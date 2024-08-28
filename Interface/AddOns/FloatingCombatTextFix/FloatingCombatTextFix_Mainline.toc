@@ -1,0 +1,31 @@
+## Interface: 100107
+## Version: 1.0.1
+
+## Title: Floating Combat Text Fix
+## Title-esMX: Corrección del Texto de Combate Flotante
+## Title-esES: Corrección del Texto Flotante de Combate
+## Title-ptBR: Correção do Texto de Combate Flutuante
+## Title-deDE: Schwebenden Kampflogtext Korrektur
+## Title-frFR: Correction du Texte de Combat Flottant
+## Title-itIT: Correzione del Testo di Combattimento Fluttuante
+## Title-ruRU: Плавающий Боевой Текста Исправление
+## Title-koKR: 플로팅 전투 텍스트 수정
+## Title-zhTW: 浮動戰鬥文修復
+## Title-zhCN: 浮动战斗文修复
+
+## Notes: Ensures that the default Floating Combat Text is always active
+## Notes-esMX: Asegura que el Texto de Combate Flotante esté siempre activo
+## Notes-esES: Asegura que el Texto Flotante de Combate esté siempre activo
+## Notes-ptBR: Garante que o Texto de Combate Flutuante padrão esteja sempre ativo
+## Notes-deDE: Stellt sicher dass der standardmäßige Schwebenden Kampflogtext immer aktiv ist
+## Notes-frFR: Assurez que le Texte de Combat Flottant défaut soit toujours actif
+## Notes-itIT: Assicura che il Testo di Combattimento Fluttuante predefinito sia sempre attivo
+## Notes-ruRU: Гарантирует что Плавающий Боевой Текста по умолчанию всегда активен
+## Notes-koKR: 기본 플로팅 전투 텍스트가 항상 활성화되도록 합니다.
+## Notes-zhTW: 確保默認浮動戰鬥文本始終處於活動狀態
+## Notes-zhCN: 确保默认的浮动战斗文本始终处于活动状态
+
+## Author: Breno Ludgero
+
+Localization.lua
+FloatingCombatTextFix.lua

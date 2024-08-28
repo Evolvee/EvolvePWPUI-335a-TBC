@@ -472,6 +472,9 @@ local function OnInit()
     ChatFrameMenuButton:Hide()
 	--classic only
     --ChatFrameChannelButton:Hide()
+	
+	--3.3.5a only:
+	FriendsMicroButton:Hide()
 
     -- TargetFrame castbar slight up-scaling
     TargetFrameSpellBar:SetScale(1.1)
@@ -480,31 +483,36 @@ local function OnInit()
     FocusFrameSpellBar:SetScale(1.1)
 
     -- Rework Main Cast-Bar texture (castbar is now going to be round) - this is kinda "idk kev"... not sure if I rly like it, yet...
-    -- Commented out - currently temporarily replaced by the DragonflightUI castbar (testing it out and shit)
-    --CastingBarFrame:SetScale(1)
-    --CastingBarFrame.Border:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border-Small")
-    --CastingBarFrame.Flash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
-    --CastingBarFrame.Spark:SetHeight(50)
-    -- CastingBarFrame.Text:ClearAllPoints()
-    --CastingBarFrame.Text:SetPoint("CENTER", 0, 1)
-    -- CastingBarFrame.Border:SetWidth(CastingBarFrame.Border:GetWidth() + 4)
-    -- CastingBarFrame.Flash:SetWidth(CastingBarFrame.Flash:GetWidth() + 4)
-    --CastingBarFrame.BorderShield:SetWidth(CastingBarFrame.BorderShield:GetWidth() + 4)
-    -- CastingBarFrame.Border:SetPoint("TOP", 0, 26)
-    -- CastingBarFrame.Flash:SetPoint("TOP", 0, 26)
-    --CastingBarFrame.BorderShield:SetPoint("TOP", 0, 26)
+    CastingBarFrame:SetScale(1)
+    CastingBarFrameBorder:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border-Small")
+    CastingBarFrameFlash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
+    CastingBarFrameSpark:SetHeight(50)
+    CastingBarFrameText:ClearAllPoints()
+    CastingBarFrameText:SetPoint("CENTER", 0, 1)
+    CastingBarFrameBorder:SetWidth(CastingBarFrameBorder:GetWidth() + 4)
+    CastingBarFrameFlash:SetWidth(CastingBarFrameFlash:GetWidth() + 4)
+    CastingBarFrameBorderShield:SetWidth(CastingBarFrameBorderShield:GetWidth() + 4)
+    CastingBarFrameBorder:SetPoint("TOP", 0, 26)
+    CastingBarFrameFlash:SetPoint("TOP", 0, 26)
+    CastingBarFrameBorderShield:SetPoint("TOP", 0, 26)
 
     -- removing the "interrupted" red delay bar from nameplate castbars
     --^^ handled in JaxPartyCastBars addon!
 
+
+
+
+	--classic only
     --removing character "C" button image
     MicroButtonPortrait:Hide()
-    CharacterMicroButton:SetNormalTexture("Interface/BUTTONS/Custom Evo C panel");
-    CharacterMicroButton:SetPushedTexture("Interface/BUTTONS/Custom Evo C panel");
+    --CharacterMicroButton:SetNormalTexture("Interface/BUTTONS/Custom Evo C panel");
+    --CharacterMicroButton:SetPushedTexture("Interface/BUTTONS/Custom Evo C panel");
 	
-	--classic only
-    --LFGMicroButton:SetNormalTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
-    --LFGMicroButton:SetPushedTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
+	--3.3.5a only:
+	
+	PVPMicroButton:Hide()
+	
+	--classic only    --LFGMicroButton:SetNormalTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");    --LFGMicroButton:SetPushedTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
 	
     -- removing the new "latency" bar unfortunately introduced in wotlk
     MainMenuBarPerformanceBar:SetAlpha(0)
@@ -587,8 +595,13 @@ local function OnInit()
 
     texture = PVPMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-
-    PVPMicroButtonTexture:SetAlpha(0)
+	--classic only
+    --PVPMicroButtonTexture:SetAlpha(0)
+	
+	--3.3.5a only:
+	PVPMicroButtonTexture:Hide()
+	
+	
 	--classic only
     --texture = LFGMicroButton:GetHighlightTexture()
     --texture:SetAlpha(0)
@@ -625,37 +638,37 @@ local function OnInit()
         _G["MultiBarLeftButton" .. i .. "Name"]:SetAlpha(0)
     end
 
-	
+	--not needed on 3.3.5a:
     -- trying to salvage the main action bar abomination they created in the clASSic ICC patch (bringing back the old looks of it)
 
-    MainMenuBar:SetSize(1024, 53)
-    MainMenuExpBar:SetSize(1024, 13);
-    MainMenuBarTexture0:SetPoint("BOTTOM", -384, 0);
-    MainMenuBarTexture1:SetPoint("BOTTOM", -128, 0);
-    MainMenuBarTexture2:SetPoint("BOTTOM", 128, 0);
-    MainMenuBarTexture3:SetPoint("BOTTOM", 384, 0);
-    MainMenuBarLeftEndCap:SetPoint("BOTTOM", -544, 0);
-    MainMenuBarRightEndCap:SetPoint("BOTTOM", 544, 0);
-    MainMenuBarPageNumber:SetPoint("CENTER", 30, -5);
-    MainMenuXPBarTexture0:SetSize(256, 10);
-    MainMenuXPBarTexture1:SetSize(256, 10);
-    MainMenuXPBarTexture2:SetSize(256, 10);
-    MainMenuXPBarTexture3:SetSize(256, 10);
-    MainMenuXPBarTexture3:SetPoint("BOTTOM", 384, 3);
+    --MainMenuBar:SetSize(1024, 53)
+    --MainMenuExpBar:SetSize(1024, 13);
+    --MainMenuBarTexture0:SetPoint("BOTTOM", -384, 0);
+    --MainMenuBarTexture1:SetPoint("BOTTOM", -128, 0);
+    --MainMenuBarTexture2:SetPoint("BOTTOM", 128, 0);
+    --MainMenuBarTexture3:SetPoint("BOTTOM", 384, 0);
+    --MainMenuBarLeftEndCap:SetPoint("BOTTOM", -544, 0);
+    --MainMenuBarRightEndCap:SetPoint("BOTTOM", 544, 0);
+    --MainMenuBarPageNumber:SetPoint("CENTER", 30, -5);
+    --MainMenuXPBarTexture0:SetSize(256, 10);
+    --MainMenuXPBarTexture1:SetSize(256, 10);
+    --MainMenuXPBarTexture2:SetSize(256, 10);
+    --MainMenuXPBarTexture3:SetSize(256, 10);
+    --MainMenuXPBarTexture3:SetPoint("BOTTOM", 384, 3);
     --classic only
 	--CollectionsMicroButton:Hide()
-    PVPMicroButton:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
-    UpdateMicroButtons()
-    hooksecurefunc(PVPMicroButton, "SetPoint", function(self)
-        if self.moving then
-            return
-        end
-        self.moving = true
-        self:ClearAllPoints()
-        self:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
-        UpdateMicroButtons()
-        self.moving = false
-    end)
+    --PVPMicroButton:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
+    --UpdateMicroButtons()
+    --hooksecurefunc(PVPMicroButton, "SetPoint", function(self)
+        --if self.moving then
+            --return
+        --end
+        --self.moving = true
+        --self:ClearAllPoints()
+        --self:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
+        --UpdateMicroButtons()
+        --self.moving = false
+    --end)
 end
 
 -- SpeedyActions level: Garage clicker & Pro Gaymer
@@ -821,8 +834,8 @@ local function TextStatusBar_UpdateTextString(statusFrame)
         statusFrame.TextString:Hide()
     end
 end
---XYZ
---hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", --TextStatusBar_UpdateTextString)
+--XYZ(hooksecurefunc(): TextStatusBar_UpdateTextStringWithValues is not a function)
+--hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", TextStatusBar_UpdateTextString)
 
 local function Classification(self, forceNormalTexture)
     local classification = UnitClassification(self.unit);

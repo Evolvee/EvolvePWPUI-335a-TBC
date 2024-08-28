@@ -1,0 +1,130 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	
+	<Script file="UILibLayers.lua"/>
+	
+	<Frame name="BFOverlay" mixin="BackdropTemplateMixin" enablemouse="true" hidden="true" virtual="true">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="UIParent" relativePoint="TOPLEFT">
+				<Offset>
+					<AbsDimension x="0" y="0" />
+				</Offset>
+			</Anchor>
+			<Anchor point="BOTTOMRIGHT" relativeTo="UIParent" relativePoint="BOTTOMRIGHT">
+				<Offset>
+					<AbsDimension x="0" y="0" />
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface/Tooltips/UI-Tooltip-Background" edgeFile="" tile="true">
+			<TileSize>
+				<AbsValue val="16" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="16" />
+			</EdgeSize>
+		</Backdrop>
+	</Frame>
+
+	
+	
+	<!-- The primary configure layer, all configuration UI descends from this -->
+	<Frame name="BFConfigureLayer" parent="UIParent" frameStrata="LOW" hidden="true">
+		<Scripts>
+			<OnShow>
+				BFUILib.ConfigureModeEnabled();
+
+			</OnShow>
+			<OnHide>
+				BFUILib.ConfigureModeDisabled();
+
+			</OnHide>
+		</Scripts>
+	</Frame>
+	
+	<!-- Layer to house the advanced ui controls -->
+	<Frame name="BFAdvancedToolsLayer" parent="BFConfigureLayer" frameStrata="LOW" hidden="true"/>
+	
+	<!-- Overlay for bar creation -->
+	<Frame name="BFCreateBarOverlay" parent="UIParent" inherits="BFOverlay" frameStrata="FULLSCREEN_DIALOG">
+		<Scripts>
+			<OnLoad>
+				self:SetBackdropColor(unpack(BFConst.CreateBarOverlayColor));
+				tinsert(UISpecialFrames, self:GetName());
+			</OnLoad>
+			<OnMouseUp>
+				if (button == "LeftButton") then
+					local Left, Top = GetCursorPosition();
+					local Scale = UIParent:GetEffectiveScale();
+					if (BFUILib.CreateBarMode) then
+						BFUtil.NewBar(Left / Scale, Top / Scale);
+					elseif (BFUILib.CreateBonusBarMode) then
+						BFUtil.NewBonusBar(Left / Scale, Top / Scale);
+					end
+				end
+				BFUILib.ToggleCreateBarMode(true);
+			</OnMouseUp>
+			<OnEnter>
+				SetCursor("REPAIRNPC_CURSOR");
+			</OnEnter>
+			<OnHide>
+				BFUILib.ToggleCreateBarMode(true);
+			</OnHide>
+		</Scripts>
+	</Frame>
+	
+	<!-- Overlay for bar destruction (this overlay contains destroy frames unique to each bar) -->
+	<Frame name="BFDestroyBarOverlay" parent="UIParent" inherits="BFOverlay">
+		<Scripts>
+			<OnLoad>
+				self:SetBackdropColor(unpack(BFConst.DestroyBarOverlayColor));
+				tinsert(UISpecialFrames, self:GetName());
+			</OnLoad>
+			<OnMouseUp>
+				BFUILib.ToggleDestroyBarMode(true);
+			</OnMouseUp>
+			<OnEnter>
+				SetCursor("CAST_ERROR_CURSOR");
+			</OnEnter>
+			<OnHide>
+				BFUILib.ToggleDestroyBarMode(true);
+			</OnHide>
+		</Scripts>
+	</Frame>
+	
+	<!-- Frame to drag a Toggle button against -->
+	<Frame name="BFIconDragOverlay" parent="UIParent" inherits="BFOverlay" frameStrata="LOW" frameLevel="1">
+		<Scripts>
+			<OnLoad>
+				self:SetBackdropColor(unpack(BFConst.IconDragOverlayColor));
+				tinsert(UISpecialFrames, self:GetName());
+			</OnLoad>
+			<OnEnter>
+				SetCursor("ITEM_CURSOR");
+			</OnEnter>
+			<OnMouseDown>
+				BFUILib:StopDraggingIcon();
+			</OnMouseDown>
+			<OnHide>
+				BFUILib:StopDraggingIcon();
+			</OnHide>
+		</Scripts>
+	</Frame>
+	
+	<!-- Frame to handle protected processing that may be needed when entering combat -->
+	<Frame name="BFSecureForCombatFrame" hidden="true" inherits="SecureHandlerStateTemplate">
+		<Scripts>
+			<OnLoad>
+				RegisterStateDriver(self, "combat", "[combat] true; false");
+			</OnLoad>
+		</Scripts>
+	</Frame>
+	
+	<!-- Frame to handle protected processing when the override or vehicle bar becomes active -->
+	<Frame name="BFSecureSpecialBarFrame" hidden="true" inherits="SecureHandlerStateTemplate">
+		<Scripts>
+			<OnLoad>
+				RegisterStateDriver(self, "bar", "[overridebar] overridebar; [vehicleui] vehicleui; normal");
+			</OnLoad>
+		</Scripts>
+	</Frame>
+</Ui>

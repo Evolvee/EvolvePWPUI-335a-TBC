@@ -1,0 +1,147 @@
+--[[
+    Author: Alternator (Massiner of Nathrezim)
+    Copyright 2012
+
+--]]
+	
+	
+local Button = BFButton;
+
+
+function Button.SecureOnReceiveDrag = [[
+	if (kind) then
+		--store the cursor from the button
+	end
+			
+	if (kind == "spell") then
+		
+	elseif (kind == "item") then
+		
+	elseif (kind == "macro") then
+		
+	elseif (kind == "companion") then
+			
+	elseif (kind == "equipmentset") then
+			
+	elseif (kind == "bonusaction") then
+			
+	elseif (kind == "flyout") then
+			
+	elseif (kind == "customaction") then
+		
+	elseif (kind == nil or kind == "") then
+		
+	else
+			
+	end
+		
+]];
+
+function Button.SecureOnStateMode = [[
+	self:SetAttribute("type", nil);
+	self:SetAttribute("spell", nil);
+	self:SetAttribute("item", nil);
+	self:SetAttribute("macro", nil);
+	self:SetAttribute("macrotext", nil);
+	self:SetAttribute("action", nil);
+	
+	--Type and Value are Member values in the secure space for the button
+	if (Type == "spell" or Type == "item" or Type == "macro") then
+		self:SetAttribute("type", Type);
+		self:SetAttribute(Type, Value);
+		
+	elseif (Type == "companion") then
+		self:SetAttribute("type", "spell");
+		self:SetAttribute("spell", Value);
+		
+	elseif (Type == "equipmentset") then
+		self:SetAttribute("type", "macro");
+		self:SetAttribute("macrotext", "/equipset "..Value);
+	elseif (Type == "bonusaction") then
+		self:SetAttribute("type", "action");
+		self:SetAttribute("action", Value + 120);
+	elseif (Type == "flyout") then
+		self:SetAttribute("type", "flyout");
+		self:SetAttribute("spell", Value);
+		
+	elseif (Type == "customaction") then
+		if (Value == "configuremode") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarToggle");
+		elseif (Value == "createbarmode") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarCreateBar");
+		elseif (Value == "createbonusbarmode") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarCreateBonusBar");
+		elseif (Value == "destroybarmode") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarDestroyBar");
+		elseif (Value == "advancedtoolsmode") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarAdvanced");
+		elseif (Value == "rightclickselfcast") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/click BFToolbarRightClickSelfCast");
+		elseif (Value == "vehicleexit") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/run VehicleExit()");
+		elseif (Value == "possesscancel") then
+			self:SetAttribute("type", "macro");
+			self:SetAttribute("macrotext", "/run CancelUnitBuff(\"player\", select(2, GetPossessInfo(2)) or \"\")");
+		end
+	end
+]]
+
+--[[ Set the buttons attributes (When I get some spare time this could be put in the secure env to allow changing the button during combat) --]]
+function Button:SetAttributes(Type, Value)
+	--Firstly clear all relevant fields
+	self.Widget:SetAttribute("type", nil);
+	self.Widget:SetAttribute("spell", nil);
+	self.Widget:SetAttribute("item", nil);
+	self.Widget:SetAttribute("macro", nil);
+	self.Widget:SetAttribute("macrotext", nil);
+	self.Widget:SetAttribute("action", nil);
+	
+	--Now if a valid type is passed in set it
+	if (Type == "spell" or Type == "item" or Type == "macro") then
+		self.Widget:SetAttribute("type", Type);
+		self.Widget:SetAttribute(Type, Value);
+		
+	elseif (Type == "companion") then
+		self.Widget:SetAttribute("type", "spell");
+		self.Widget:SetAttribute("spell", Value);
+		
+	elseif (Type == "equipmentset") then
+		self.Widget:SetAttribute("type", "macro");
+		self.Widget:SetAttribute("macrotext", "/equipset "..Value);
+	elseif (Type == "bonusaction") then
+		self.Widget:SetAttribute("type", "action");
+		self.Widget:SetAttribute("action", Value + 120);
+	elseif (Type == "flyout") then
+		self.Widget:SetAttribute("type", "flyout");
+		self.Widget:SetAttribute("spell", Value);
+	elseif (Type == "customaction") then
+		CustomAction.SetAttributes(Value, self.Widget);
+	end
+end
+
+
+
+
+(self, button, kind, value, …)
+
+	local self = Widget.ParentButton;
+	if (not InCombatLockdown()) then
+		if (GetCursorInfo()) then
+			Util.StoreCursor(self:GetCursor());
+			if (self:SetCommandFromTriplet(GetCursorInfo())) then
+				Util.SetCursor(Util.GetStoredCursor());
+			end
+		elseif (UILib.GetDragInfo()) then
+			Util.StoreCursor(self:GetCursor());
+			if (self:SetCommandFromTriplet(UILib.GetDragInfo())) then
+				Util.SetCursor(Util.GetStoredCursor());
+			end
+		end
+	end

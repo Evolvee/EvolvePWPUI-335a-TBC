@@ -1,0 +1,9 @@
+## Interface: 30403
+## Title: DeBuffFilter
+## Version: v3.1
+## Notes: discord.gg/CtxPasSQnQ
+## Author: Xyz, Asuri (bugs, jk)
+## SavedVariables: DeBuffFilterDB
+
+Embeds.xml
+DeBuffFilter.lua

@@ -1,0 +1,6 @@
+## Interface: 30403
+## Author: Evolve, Xyz
+## Notes: Button that enables to switch between two OmniBarFrames on demand.
+## Version: 1
+## Title: OmnibarAdditionalButton
+OmnibarAdditionalButton.lua

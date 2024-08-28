@@ -1,0 +1,7 @@
+<Bindings>
+   <Binding name="Toggle Frame Visibility" runOnUp="true" header="OmnibarAdditionalButton">
+      if ( keystate == "down" ) then
+         OABframe.ToggleVisible();
+      end
+   </Binding>
+</Bindings>

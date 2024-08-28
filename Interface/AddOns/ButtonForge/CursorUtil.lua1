@@ -1,0 +1,76 @@
+--[[
+	Author: Alternator (Massiner of Nathrezim)
+
+	Copyright: 2012
+
+]]
+
+--local AddonName, AddonTable = ...;
+local CursorUtil = BFCursorUtil;
+
+local UILib = BFUILib;
+local Util = BFUtil;
+local PetActionIndex;
+
+function CursorUtil.GetCursorInfo()
+	local Command, Data, Subvalue, Subsubvalue = GetCursorInfo();
+	if (Command) then
+		if (Command == "petaction") then
+			Data = PetActionIndex;
+			local Type, Id = GetSpellBookItemInfo(Data, BOOKTYPE_PET);
+			if (Type == "PETACTION") then
+				Command = "petcommand";
+			else
+				Command = "petability";
+			end
+		end
+		return Command, Data, Subvalue, Subsubvalue;
+	end
+	return UILib.GetDragInfo();
+end
+
+local CompatibleActions = {
+	["spell"] = true
+	, ["item"] = true
+	, ["macro"] = true
+	, ["flyout"] = true
+	, ["petaction"] = true
+	, ["companion"] = true
+	, ["equipmentset"] = true};
+function CursorUtil.CursorHasAction()
+	return CompatibleActions[GetCursorInfo()] or CustomCommand ~= nil;
+end
+
+local StoredCursor = {};
+function CursorUtil.StoreCursor(...)
+	StoredCursor = {...};
+end
+
+function CursorUtil.GetStoredCursor()
+	return unpack(StoredCursor);
+end
+
+
+local function CapturePickupSpellBookItem(Index, BookType)
+	PetActionIndex = Index;
+end
+
+local function CapturePickupPetAction(Slot)
+	PetActionIndex = Util.FindPetActionIndexByTexture(Util.GetTrackedPetSlotAction(Slot, true));
+	print(Slot, PetActionIndex);
+end
+
+local function CaptureCastPetAction(Slot)
+	PetActionIndex = Util.FindPetActionIndexByTexture(Util.GetTrackedPetSlotAction(Slot, false));
+end
+
+local function CapturePickupPetSpell(Id)
+	PetActionIndex = Util.FindPetActionIndexById(Id);
+end
+
+hooksecurefunc("PickupSpellBookItem", CapturePickupSpellBookItem);
+hooksecurefunc("PickupPetAction", CapturePickupPetAction);
+hooksecurefunc("PickupPetSpell", CapturePickupPetSpell);
+hooksecurefunc("CastPetAction", CaptureCastPetAction);
+
+

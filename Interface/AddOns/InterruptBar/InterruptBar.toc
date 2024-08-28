@@ -1,0 +1,9 @@
+## Interface: 20501
+## Title: Interrupt Bar Resurrected
+## Notes: Tracks interrupts
+## Version: 1.2
+## Author: Rdmx
+## DefaultState: Enabled
+## SavedVariables: InterruptBarDB
+
+InterruptBar.lua

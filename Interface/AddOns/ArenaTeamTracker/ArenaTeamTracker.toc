@@ -1,0 +1,12 @@
+## Interface: 20501
+## Author - by Izy - ported by Schaka
+## Title: Arena Team Tracker
+## Version: v7.45 TBC Classic
+## Notes: Track all selected cooldowns of your party members
+## SavedVariables: ATTDB
+
+libs\libs.xml
+Spells\spell_lib_defaults.lua
+Spells\spell_lib_modif.lua
+
+ArenaTeamTracker.lua

@@ -1,0 +1,13 @@
+## Interface: 30402
+## Title: JaxPartyCastbars
+## Notes: Dont mind me, im literally using this just to show my mages polymorph to not always cuck it with a holy nova....
+## Version: v3.0
+## Author: Jax, Xyz
+## SavedVariables: jpcbDB
+#@no-lib-strip@
+Embeds.xml
+#@end-no-lib-strip@
+
+
+JaxPartyCastbars.lua
+Options.lua

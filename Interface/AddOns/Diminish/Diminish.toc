@@ -1,0 +1,18 @@
+## Interface: 20504
+## X-Expansion: 5
+## Title: Diminish
+## Notes: Lightweight diminishing returns tracker for hostile and friendly units.
+## SavedVariables: DiminishDB
+## Version: v2.4.19
+## X-Curse-Project-ID: 92871
+## X-Wago-ID: 7nGvPW6x
+
+libs\LibStub\LibStub.lua
+libs\DRList-1.0\DRList-1.0.xml
+
+helpers.lua
+core\config.lua
+core\anchors.lua
+core\icons.lua
+core\timers.lua
+Diminish.lua

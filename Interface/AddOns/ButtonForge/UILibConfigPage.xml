@@ -1,0 +1,61 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	<Script file="UILibConfigPage.lua"/>
+	
+	<Frame name="BFConfigPage" parent="UIParent">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTitle" inherits="GameFontNormalLarge" text="Button Forge">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="16" y="-16" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentVersion" inherits="GameFontDisableSmall" text="Button Forge">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="16" y="16" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				self.name = "Button Forge";
+				InterfaceOptions_AddCategory(self);
+				BFConfigPageVersion:SetText("Version "..BFConst.Version.."."..BFConst.VersionMinor);
+			</OnLoad>
+		</Scripts>
+		<Frames>
+			<Button name="$parentToolbarToggle" text="Show/Hide Button Forge Toolbar" inherits="UIPanelButtonTemplate, SecureHandlerBaseTemplate, SecureHandlerClickTemplate">
+				<Size>
+					<AbsDimension x="220" y="22" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="20" y="-48" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						SecureHandler_OnLoad(self);
+						self:SetFrameRef("ConfigureLayer", BFConfigureLayer);
+						self:SetAttribute("_onclick", [[local Configure = owner:GetFrameRef("ConfigureLayer");
+														if (Configure:IsShown()) then
+															Configure:Hide();
+														else
+															Configure:Show();
+														end]]);
+					</OnLoad>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>
