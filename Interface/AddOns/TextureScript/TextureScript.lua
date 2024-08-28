@@ -149,49 +149,50 @@ local function ColorGuildTabs()
     end
 end
 
-local sounds = {
-    569772, -- sound/spells/fizzle/fizzleholya.ogg
-    569773, -- sound/spells/fizzle/fizzlefirea.ogg
-    569774, -- sound/spells/fizzle/fizzlenaturea.ogg
-    569775, -- sound/spells/fizzle/fizzlefrosta.ogg
-    569776, -- sound/spells/fizzle/fizzleshadowa.ogg
-    567407, -- sound/interface/uchatscrollbutton.ogg annoying clicking sound when you press a spell on action bar
-    598127, -- DalaranArena_WaterIncoming
-    565772, -- DalaranSewer_ArenaWaterFall_Closed
-    569506, -- DalaranSewer_ArenaWaterFall_Close
-    598178, -- Orgrimmar_Arena_PillarWarning
-    545431, -- sound/creature/brann/ur_brann_dalaran01.ogg (dalaran cancer)
-    559130, -- sound/creature/rhonin/ur_rhonin_event01.ogg
-    559131, -- sound/creature/rhonin/ur_rhonin_event02.ogg
-    559126, -- sound/creature/rhonin/ur_rhonin_event03.ogg
-    559128, -- sound/creature/rhonin/ur_rhonin_event04.ogg
-    559133, -- sound/creature/rhonin/ur_rhonin_event05.ogg
-    559129, -- sound/creature/rhonin/ur_rhonin_event06.ogg
-    559132, -- sound/creature/rhonin/ur_rhonin_event07.ogg
-    559127, -- sound/creature/rhonin/ur_rhonin_event08.ogg
-    538978, -- Greenslime
-    538976, -- Greenslime
-    1229, -- crab sounds (Blizzard is too dogshit to fix this themselves, as usual)
-    1230,
-    1228,
-    1227,
-    1226,
-    1225,
-    567231, --RiverA
-    567250,
-    567272,
-    567251,
-    567253,
-    567266,
-    567230, -- RiverB
-    567271,
-    567234,
-    567246,
-    567244,
-    567261,
-    567453, -- target
-    567520, -- untarget
-}
+--not needed (hackfixed via data/sound folder)
+--local sounds = {
+    --569772, -- sound/spells/fizzle/fizzleholya.ogg
+    --569773, -- sound/spells/fizzle/fizzlefirea.ogg
+    --569774, -- sound/spells/fizzle/fizzlenaturea.ogg
+    --569775, -- sound/spells/fizzle/fizzlefrosta.ogg
+    --569776, -- sound/spells/fizzle/fizzleshadowa.ogg
+    --567407, -- sound/interface/uchatscrollbutton.ogg annoying clicking sound when you press a spell on action bar
+    --598127, -- DalaranArena_WaterIncoming
+    --565772, -- DalaranSewer_ArenaWaterFall_Closed
+    --569506, -- DalaranSewer_ArenaWaterFall_Close
+    --598178, -- Orgrimmar_Arena_PillarWarning
+    --545431, -- sound/creature/brann/ur_brann_dalaran01.ogg (dalaran cancer)
+    --559130, -- sound/creature/rhonin/ur_rhonin_event01.ogg
+    --559131, -- sound/creature/rhonin/ur_rhonin_event02.ogg
+    --559126, -- sound/creature/rhonin/ur_rhonin_event03.ogg
+    --559128, -- sound/creature/rhonin/ur_rhonin_event04.ogg
+    --559133, -- sound/creature/rhonin/ur_rhonin_event05.ogg
+    --559129, -- sound/creature/rhonin/ur_rhonin_event06.ogg
+    --559132, -- sound/creature/rhonin/ur_rhonin_event07.ogg
+    --559127, -- sound/creature/rhonin/ur_rhonin_event08.ogg
+    --538978, -- Greenslime
+    --538976, -- Greenslime
+    --1229, -- crab sounds (Blizzard is too dogshit to fix this themselves, as usual)
+    --1230,
+    --1228,
+    --1227,
+    --1226,
+    --1225,
+    --567231, --RiverA
+    --567250,
+    --567272,
+    --567251,
+    --567253,
+    --567266,
+    --567230, -- RiverB
+    --567271,
+    --567234,
+    --567246,
+    --567244,
+    --567261,
+    --567453, -- target
+    --567520, -- untarget
+--}
 
 local tooltipOwnerBlacklist = {
     "ActionButton%d+$", -- bar buttons
@@ -208,6 +209,7 @@ local tooltipOwnerBlacklist = {
     "SocialsMicroButton",
     "PVPMicroButton",
     "LFGMicroButton",
+	"LFDMicroButton", -- 3.3.5a cancer only
     "HelpMicroButton",
     --"CollectionsMicroButton", -- classic cancer
     "^KeyRingButton$", -- key ring
@@ -310,10 +312,16 @@ local function OnInit()
     MiniMapMailFrame:SetPoint('BOTTOMRIGHT', 0, -10)
     MinimapZoneTextButton:Hide()
 	PlayerPVPTimerText:SetAlpha(0)
-
+	
+	--classic only
     -- MiniMapWorldMapButton:Hide() needs to be done like this since patch 2.5.3 for some reason
-    hooksecurefunc(MiniMapWorldMapButton, "Show", MiniMapWorldMapButton.Hide)
-
+    --hooksecurefunc(MiniMapWorldMapButton, "Show", MiniMapWorldMapButton.Hide)
+	
+	--^^3.3.5a "solution" only:
+	MiniMapWorldMapButton:Hide()
+	
+	
+	
 	--XYZ
     -- Color Clock
     --select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
@@ -493,13 +501,13 @@ local function OnInit()
     MicroButtonPortrait:Hide()
     CharacterMicroButton:SetNormalTexture("Interface/BUTTONS/Custom Evo C panel");
     CharacterMicroButton:SetPushedTexture("Interface/BUTTONS/Custom Evo C panel");
+	
 	--classic only
     --LFGMicroButton:SetNormalTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
     --LFGMicroButton:SetPushedTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
 	
-	--classic only
     -- removing the new "latency" bar unfortunately introduced in wotlk
-    --MainMenuBarPerformanceBar:SetAlpha(0)
+    MainMenuBarPerformanceBar:SetAlpha(0)
 
     -- move target of target to the right in order to allow clear vision of buffs/debuffs on a target, this will also be prolly mandatory when I try to resize the debuff scale to match 2.4.3
     TargetFrameToT:ClearAllPoints();
@@ -586,6 +594,10 @@ local function OnInit()
     --texture:SetAlpha(0)
 
     texture = MainMenuMicroButton:GetHighlightTexture()
+    texture:SetAlpha(0)
+	
+	--3.3.5a only:
+	texture = LFDMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
 
     texture = HelpMicroButton:GetHighlightTexture()
@@ -1419,6 +1431,8 @@ local function RemovePlate(unit)
     end
 end
 
+
+--XYZ (attempt to call field 'GetOptions' (a nil value))
 -- Skip certain gossip_menu windows for vendors and especially arena/bg NPCs --> can be bypassed by pressing ctrl/alt/shift
 -- To see the icon number of gossip options, use: /dump C_GossipInfo.GetOptions()
 
@@ -1436,30 +1450,30 @@ local IsShiftKeyDown, IsAltKeyDown, IsControlKeyDown = IsShiftKeyDown, IsAltKeyD
 local GetNumGossipActiveQuests, GetNumGossipAvailableQuests = C_GossipInfo.GetNumActiveQuests, C_GossipInfo.GetNumAvailableQuests
 local SelectGossipOption, Dismount = C_GossipInfo.SelectOption, Dismount
 
-local function skipEventFrame()
-    local options = C_GossipInfo.GetOptions()
-    local numOptions = #options
+--local function skipEventFrame()
+--    local options = C_GossipInfo.GetOptions()
+--    local numOptions = #options
 
-    if not IsShiftKeyDown() and numOptions == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
-        if gossipSkipIcon[options[1].icon] then
-            SelectGossipOption(options[1].gossipOptionID)
-            if options[1].icon == 132057 then
+--    if not IsShiftKeyDown() and numOptions == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
+--        if gossipSkipIcon[options[1].icon] then
+--            SelectGossipOption(options[1].gossipOptionID)
+--            if options[1].icon == 132057 then
                 -- taxi
-                Dismount()
-            end
-            return
-        end
-    end
-    if numOptions > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
-        for _, v in ipairs(options) do
-            if v.icon == 132060 then
+--                Dismount()
+--            end
+--            return
+--        end
+--    end
+--    if numOptions > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
+--        for _, v in ipairs(options) do
+--            if v.icon == 132060 then
                 -- vendor
-                SelectGossipOption(v.gossipOptionID)
-                return
-            end
-        end
-    end
-end
+--                SelectGossipOption(v.gossipOptionID)
+--                return
+--            end
+--        end
+--    end
+--end
 
 -- Add MMR at the bottom of Arena Scoreboard
 local teamRatingFrame = CreateFrame("frame", "TeamRatingTextFrame", WorldStateScoreFrame)
@@ -1756,8 +1770,9 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         else
             plateEventFrame:SetScript("OnEvent", PlateScript)
         end
-    elseif event == "GOSSIP_SHOW" then
-        skipEventFrame()
+	--XYZ (attempt to call global 'skipEventFrame' (a nil value))
+    --elseif event == "GOSSIP_SHOW" then
+    --    skipEventFrame()
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
