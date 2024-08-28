@@ -1,0 +1,8 @@
+## Interface: 20501
+## Title: QueueAlert
+## Notes: Sends a whisper to yourself when battleground/arena queue pops, notifies Windows client if alt-tabbed
+## Version: v1.1
+## Author: Zannix
+## DefaultState: Enabled
+
+QueueAlert.lua

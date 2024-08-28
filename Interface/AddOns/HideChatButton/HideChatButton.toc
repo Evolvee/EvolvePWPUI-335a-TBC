@@ -1,0 +1,6 @@
+## Interface: 30403
+## Author: For Classic WOTLK fixed by Evolve (+ xyz -.-)
+## Notes: Left-bottom button to hide/show chat.
+## Version: 3.4.0.45572
+## Title: HideChatButton
+HideChatButton.lua

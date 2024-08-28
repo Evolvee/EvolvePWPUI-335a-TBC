@@ -1,0 +1,6 @@
+## Interface: 30402
+## Author: Evolve, Pyralis, Xyz
+## Title: |cff69ccf0EvolvePWPUI - ClassicWOTLK|r
+## Notes: Evolve PWP UI for Classic WOTLK
+
+TextureScript.lua
