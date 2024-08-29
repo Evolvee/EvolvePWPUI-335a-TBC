@@ -1,10 +1,10 @@
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
+local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
-local default = function()
+local default = function(parentType)
   return {
     tick_visible = true,
     tick_color = {1, 1, 1, 1},
@@ -107,10 +107,8 @@ local auraBarAnchorInverse = {
 }
 
 local function create()
-  local subRegion = CreateFrame("Frame", nil, UIParent)
+  local subRegion = CreateFrame("FRAME", nil, UIParent)
   subRegion.texture = subRegion:CreateTexture()
-  subRegion.texture:SetSnapToPixelGrid(false)
-  subRegion.texture:SetTexelSnappingBias(0)
   subRegion.texture:SetDrawLayer("ARTWORK", 3)
   subRegion.texture:SetAllPoints(subRegion)
   return subRegion
@@ -122,6 +120,13 @@ end
 
 local function onRelease(subRegion)
   subRegion:Hide()
+end
+
+local function getRotatedPoints(degrees)
+  local angle = rad(135 - degrees)
+  local vx = math.cos(angle)
+  local vy = math.sin(angle)
+  return 0.5+vx, 0.5-vy, 0.5-vy, 0.5-vx, 0.5+vy, 0.5+vx, 0.5-vx, 0.5+vy
 end
 
 local funcs = {
@@ -180,7 +185,7 @@ local funcs = {
       self.texture:SetVertexColor(r, g, b, a or 1)
       self:UpdateTickDesaturated()
     else
-      self.texture:SetColorTexture(r, g, b, a or 1)
+      self.texture:SetTexture(r, g, b, a or 1)
     end
   end,
   SetTickPlacementMode = function(self, placement_mode)
@@ -192,18 +197,16 @@ local funcs = {
     end
   end,
   UpdateTimerTick = function(self)
-    if self.tick_placement_mode == "ValueOffset"
-       and self.state
-       and self.state.progressType == "timed"
-       and not self.paused
-    then
+    if self.tick_placement_mode == "ValueOffset" and self.state and self.state.progressType == "timed" and not self.paused then
       if not self.TimerTick then
         self.TimerTick = self.UpdateTickPlacement
+        self.parent:UpdateRegionHasTimerTick()
         self.parent.subRegionEvents:AddSubscriber("TimerTick", self)
       end
     else
       if self.TimerTick then
         self.TimerTick = nil
+        self.parent:UpdateRegionHasTimerTick()
         self.parent.subRegionEvents:RemoveSubscriber("TimerTick", self)
       end
     end
@@ -276,9 +279,7 @@ local funcs = {
     end
     local side = inverse and auraBarAnchorInverse or auraBarAnchor
     self:ClearAllPoints()
-    self:SetPoint("CENTER", self.parent.bar, side[self.orientation],
-                  offsetx + self.tick_xOffset,
-                  offsety + self.tick_yOffset)
+    self:SetPoint("CENTER", self.parent.bar, side[self.orientation], offsetx + self.tick_xOffset, offsety + self.tick_yOffset)
   end,
   SetAutomaticLength = function(self, automatic_length)
     if self.automatic_length ~= automatic_length then
@@ -328,8 +329,7 @@ local funcs = {
     end
   end,
   UpdateTickRotation = function(self)
-      local rad = math.rad(self.tick_rotation)
-      self.texture:SetRotation(rad)
+      self:UpdateTexCoord()
   end,
   SetTickMirror = function(self, mirror)
     if self.mirror ~= mirror then
@@ -338,11 +338,7 @@ local funcs = {
     end
   end,
   UpdateTickMirror = function(self)
-    if self.mirror then
-      self.texture:SetTexCoord(0,  1,  1,  1,  0,  0,  1,  0)
-    else
-      self.texture:SetTexCoord(0,  0,  1,  0,  0,  1,  1,  1)
-    end
+    self:UpdateTexCoord()
   end,
   SetTickBlendMode = function(self, mode)
     if self.tick_blend_mode ~= mode then
@@ -355,6 +351,14 @@ local funcs = {
       self.texture:SetBlendMode(self.tick_blend_mode)
     else
       self.texture:SetBlendMode("BLEND")
+    end
+  end,
+  UpdateTexCoord = function(self)
+    local ulx, uly, llx, lly, urx, ury, lrx, lry = getRotatedPoints(self.tick_rotation);
+    if self.mirror then
+      self.texture:SetTexCoord(urx, ury, lrx, lry, ulx, uly, llx, lly);
+    else
+      self.texture:SetTexCoord(ulx, uly, llx, lly, urx, ury, lrx, lry);
     end
   end,
 }
@@ -392,7 +396,7 @@ local function modify(parent, region, parentData, data, first)
   end
 
   if data.use_texture then
-    Private.SetTextureOrAtlas(region.texture, data.tick_texture, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    region.texture:SetTexture(data.tick_texture)
   end
 
   region:SetVisible(data.tick_visible)
@@ -416,5 +420,4 @@ local function supports(regionType)
   return regionType == "aurabar"
 end
 
-WeakAuras.RegisterSubRegionType("subtick", L["Tick"], supports, create, modify, onAcquire, onRelease,
-                                default, nil, properties);
+WeakAuras.RegisterSubRegionType("subtick", L["Tick"], supports, create, modify, onAcquire, onRelease, default, nil, properties);

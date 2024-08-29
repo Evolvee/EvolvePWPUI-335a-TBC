@@ -118,7 +118,7 @@ local function Constructor()
 
 	local highlight = frame:CreateTexture(nil, "HIGHLIGHT")
 	highlight:SetAllPoints(image)
-	highlight:SetTexture(136580) -- Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight
+	highlight:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
 	highlight:SetTexCoord(0, 1, 0.23, 0.77)
 	highlight:SetBlendMode("ADD")
 
@@ -132,7 +132,7 @@ local function Constructor()
 		widget[method] = func
 	end
 
-	widget.SetText = function(self, ...) print("AceGUI-3.0-Icon: SetText is deprecated! Use SetLabel instead!"); self:SetLabel(...) end
+	widget.SetText = widget.SetLabel
 
 	return AceGUI:RegisterAsWidget(widget)
 end

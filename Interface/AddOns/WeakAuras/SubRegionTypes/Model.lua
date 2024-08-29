@@ -1,7 +1,7 @@
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
+local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
 Private.barmodels = {}
@@ -10,22 +10,13 @@ local default = function(parentType)
   return {
     model_visible = true,
     model_alpha = 1,
-    api = false,
+
     model_x = 0,
     model_y = 0,
     model_z = 0,
     rotation = 0,
-    -- SetTransform
-    model_st_tx = 0,
-    model_st_ty = 0,
-    model_st_tz = 0,
-    model_st_rx = 270,
-    model_st_ry = 0,
-    model_st_rz = 0,
-    model_st_us = 40,
 
-    model_fileId = "235338",
-    model_path = "spells/arcanepower_state_chest.m2",
+    model_path = "Environments/Stars/NexusRaid_RuneEffects_Nebula.m2",
     bar_model_clip = true
   }
 end
@@ -49,51 +40,32 @@ local properties = {
 
 local function PreShow(self)
   local data = self.data
-  self:SetKeepModelOnHide(true)
+  --self:SetKeepModelOnHide(true)
   self:Show()
 
   -- Adjust model
-  local modelId
-  if WeakAuras.IsClassicEra() then
-    modelId = data.model_path
-  else
-    modelId = tonumber(data.model_fileId)
-  end
-  if modelId then
-    pcall(self.SetModel, self, modelId)
-  end
+  self:SetModel(data.model_path)
 
-  self:ClearTransform()
-  if (data.api) then
-    self:MakeCurrentCameraCustom()
-    self:SetTransformFixed(data.model_st_tx / 1000, data.model_st_ty / 1000, data.model_st_tz / 1000,
-      rad(data.model_st_rx), rad(data.model_st_ry), rad(data.model_st_rz),
-      data.model_st_us / 1000);
-  else
-    self:SetPosition(data.model_z, data.model_x, data.model_y);
-    self:SetFacing(0);
-  end
-  self:SetModelAlpha(self.region.alpha)
+  self:SetPosition(data.model_z, data.model_x, data.model_y);
+  self:SetFacing(0);
+  self:SetAlpha(self.region.alpha)
 end
 
 local function CreateModel()
   local model =  CreateFrame("PlayerModel", nil, UIParent)
   model.PreShow = PreShow;
-  model.SetTransformFixed = model.GetResizeBounds and Private.ModelSetTransformFixed or model.SetTransform  -- TODO change test to WeakAuras.IsWrathOrRetail() after 3.4.1 release
   return model
 end
 
 -- Keep the two model apis separate
-local poolOldApi = CreateObjectPool(CreateModel)
-local poolNewApi = CreateObjectPool(CreateModel)
-
+local pool = CreateObjectPool(CreateModel)
 
 local function AcquireModel(region, data)
-  local pool = data.api and poolNewApi or poolOldApi
   local model = pool:Acquire()
   model.data = data
   Private.barmodels[model] = true
-  model.api = data.api
+
+  model:ClearAllPoints()
 
   local anchor
   if region.parentType == "aurabar" then
@@ -108,42 +80,28 @@ local function AcquireModel(region, data)
     extra_height = data.extra_height or 0
   end
 
-  model:ClearAllPoints()
   model:SetPoint("TOPLEFT", anchor ,"TOPLEFT", -extra_width/2, extra_height/2)
   model:SetPoint("BOTTOMRIGHT", anchor ,"BOTTOMRIGHT", extra_width/2, -extra_height/2)
 
   model:SetParent(region)
-  model:SetKeepModelOnHide(true)
+  --model:SetKeepModelOnHide(true)
   model:Show()
 
   -- Adjust model
-  local modelId
-  if WeakAuras.IsClassicEra() then
-    modelId = data.model_path
-  else
-    modelId = tonumber(data.model_fileId)
-  end
-  if modelId then
-    pcall(model.SetModel, model, modelId)
-  end
-
-  model:ClearTransform()
-  if (data.api) then
-    model:MakeCurrentCameraCustom()
-    model:SetTransformFixed(data.model_st_tx / 1000, data.model_st_ty / 1000, data.model_st_tz / 1000,
-      rad(data.model_st_rx), rad(data.model_st_ry), rad(data.model_st_rz),
-      data.model_st_us / 1000);
-  else
+  model:SetModel(data.model_path)
+  model:SetPosition(data.model_z, data.model_x, data.model_y);
+  model:SetScript("OnShow", function()
+    model:SetModel(data.model_path)
     model:SetPosition(data.model_z, data.model_x, data.model_y);
-    model:SetFacing(0);
-  end
+  end)
+  model:SetFacing(0);
+
   return model
 end
 
 local function ReleaseModel(model)
-  model:SetKeepModelOnHide(false)
+  --model:SetKeepModelOnHide(false)
   model:Hide()
-  local pool = model.api and poolNewApi or poolOldApi
   pool:Release(model)
   Private.barmodels[model] = nil
 end
@@ -155,7 +113,7 @@ local funcs = {
   end,
   SetAlpha = function(self, alpha)
     if self.model then
-      self.model:SetModelAlpha(alpha)
+      self.model:SetAlpha(alpha)
     end
     self.alpha = alpha
   end,
@@ -167,7 +125,7 @@ local funcs = {
     if effectiveVisible then
       if not self.model then
         self.model = AcquireModel(self, self.data)
-        self.model:SetModelAlpha(self.alpha)
+        self.model:SetAlpha(self.alpha)
         self.model.region = self
       end
     else
@@ -197,8 +155,8 @@ local funcs = {
 }
 
 local function create()
-  local subRegion = CreateFrame("Frame", nil, UIParent)
-  subRegion:SetClipsChildren(true)
+  local subRegion = CreateFrame("FRAME", nil, UIParent)
+  --subRegion:SetClipsChildren(true)
 
   for k, v in pairs(funcs) do
     subRegion[k] = v
@@ -233,7 +191,7 @@ local function modify(parent, region, parentData, data, first)
   local anchor
   if parentData.regionType == "aurabar" then
     if data.bar_model_clip then
-      anchor = parent.bar.fgMask
+      anchor = parent.bar.fgFrame
     else
       anchor = parent.bar
     end
@@ -247,7 +205,6 @@ local function modify(parent, region, parentData, data, first)
     extra_height = data.extra_height or 0
   end
 
-  region:ClearAllPoints()
   region:SetPoint("TOPLEFT", anchor ,"TOPLEFT", -extra_width/2, extra_height/2)
   region:SetPoint("BOTTOMRIGHT", anchor ,"BOTTOMRIGHT", extra_width/2, -extra_height/2)
 

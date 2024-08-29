@@ -1548,15 +1548,17 @@ local function SetPosition(frame, ...)
     end
 end
 
+
+--XYZ
 -- Removing the flashing animation of coooldown finish at action bars
-for k, v in pairs(_G) do
-    if type(v) == "table" and type(v.SetDrawBling) == "function" then
-        v:SetDrawBling(false)
-    end
-end
-hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self)
-    self:SetDrawBling(false)
-end)
+--for k, v in pairs(_G) do
+--    if type(v) == "table" and type(v.SetDrawBling) == "function" then
+--        v:SetDrawBling(false)
+--    end
+--end
+--hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self)
+--    self:SetDrawBling(false)
+--end)
 
 --XYZ
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
@@ -1794,6 +1796,50 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         RemovePlate(unit)
     end
 end)
+
+
+
+-- Warmane only:
+local g = CreateFrame("Frame")
+g:RegisterEvent("MERCHANT_SHOW")
+
+g:SetScript("OnEvent", function()  
+    local bag, slot
+    for bag = 0, 4 do
+        for slot = 0, GetContainerNumSlots(bag) do
+            local link = GetContainerItemLink(bag, slot)
+            if link and (select(3, GetItemInfo(link)) == 0) then
+                UseContainerItem(bag, slot)
+            end
+        end
+    end
+
+    if(CanMerchantRepair()) then
+        local cost = GetRepairAllCost()
+        if cost > 0 then
+            local money = GetMoney()
+            if IsInGuild() then
+                local guildMoney = GetGuildBankWithdrawMoney()
+                if guildMoney > GetGuildBankMoney() then
+                    guildMoney = GetGuildBankMoney()
+                end
+                if guildMoney > cost and CanGuildBankRepair() then
+                    RepairAllItems(1)
+                    ChatFrame1:AddMessage(format("|cfff07100Repair cost covered by G-Bank: %.1fg|r", cost * 0.0001))
+                    return
+                end
+            end
+            if money > cost then
+                RepairAllItems()
+                ChatFrame1:AddMessage(format("|cffead000Repair cost: %.1fg|r", cost * 0.0001))
+            else
+                ChatFrame1:AddMessage("Not enough gold to cover the repair cost.")
+            end
+        end
+    end
+end)
+
+
 
 
 

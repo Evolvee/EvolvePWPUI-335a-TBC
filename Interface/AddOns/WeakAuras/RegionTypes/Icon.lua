@@ -1,11 +1,16 @@
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
+local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L
-local MSQ = LibStub("Masque", true);
+local MSQ, MSQ_Version = LibStub("Masque", true);
 if MSQ then
-  MSQ:AddType("WA_Aura", {"Icon", "Cooldown"})
+  if MSQ_Version <= 80100 then
+    MSQ = nil
+   WeakAuras.prettyPrint(L["Please upgrade your Masque version"])
+  else
+    MSQ:AddType("WA_Aura", {"Icon", "Cooldown"})
+  end
 end
 
 -- WoW API
@@ -27,14 +32,11 @@ local default = {
   zoom = 0,
   keepAspectRatio = false,
   frameStrata = 1,
-  cooldown = true,
-  cooldownTextDisabled = false,
-  cooldownSwipe = true,
-  cooldownEdge = false,
-  useCooldownModRate = true
+  cooldown = false,
+  cooldownEdge = false
 };
 
-Private.regionPrototype.AddAlphaToDefault(default);
+WeakAuras.regionPrototype.AddAlphaToDefault(default);
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
@@ -72,19 +74,9 @@ local properties = {
     setter = "SetInverse",
     type = "bool"
   },
-  cooldownSwipe = {
-    display = { L["Cooldown"], L["Swipe"], true},
-    setter = "SetCooldownSwipe",
-    type = "bool",
-  },
   cooldownEdge = {
     display = { L["Cooldown"], L["Edge"]},
     setter = "SetCooldownEdge",
-    type = "bool",
-  },
-  cooldownText = {
-    display = { L["Cooldown"], L["Hide Timer Text"]},
-    setter = "SetHideCountdownNumbers",
     type = "bool",
   },
   zoom = {
@@ -110,7 +102,7 @@ local properties = {
   }
 };
 
-Private.regionPrototype.AddProperties(properties, default);
+WeakAuras.regionPrototype.AddProperties(properties, default);
 
 local function GetProperties(data)
   local result = CopyTable(properties)
@@ -118,32 +110,25 @@ local function GetProperties(data)
   return result
 end
 
-local function GetTexCoord(region, texWidth, aspectRatio, xOffset, yOffset)
+local function GetTexCoord(region, texWidth, aspectRatio)
   region.currentCoord = region.currentCoord or {}
   local usesMasque = false
   if region.MSQGroup then
     local db = region.MSQGroup.db
     if db and not db.Disabled then
       usesMasque = true
-      region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4],
-        region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8]
-        = region.icon:GetTexCoord()
+      region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4], region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8] = region.icon:GetTexCoord()
     end
   end
   if (not usesMasque) then
-    region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4],
-      region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8]
-      = 0, 0, 0, 1, 1, 0, 1, 1;
+    region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4], region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8] = 0, 0, 0, 1, 1, 0, 1, 1;
   end
 
   local xRatio = aspectRatio < 1 and aspectRatio or 1;
   local yRatio = aspectRatio > 1 and 1 / aspectRatio or 1;
   for i, coord in ipairs(region.currentCoord) do
-    if(i % 2 == 1) then
-      region.currentCoord[i] = (coord - 0.5) * texWidth * xRatio + 0.5 - xOffset;
-    else
-      region.currentCoord[i] = (coord - 0.5) * texWidth * yRatio + 0.5 - yOffset;
-    end
+    local aspectRatio = (i % 2 == 1) and xRatio or yRatio;
+    region.currentCoord[i] = (coord - 0.5) * texWidth * aspectRatio + 0.5;
   end
 
   return unpack(region.currentCoord)
@@ -151,15 +136,14 @@ end
 
 local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
   if anchorType == "area" then
-    Private.regionPrototype.AnchorSubRegion(selfPoint == "region" and self or self.icon,
-                    subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
+    WeakAuras.regionPrototype.AnchorSubRegion(selfPoint == "region" and self or self.icon, subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
   else
     subRegion:ClearAllPoints()
     anchorPoint = anchorPoint or "CENTER"
     local anchorRegion = self.icon
     if anchorPoint:sub(1, 6) == "INNER_" then
       if not self.inner then
-        self.inner = CreateFrame("Frame", nil, self)
+        self.inner = CreateFrame("FRAME", nil, self)
         self.inner:SetPoint("CENTER")
         self.UpdateInnerOuterSize()
       end
@@ -167,7 +151,7 @@ local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoi
       anchorPoint = anchorPoint:sub(7)
     elseif anchorPoint:sub(1, 6) == "OUTER_" then
       if not self.outer then
-        self.outer = CreateFrame("Frame", nil, self)
+        self.outer = CreateFrame("FRAME", nil, self)
         self.outer:SetPoint("CENTER")
         self.UpdateInnerOuterSize()
       end
@@ -189,19 +173,81 @@ local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoi
   end
 end
 
+local function setDesaturated(self, desaturated, ...)
+  self.isDesaturated = desaturated and 1 or 0
+  return self._SetDesaturated(self, desaturated, ...)
+end
+
+local function setTexture(self, ...)
+  local apply = self._SetTexture(self, ...)
+  if self.isDesaturated ~= nil then
+    self:_SetDesaturated(self.isDesaturated)
+  end
+  return apply
+end
+
+local function cooldown_onUpdate(self, e)
+  if self._duration then
+    if self._delay then
+      if not self._paused then
+        self._delay = self._delay - e
+      end
+      self:_SetCooldown(GetTime(), self._duration)
+      if self._delay <= 0 then
+        self._delay = nil
+        if not self._paused then
+          self:SetScript("OnUpdate", nil)
+        end
+      end
+      return
+    end
+    if self._paused then
+      self:_SetCooldown(GetTime() - self._paused, self._duration)
+    end
+  end
+end
+
+local function cooldown_pause(self)
+  if not self._paused then
+    self._paused = GetTime() - (self._start or 0)
+    self:SetScript("OnUpdate", cooldown_onUpdate)
+  end
+end
+
+local function cooldown_resume(self)
+  if self._paused then
+    self._start = GetTime() - self._paused
+  end
+  self._paused = nil
+  self:SetScript("OnUpdate", nil)
+end
+
+local function cooldown_setCooldown(self, start, duration, ...)
+  if self._start == start and self._duration == duration then
+    return
+  end
+  self._start = start
+  self._duration = duration
+  local getTime = GetTime()
+  local delay = start - getTime
+  if delay > 0 then
+    self._delay = delay
+    self:SetScript("OnUpdate", cooldown_onUpdate)
+  end
+  if self._paused then
+    self._paused = getTime - self._start
+  end
+  return self._SetCooldown(self, math.min(getTime, start), duration, ...)
+end
+
 local function create(parent, data)
   local font = "GameFontHighlight";
 
-  local region = CreateFrame("Frame", nil, parent);
-  --- @cast region table|Frame
+  local region = CreateFrame("FRAME", nil, parent);
   region.regionType = "icon"
   region:SetMovable(true);
   region:SetResizable(true);
-  if region.SetResizeBounds then
-    region:SetResizeBounds(1, 1)
-  else
-    region:SetMinResize(1, 1)
-  end
+  region:SetMinResize(1, 1);
 
   function region.UpdateInnerOuterSize()
     local width = region.width * math.abs(region.scalex);
@@ -229,7 +275,6 @@ local function create(parent, data)
   local button
   if MSQ then
     button = CreateFrame("Button", nil, region)
-    --- @cast button table|Button
     button.data = data
     region.button = button;
     button:EnableMouse(false);
@@ -238,8 +283,6 @@ local function create(parent, data)
   end
 
   local icon = region:CreateTexture(nil, "BACKGROUND");
-  icon:SetSnapToPixelGrid(false)
-  icon:SetTexelSnappingBias(0)
   if MSQ then
     icon:SetAllPoints(button);
     button:SetScript("OnSizeChanged", region.UpdateInnerOuterSize);
@@ -250,9 +293,13 @@ local function create(parent, data)
   region.icon = icon;
   icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
 
+  icon._SetDesaturated = icon.SetDesaturated
+  icon.SetDesaturated = setDesaturated
+  icon._SetTexture = icon.SetTexture
+  icon.SetTexture = setTexture
+
   --This section creates a unique frame id for the cooldown frame so that it can be created with a global reference
-  --The reason is so that WeakAuras cooldown frames can interact properly with OmniCC
-  -- (i.e., put on its ignore list for timer overlays)
+  --The reason is so that WeakAuras cooldown frames can interact properly with OmniCC (i.e., put on its ignore list for timer overlays)
   local id = data.id;
   local frameId = id:lower():gsub(" ", "_");
   if(_G["WeakAurasCooldown"..frameId]) then
@@ -265,18 +312,14 @@ local function create(parent, data)
   end
   region.frameId = frameId;
 
-  local cooldown = CreateFrame("Cooldown", "WeakAurasCooldown"..frameId, region, "CooldownFrameTemplate");
+  local cooldown = CreateFrame("COOLDOWN", "WeakAurasCooldown"..frameId, region, "CooldownFrameTemplate");
   region.cooldown = cooldown;
   cooldown:SetAllPoints(icon);
-  cooldown:SetDrawBling(false)
-  cooldown.SetDrawSwipeOrg = cooldown.SetDrawSwipe
-  cooldown.SetDrawSwipe = function() end
 
-  if not OmniCC and ElvUI and ElvUI[1] and ElvUI[1].CooldownEnabled
-     and ElvUI[1].RegisterCooldown and ElvUI[1]:CooldownEnabled()
-  then
-    ElvUI[1]:RegisterCooldown(cooldown, "WeakAuras");
-  end
+  cooldown._SetCooldown = cooldown.SetCooldown;
+  cooldown.SetCooldown = cooldown_setCooldown;
+  cooldown.Pause = cooldown_pause;
+  cooldown.Resume = cooldown_resume;
 
   local SetFrameLevel = region.SetFrameLevel;
 
@@ -288,7 +331,7 @@ local function create(parent, data)
     end
   end
 
-  Private.regionPrototype.create(region);
+  WeakAuras.regionPrototype.create(region);
 
   region.AnchorSubRegion = AnchorSubRegion
 
@@ -300,7 +343,7 @@ local function modify(parent, region, data)
   region.stacks = nil
   region.text2 = nil
 
-  Private.regionPrototype.modify(parent, region, data);
+  WeakAuras.regionPrototype.modify(parent, region, data);
 
   local button, icon, cooldown = region.button, region.icon, region.cooldown;
 
@@ -351,11 +394,11 @@ local function modify(parent, region, data)
     end
 
     if region.MSQGroup then
-      region.MSQGroup:ReSkin(button)
+      region.MSQGroup:RemoveButton(button)
+      region.MSQGroup:AddButton(button, {Icon = icon, Cooldown = cooldown}, "WA_Aura", true)
     end
 
-    local ulx, uly, llx, lly, urx, ury, lrx, lry
-      = GetTexCoord(region, texWidth, aspectRatio, region.texXOffset, -region.texYOffset)
+    local ulx, uly, llx, lly, urx, ury, lrx, lry = GetTexCoord(region, texWidth, aspectRatio)
 
     if(mirror_h) then
       if(mirror_v) then
@@ -378,8 +421,6 @@ local function modify(parent, region, data)
   region.scaley = 1;
   region.keepAspectRatio = data.keepAspectRatio;
   region.zoom = data.zoom;
-  region.texXOffset = data.texXOffset or 0
-  region.texYOffset = data.texYOffset or 0
   region:UpdateSize()
 
   icon:SetDesaturated(data.desaturate);
@@ -387,7 +428,7 @@ local function modify(parent, region, data)
   local tooltipType = Private.CanHaveTooltip(data);
   if(tooltipType and data.useTooltip) then
     if not region.tooltipFrame then
-      region.tooltipFrame = CreateFrame("Frame", nil, region);
+      region.tooltipFrame = CreateFrame("frame", nil, region);
       region.tooltipFrame:SetAllPoints(region);
       region.tooltipFrame:SetScript("OnEnter", function()
         Private.ShowMouseoverTooltip(region, region);
@@ -401,18 +442,6 @@ local function modify(parent, region, data)
 
   cooldown:SetReverse(not data.inverse);
 
-  function region:SetHideCountdownNumbers(cooldownTextDisabled)
-    cooldown:SetHideCountdownNumbers(cooldownTextDisabled);
-    if OmniCC and OmniCC.Cooldown and OmniCC.Cooldown.SetNoCooldownCount then
-      OmniCC.Cooldown.SetNoCooldownCount(cooldown, cooldownTextDisabled)
-    elseif ElvUI and ElvUI[1] and ElvUI[1].CooldownEnabled
-           and ElvUI[1].ToggleCooldown and ElvUI[1]:CooldownEnabled()
-    then
-      ElvUI[1]:ToggleCooldown(cooldown, not cooldownTextDisabled);
-    end
-  end
-  region:SetHideCountdownNumbers(data.cooldownTextDisabled)
-
   function region:Color(r, g, b, a)
     region.color_r = r;
     region.color_g = g;
@@ -421,8 +450,7 @@ local function modify(parent, region, data)
     if (r or g or b) then
       a = a or 1;
     end
-    icon:SetVertexColor(region.color_anim_r or r, region.color_anim_g or g,
-                        region.color_anim_b or b, region.color_anim_a or a)
+    icon:SetVertexColor(region.color_anim_r or r, region.color_anim_g or g, region.color_anim_b or b, region.color_anim_a or a);
     if region.button then
       region.button:SetAlpha(region.color_anim_a or a or 1);
     end
@@ -480,7 +508,7 @@ local function modify(parent, region, data)
     end
 
     iconPath = iconPath or self.displayIcon or "Interface\\Icons\\INV_Misc_QuestionMark"
-    Private.SetTextureOrAtlas(self.icon, iconPath)
+    icon:SetTexture(iconPath)
   end
 
   function region:Scale(scalex, scaley)
@@ -511,15 +539,8 @@ local function modify(parent, region, data)
     if (cooldown.expirationTime and cooldown.duration and cooldown:IsShown()) then
       -- WORKAROUND SetReverse not applying until next frame
       cooldown:SetCooldown(0, 0);
-      cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration,
-                           cooldown.duration,
-                           cooldown.useCooldownModRate and cooldown.modRate or nil);
+      cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration, cooldown.duration);
     end
-  end
-
-  function region:SetCooldownSwipe(cooldownSwipe)
-    region.cooldownSwipe = cooldownSwipe;
-    cooldown:SetDrawSwipeOrg(cooldownSwipe);
   end
 
   function region:SetCooldownEdge(cooldownEdge)
@@ -527,7 +548,6 @@ local function modify(parent, region, data)
     cooldown:SetDrawEdge(cooldownEdge);
   end
 
-  region:SetCooldownSwipe(data.cooldownSwipe)
   region:SetCooldownEdge(data.cooldownEdge)
 
   function region:SetZoom(zoom)
@@ -537,14 +557,11 @@ local function modify(parent, region, data)
 
   cooldown.expirationTime = nil;
   cooldown.duration = nil;
-  cooldown.modRate = nil
-  cooldown.useCooldownModRate = data.useCooldownModRate
   cooldown:Hide()
   if(data.cooldown) then
     function region:SetValue(value, total)
       cooldown.value = value
       cooldown.total = total
-      cooldown.modRate = nil
       if (value >= 0 and value <= total) then
         cooldown:Show()
         cooldown:SetCooldown(GetTime() - (total - value), total)
@@ -553,17 +570,15 @@ local function modify(parent, region, data)
       end
     end
 
-    function region:SetTime(duration, expirationTime, modRate)
+    function region:SetTime(duration, expirationTime)
       if (duration > 0 and expirationTime > GetTime()) then
         cooldown:Show();
         cooldown.expirationTime = expirationTime;
         cooldown.duration = duration;
-        cooldown.modRate = modRate;
-        cooldown:SetCooldown(expirationTime - duration, duration, cooldown.useCooldownModRate and modRate or nil);
+        cooldown:SetCooldown(expirationTime - duration, duration);
       else
         cooldown.expirationTime = expirationTime;
         cooldown.duration = duration;
-        cooldown.modRate = modRate;
         cooldown:Hide();
       end
     end
@@ -571,9 +586,7 @@ local function modify(parent, region, data)
     function region:PreShow()
       if (cooldown.duration and cooldown.duration > 0.01) then
         cooldown:Show();
-        cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration,
-                             cooldown.duration,
-                             cooldown.useCooldownModRate and cooldown.modRate or nil);
+        cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration, cooldown.duration);
         cooldown:Resume()
       end
     end
@@ -614,7 +627,7 @@ local function modify(parent, region, data)
           max = duration
         end
 
-        region:SetTime(max - adjustMin, expirationTime - adjustMin, state.modRate);
+        region:SetTime(max - adjustMin, expirationTime - adjustMin, state.inverse);
       elseif state.progressType == "static" then
         local value = state.value or 0;
         local total = state.total or 0;
@@ -650,7 +663,7 @@ local function modify(parent, region, data)
     end
   end
 
-  Private.regionPrototype.modifyFinish(parent, region, data);
+  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
 
   --- WORKAROUND
   -- This fixes a issue with barmodels not appearing on icons if the
@@ -663,4 +676,4 @@ local function validate(data)
   Private.EnforceSubregionExists(data, "subbackground")
 end
 
-Private.RegisterRegionType("icon", create, modify, default, GetProperties, validate)
+WeakAuras.RegisterRegionType("icon", create, modify, default, GetProperties, validate)

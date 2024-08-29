@@ -1,4 +1,4 @@
---[[ $Id: AceGUIWidget-DropDown-Items.lua 1272 2022-08-29 15:56:35Z nevcairiel $ ]]--
+--[[ $Id$ ]]--
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -41,7 +41,7 @@ local ItemBase = {
 	-- NOTE: The ItemBase version is added to each item's version number
 	--       to ensure proper updates on ItemBase changes.
 	--       Use at least 1000er steps.
-	version = 2000,
+	version = 1000,
 	counter = 0,
 }
 
@@ -169,7 +169,7 @@ function ItemBase.Create(type)
 	self.text = text
 
 	local highlight = frame:CreateTexture(nil, "OVERLAY")
-	highlight:SetTexture(136810) -- Interface\\QuestFrame\\UI-QuestTitleHighlight
+	highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
 	highlight:SetBlendMode("ADD")
 	highlight:SetHeight(14)
 	highlight:ClearAllPoints()
@@ -178,19 +178,19 @@ function ItemBase.Create(type)
 	highlight:Hide()
 	self.highlight = highlight
 
-	local check = frame:CreateTexture(nil, "OVERLAY")
+	local check = frame:CreateTexture("OVERLAY")
 	check:SetWidth(16)
 	check:SetHeight(16)
 	check:SetPoint("LEFT",frame,"LEFT",3,-1)
-	check:SetTexture(130751) -- Interface\\Buttons\\UI-CheckBox-Check
+	check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
 	check:Hide()
 	self.check = check
 
-	local sub = frame:CreateTexture(nil, "OVERLAY")
+	local sub = frame:CreateTexture("OVERLAY")
 	sub:SetWidth(16)
 	sub:SetHeight(16)
 	sub:SetPoint("RIGHT",frame,"RIGHT",-3,-1)
-	sub:SetTexture(130940) -- Interface\\ChatFrame\\ChatFrameExpandArrow
+	sub:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
 	sub:Hide()
 	self.sub = sub
 
@@ -323,7 +323,7 @@ end
 -- Does not close the pullout on click.
 do
 	local widgetType = "Dropdown-Item-Toggle"
-	local widgetVersion = 4
+	local widgetVersion = 3
 
 	local function UpdateToggle(self)
 		if self.value then
@@ -343,9 +343,9 @@ do
 		if self.disabled then return end
 		self.value = not self.value
 		if self.value then
-			PlaySound(856) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
+			PlaySound("igMainMenuOptionCheckBoxOn")
 		else
-			PlaySound(857) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
+			PlaySound("igMainMenuOptionCheckBoxOff")
 		end
 		UpdateToggle(self)
 		self:Fire("OnValueChanged", self.value)
@@ -440,7 +440,7 @@ end
 -- A single line to separate items
 do
 	local widgetType = "Dropdown-Item-Separator"
-	local widgetVersion = 2
+	local widgetVersion = 1
 
 	-- exported, override
 	local function SetDisabled(self, disabled)
@@ -455,7 +455,7 @@ do
 
 		local line = self.frame:CreateTexture(nil, "OVERLAY")
 		line:SetHeight(1)
-		line:SetColorTexture(.5, .5, .5)
+		line:SetTexture(.5, .5, .5)
 		line:SetPoint("LEFT", self.frame, "LEFT", 10, 0)
 		line:SetPoint("RIGHT", self.frame, "RIGHT", -10, 0)
 

@@ -1,9 +1,8 @@
-if not WeakAuras.IsLibsOK() then return end
 --[[-----------------------------------------------------------------------------
 SnippetButton Widget, based on AceGUI Button (and WA ToolbarButton)
 Graphical Button.
 -------------------------------------------------------------------------------]]
-local Type, Version = "WeakAurasSnippetButton", 2
+local Type, Version = "WeakAurasSnippetButton", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
   return
@@ -61,7 +60,7 @@ end
 local function rename_complete(self, ...)
   self:ClearFocus()
   AceGUI:ClearFocus()
-  self:Disable()
+  self:EnableMouse(false)
   self:Hide()
   self:GetParent().obj:Fire("OnEnterPressed", ...)
 end
@@ -114,7 +113,7 @@ local methods = {
       AceGUI:ClearFocus()
       self.title:Hide()
       self.renameEditBox:Show()
-      self.renameEditBox:Enable()
+      self.renameEditBox:EnableMouse(true)
       self.renameEditBox:SetText(self.title:GetText())
       self.renameEditBox:HighlightText()
       self.renameEditBox:SetFocus()
@@ -138,7 +137,7 @@ local function Constructor()
   button:SetHeight(24)
   button:SetWidth(170)
 
-  local deleteButton = CreateFrame("Button", nil, button)
+  local deleteButton = CreateFrame("BUTTON", nil, button)
   deleteButton:SetPoint("RIGHT", button, "RIGHT", -3, 0)
   deleteButton:SetSize(20, 20)
   local deleteTex = deleteButton:CreateTexture()
@@ -173,7 +172,7 @@ local function Constructor()
   button.htex = htex
 
   local ptex = button:CreateTexture()
-  ptex:SetColorTexture(1, 1, 1, 0.2)
+  ptex:SetTexture(1, 1, 1, 0.2)
   htex:SetAllPoints(ntex)
   button:SetPushedTexture(ptex)
   button.ptext = ptex
@@ -194,14 +193,14 @@ local function Constructor()
   renameEditBox:SetHeight(14)
   renameEditBox:SetPoint("TOPLEFT", title, "TOPLEFT")
   renameEditBox:SetPoint("BOTTOMRIGHT", title, "BOTTOMRIGHT")
-  renameEditBox:Disable()
+  renameEditBox:EnableMouse(false)
   renameEditBox:Hide()
   renameEditBox:SetScript(
     "OnEscapePressed",
     function(self)
       self:ClearFocus()
       AceGUI:ClearFocus()
-      self:Disable()
+      self:EnableMouse(false)
       self:Hide()
       title:Show()
     end
@@ -211,7 +210,7 @@ local function Constructor()
     function(self)
       self:ClearFocus()
       AceGUI:ClearFocus()
-      self:Disable()
+      self:EnableMouse(false)
       self:Hide()
       title:Show()
     end

@@ -1,6 +1,5 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
-local GetAtlasInfo = C_Texture and  C_Texture.GetAtlasInfo or GetAtlasInfo
 
 -- Lua APIs
 local wipe = wipe
@@ -10,6 +9,7 @@ local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -61,18 +61,13 @@ local function GetAll(baseObject, path, property, default)
   return result
 end
 
-local function SetAll(baseObject, path, property, value, width, height, adjustSize)
+local function SetAll(baseObject, path, property, value)
   local valueFromPath = OptionsPrivate.Private.ValueFromPath
   for child in OptionsPrivate.Private.TraverseLeafsOrAura(baseObject) do
     local object = valueFromPath(child, path)
       if object then
         object[property] = value
-        if adjustSize and width and height then
-          child.width = width
-          child.height = height
-        end
         WeakAuras.Add(child)
-        WeakAuras.ClearAndUpdateOptions(child.id)
         WeakAuras.UpdateThumbnail(child)
       end
   end
@@ -81,14 +76,13 @@ end
 local texturePicker
 
 local function ConstructTexturePicker(frame)
-  local group = AceGUI:Create("SimpleGroup");
+  local group = AceGUI:Create("InlineGroup");
   group.frame:SetParent(frame);
-  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
+  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 42);
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -10);
   group.frame:Hide();
   group.children = {};
   group.categories = {};
-  group.textureWidgets = {}
 
   local dropdown = AceGUI:Create("DropdownGroup");
   dropdown:SetLayout("fill");
@@ -99,116 +93,45 @@ local function ConstructTexturePicker(frame)
   dropdown.list = {};
   dropdown:SetGroupList(dropdown.list);
 
-  local scroll = AceGUI:Create("WeakAurasScrollArea");
+  local scroll = AceGUI:Create("ScrollFrame");
   scroll:SetWidth(540);
+  scroll:SetLayout("flow");
   dropdown:AddChild(scroll);
 
-  local function UpdateShownWidgets()
-    -- Acquires/Releases widgets based on the scroll position
-    for _, widget in ipairs(group.textureWidgets) do
-      widget.frame:Hide()
-      widget:Release()
-    end
-    wipe(group.textureWidgets)
-    local viewportWidth, viewportHeight = scroll:GetViewportSize()
-
-    local texturesPerRow = floor(viewportWidth / 128)
-    local topRow = floor(scroll:GetContentOffset() / 128)
-    local bottomRow = topRow + ceil(viewportHeight / 128)
-
-    local first = topRow * texturesPerRow + 1
-    local last = first + (bottomRow - topRow + 1) * texturesPerRow - 1
-
-    for i = first, last do
-      local data = group.selectedGroupSorted[i]
-      if data then
-        local texturePath, textureName = data[1], data[2]
-        local textureWidget = AceGUI:Create("WeakAurasTextureButton");
-        tinsert(group.textureWidgets, textureWidget)
-        if (group.SetTextureFunc) then
-          group.SetTextureFunc(textureWidget, texturePath, textureName);
-        else
-          textureWidget:SetTexture(texturePath, textureName);
-          local d = group.textureData;
-          textureWidget:ChangeTexture(d.r, d.g, d.b, d.a, d.texRotation, d.auraRotation, d.mirror, d.blendMode)
-        end
-        if group.selectedTextures[texturePath] then
-          textureWidget:Pick()
-        end
-        textureWidget:SetClick(function()
-          group:Pick(texturePath);
-        end);
-
-        local index = i - 1 -- Math is easier if we start counting at 0
-        local textureY = floor(index / texturesPerRow) * -128
-        local textureX = (index % texturesPerRow) * 128
-
-        textureWidget.frame:Show()
-        textureWidget.frame:SetParent(scroll.content)
-        textureWidget.frame:SetPoint("TOPLEFT", textureX, textureY)
-      end
-    end
-  end
-
-  scroll:SetCallback("ContentScrolled", function(self)
-    UpdateShownWidgets()
-  end)
-
-  local function texturePickerGroupSelected(widget, event, uniquevalue, filter)
-    group.selectedGroupSorted = {}
-    if filter then
-      filter = filter:lower()
-    end
+  local function texturePickerGroupSelected(widget, event, uniquevalue)
+    scroll:ReleaseChildren();
     for texturePath, textureName in pairs(group.textures[uniquevalue]) do
-      if filter == nil or filter == "" or textureName:lower():match(filter) then
-        tinsert(group.selectedGroupSorted, {texturePath, textureName})
-      end
-    end
-
-    table.sort(group.selectedGroupSorted, function(a, b)
-      local aPath, bPath = a[1], b[1]
-      local aNum, bNum = tonumber(aPath:match("%d+")), tonumber(bPath:match("%d+"));
-      local aNonNumber, bNonNumber = aPath:match("[^%d]+"), bPath:match("[^%d]+")
-      if(aNum and bNum and aNonNumber == bNonNumber) then
-        return aNum < bNum;
+      local textureWidget = AceGUI:Create("WeakAurasTextureButton");
+      if (group.SetTextureFunc) then
+        group.SetTextureFunc(textureWidget, texturePath, textureName);
       else
-        return aPath < bPath;
+        textureWidget:SetTexture(texturePath, textureName);
+        local d = group.textureData;
+        textureWidget:ChangeTexture(d.r, d.g, d.b, d.a, d.rotate, d.discrete_rotation, d.rotation, d.mirror, d.blendMode);
+      end
+
+      if group.selectedTextures[texturePath] then
+        textureWidget:Pick()
+      end
+
+      textureWidget:SetClick(function()
+        group:Pick(texturePath);
+      end);
+      scroll:AddChild(textureWidget);
+      table.sort(scroll.children, function(a, b)
+        local aPath, bPath = a:GetTexturePath(), b:GetTexturePath();
+        local aNum, bNum = tonumber(aPath:match("%d+")), tonumber(bPath:match("%d+"));
+        local aNonNumber, bNonNumber = aPath:match("[^%d]+"), bPath:match("[^%d]+")
+        if(aNum and bNum and aNonNumber == bNonNumber) then
+          return aNum < bNum;
+        else
+          return aPath < bPath;
         end
-    end)
-
-    local viewportWidth = scroll:GetViewportSize()
-    local texturesPerRow = floor(viewportWidth / 128)
-    if texturesPerRow == 0 then
-      texturesPerRow = 1
+      end);
     end
-    local totalHeight = ceil(#group.selectedGroupSorted / texturesPerRow) * 128
-    scroll:SetContentHeight(totalHeight)
-
-    UpdateShownWidgets()
   end
 
-  local input = CreateFrame("EditBox", nil, group.frame, "SearchBoxTemplate");
-  input:SetScript("OnTextChanged", function(self, ...)
-    SearchBoxTemplate_OnTextChanged(self)
-    local status = dropdown.status or dropdown.localstatus
-    texturePickerGroupSelected(nil, nil, status.selected, input:GetText())
-  end);
-  input:SetScript("OnEnterPressed", function(...)
-    local status = dropdown.status or dropdown.localstatus
-    texturePickerGroupSelected(nil, nil, status.selected, input:GetText())
-  end);
-  input:SetScript("OnEscapePressed", function(...)
-    input:SetText("");
-    local status = dropdown.status or dropdown.localstatus
-    texturePickerGroupSelected(nil, nil, status.selected, input:GetText())
-  end);
-  input:SetWidth(200);
-  input:SetHeight(15);
-  input:SetPoint("TOPRIGHT", group.frame, "TOPRIGHT", -3, -10);
-
-  dropdown:SetCallback("OnGroupSelected", function(widget, event, uniquevalue)
-    texturePickerGroupSelected(widget, event, uniquevalue, input:GetText())
-  end)
+  dropdown:SetCallback("OnGroupSelected", texturePickerGroupSelected)
 
   function group.UpdateList(self)
     dropdown.dropdown.pullout:Close()
@@ -228,35 +151,27 @@ local function ConstructTexturePicker(frame)
 
   function group.Pick(self, texturePath)
     local pickedwidget;
-    for index, widget in ipairs(group.textureWidgets) do
+    for index, widget in ipairs(scroll.children) do
       widget:ClearPick();
       if(widget:GetTexturePath() == texturePath) then
         pickedwidget = widget;
       end
     end
-    local width, height
     if(pickedwidget) then
       pickedwidget:Pick();
-      if not pickedwidget.texture.IsStopMotion then
-        local atlasInfo = GetAtlasInfo(pickedwidget.texture.path)
-        if atlasInfo then
-          width = atlasInfo.width
-          height = atlasInfo.height
-        end
-      end
     end
 
     wipe(group.selectedTextures)
     group.selectedTextures[texturePath] = true
 
-    SetAll(self.baseObject, self.path, self.properties.texture, texturePath, width, height, self.adjustSize)
+    SetAll(self.baseObject, self.path, self.properties.texture, texturePath)
 
     group:UpdateList();
     local status = dropdown.status or dropdown.localstatus
     dropdown.dropdown:SetText(dropdown.list[status.selected]);
   end
 
-  function group.Open(self, baseObject, path, properties, textures, SetTextureFunc, adjustSize)
+  function group.Open(self, baseObject, path, properties, textures, SetTextureFunc)
     local valueFromPath = OptionsPrivate.Private.ValueFromPath
     self.baseObject = baseObject
     self.path = path
@@ -265,7 +180,6 @@ local function ConstructTexturePicker(frame)
     self.SetTextureFunc = SetTextureFunc
     self.givenPath = {};
     self.selectedTextures = {}
-    self.adjustSize = adjustSize
 
     for child in OptionsPrivate.Private.TraverseLeafsOrAura(baseObject) do
       local object = valueFromPath(child, path)
@@ -281,8 +195,9 @@ local function ConstructTexturePicker(frame)
       g = colorAll[2] or 1,
       b = colorAll[3] or 1,
       a = colorAll[4] or 1,
-      auraRotation = GetAll(baseObject, path, properties.auraRotation, 0),
-      texRotation = GetAll(baseObject, path, properties.rotation, 0),
+      rotate = GetAll(baseObject, path, properties.rotate, true),
+      discrete_rotation = GetAll(baseObject, path, properties.discrete_rotation, 0),
+      rotation = GetAll(baseObject, path, properties.rotation, 0),
       mirror = GetAll(baseObject, path, properties.mirror, false),
       blendMode = GetAll(baseObject, path, properties.blendMode, "ADD")
     }
@@ -309,7 +224,6 @@ local function ConstructTexturePicker(frame)
         dropdown:SetGroup(categoryName);
       end
     end
-    UpdateShownWidgets()
   end
 
   function group.Close()
@@ -333,7 +247,7 @@ local function ConstructTexturePicker(frame)
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
   cancel:SetScript("OnClick", group.CancelClose)
-  cancel:SetPoint("BOTTOMRIGHT", -20, -24)
+  cancel:SetPoint("BOTTOMRIGHT", -27, -23)
   cancel:SetSize(100, 20)
   cancel:SetText(L["Cancel"])
 

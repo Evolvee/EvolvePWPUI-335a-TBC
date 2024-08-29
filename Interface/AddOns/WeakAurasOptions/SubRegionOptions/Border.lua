@@ -1,7 +1,10 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
+local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
+
+local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
 local function createOptions(parentData, data, index, subIndex)
   local options = {
@@ -30,7 +33,6 @@ local function createOptions(parentData, data, index, subIndex)
     },
     border_offset = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Border Offset"],
       order = 5,
@@ -40,7 +42,6 @@ local function createOptions(parentData, data, index, subIndex)
     },
     border_size = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Border Size"],
       order = 6,

@@ -1,0 +1,15 @@
+## Interface: 30300
+## Author: Kolletiv, Modified by Distorted
+## Title: Party Ability Bars
+## SavedVariables: PABDB
+## X-Curse-Packaged-Version: 1.12
+## X-Curse-Project-Name: Party Ability Bars
+## X-Curse-Project-ID: pab
+## X-Curse-Repository-ID: wow/pab/mainline
+## X-Endless-Hosted: true
+## X-Endless-Version: 1.12
+
+libs\LibStub\LibStub.lua
+libs\LibSimpleOptions-1.0\lib.xml
+
+PAB.lua

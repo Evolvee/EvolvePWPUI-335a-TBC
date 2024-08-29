@@ -1,4 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -58,10 +58,16 @@ local colorScheme = {
 local function ConstructCodeReview(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
-  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -16);
+  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
   group:SetLayout("flow");
+
+  local title = AceGUI:Create("Label")
+  title:SetFontObject(GameFontNormalHuge)
+  title:SetFullWidth(true)
+  title:SetText(L["Custom Code Viewer"])
+  group:AddChild(title)
 
   local codeTree = AceGUI:Create("TreeGroup");
   codeTree:SetTreeWidth(300, false)
@@ -84,7 +90,7 @@ local function ConstructCodeReview(frame)
   IndentationLib.enable(codebox.editBox, colorScheme, 4);
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium");
   if(fontPath) then
-    codebox.editBox:SetFont(fontPath, 12, "");
+    codebox.editBox:SetFont(fontPath, 12);
   end
   group.codebox = codebox;
 

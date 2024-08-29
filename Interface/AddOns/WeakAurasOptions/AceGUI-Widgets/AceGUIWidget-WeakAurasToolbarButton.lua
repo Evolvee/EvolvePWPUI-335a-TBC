@@ -1,9 +1,8 @@
-if not WeakAuras.IsLibsOK() then return end
 --[[-----------------------------------------------------------------------------
 ToolbarButton Widget, based on AceGUI Button
 Graphical Button.
 -------------------------------------------------------------------------------]]
-local Type, Version = "WeakAurasToolbarButton", 6
+local Type, Version = "WeakAurasToolbarButton", 4
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -24,18 +23,10 @@ local function Button_OnClick(frame, ...)
 end
 
 local function Control_OnEnter(frame)
-	if frame.tooltip then
-		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(frame, "ANCHOR_NONE");
-		GameTooltip:SetPoint("BOTTOM", frame, "TOP", 0, 5);
-		GameTooltip:AddLine(frame.tooltip)
-		GameTooltip:Show()
-	end
 	frame.obj:Fire("OnEnter")
 end
 
 local function Control_OnLeave(frame)
-	GameTooltip:Hide()
 	frame.obj:Fire("OnLeave")
 end
 
@@ -57,14 +48,10 @@ local methods = {
 	["SetText"] = function(self, text)
 		self.text:SetText(text)
 		if text ~= "" then
-			self:SetWidth(self.text:GetStringWidth() + 24)
+			self:SetWidth(self.text:GetStringWidth() + 28)
 		else
 			self:SetWidth(16)
 		end
-	end,
-
-	["SetTooltip"] = function(self, text)
-		self.frame.tooltip = text
 	end,
 
 	["SetDisabled"] = function(self, disabled)
@@ -142,7 +129,6 @@ local function Constructor()
 	frame:SetPushedTexture(pTex)
 
 
-  --- @type table<string, any>
 	local widget = {
 		text  = text,
 		icon = icon,

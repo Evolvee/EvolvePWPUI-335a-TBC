@@ -1,23 +1,16 @@
-# [5.8.6](https://github.com/WeakAuras/WeakAuras2/tree/5.8.6) (2023-11-15)
+# [2.17.4](https://github.com/WeakAuras/WeakAuras2/tree/2.17.4) (2020-04-22)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.8.5...5.8.6)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/2.17.3...2.17.4)
 
 ## Highlights
 
- - Update for Range Check hotfix
-- Bugfixes and texture updates for 10.2 
+ - fix a buff tracking and nameplates regression 
 
 ## Commits
 
-InfusOnWoW (1):
+InfusOnWoW (3):
 
-- Switch to LibRangeCheck-3.0
-
-mrbuds (5):
-
-- Update model list for 10.2
-- Update texture atlas list for 10.2
-- Use LibRangeCheck-3.0
-- Dynamic Group: don't apply level to subgroups, don't do it only for top level groups
-- Dynamic Group: raise level of auras over backdrop
+- BT2 Fix Multi by adjusting it to recent changes (#2139)
+- Clean up match data if a unit ceases to exists
+- Fix nameplates auras sometimes not being applied if in a raid group
 

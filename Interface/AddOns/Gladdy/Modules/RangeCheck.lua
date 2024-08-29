@@ -7,7 +7,7 @@ local CheckInteractDistance = CheckInteractDistance
 local C_Timer = C_Timer
 local UnitIsUnit = UnitIsUnit
 local UnitClass = UnitClass
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = C_GetSpellInfo
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
 local CLASS_ICON_TCOORDS = CLASS_ICON_TCOORDS
@@ -17,6 +17,7 @@ local LibStub = LibStub
 local Gladdy = LibStub("Gladdy")
 local LSR = LibStub("SpellRange-1.0")
 local L = Gladdy.L
+local HealthBar = Gladdy.modules["Health Bar"]
 
 local classSpells = {
     ["MAGE"] =  118,
@@ -52,10 +53,18 @@ local RangeCheck = Gladdy:NewModule("Range Check", nil, {
 })
 
 function RangeCheck:Initialize()
-    self:RegisterMessage("JOINED_ARENA")
-    self:RegisterMessage("ENEMY_STEALTH")
-    self:RegisterMessage("ENEMY_SPOTTED")
+    if Gladdy.db.rangeCheckEnabled then
+        self:RegisterMessage("JOINED_ARENA")
+    end
     self.playerClass = select(2, UnitClass("player"))
+end
+
+function RangeCheck:UpdateFrameOnce()
+    if Gladdy.db.rangeCheckEnabled then
+        self:RegisterMessage("JOINED_ARENA")
+    else
+        self:UnregisterAllMessages()
+    end
 end
 
 function RangeCheck:Reset()
@@ -66,7 +75,6 @@ function RangeCheck:ResetUnit(unit)
     local button = Gladdy.buttons[unit]
     self:CancelTimer(button)
     self:SetColor(button, 1)
-    button.classColors = {}
 end
 
 function RangeCheck:Test(unit)
@@ -74,11 +82,10 @@ function RangeCheck:Test(unit)
     if not button then
         return
     end
-    self:ENEMY_SPOTTED(unit)
     self.test = true
     button.lastState = 0
     if Gladdy.db.rangeCheckEnabled then
-        if unit == "arena1" then
+        if unit == "arena2" or unit == "arena4" then
             --button.unit = "target"
             --self:CreateTimer(button)
             self:SetRangeAlpha(button, nil)
@@ -101,18 +108,12 @@ function RangeCheck:SetColor(button, oorFac)
         return
     end
 
-    if not button.classColors.r then
-        if button.class then
-            button.classColors = { r = RAID_CLASS_COLORS[button.class].r, g = RAID_CLASS_COLORS[button.class].g, b = RAID_CLASS_COLORS[button.class].b }
-        else
-            button.classColors = { r = 0.66, g = 0.66, b = 0.66 }
-        end
-    end
-
     if Gladdy.db.rangeCheckHealthBar then
-        button.healthBar.hp:SetStatusBarColor(button.classColors.r/oorFac, button.classColors.g/oorFac, button.classColors.b/oorFac, 1)
+        button.healthBar.hp.oorFactor = oorFac
+        HealthBar:SetHealthStatusBarColor(button.unit, button.healthBar.hp.current, button.healthBar.hp.max)
     else
-        button.healthBar.hp:SetStatusBarColor(button.classColors.r, button.classColors.g, button.classColors.b, 1)
+        button.healthBar.hp.oorFactor = 1
+        HealthBar:SetHealthStatusBarColor(button.unit, button.healthBar.hp.current, button.healthBar.hp.max)
     end
 
     if Gladdy.db.rangeCheckHealthBarText then
@@ -177,41 +178,12 @@ function RangeCheck:JOINED_ARENA()
     end
 end
 
-function RangeCheck:ENEMY_STEALTH(unit, stealth)
-    local button = Gladdy.buttons[unit]
-    if not button then
-        return
-    end
-    button.lastState = 0
-    if stealth then
-        button.classColors = { r = 0.66, g = 0.66, b = 0.66 }
-        if not Gladdy.db.rangeCheckEnabled then
-            button.healthBar.hp:SetStatusBarColor(0.66, 0.66, 0.66, 1)
-        end
-    else
-        if button.class then
-            button.classColors = { r = RAID_CLASS_COLORS[button.class].r, g = RAID_CLASS_COLORS[button.class].g, b = RAID_CLASS_COLORS[button.class].b }
-            if not Gladdy.db.rangeCheckEnabled then
-                button.healthBar.hp:SetStatusBarColor(RAID_CLASS_COLORS[button.class].r, RAID_CLASS_COLORS[button.class].g, RAID_CLASS_COLORS[button.class].b, 1)
-            end
-        end
-    end
-end
-
-function RangeCheck:ENEMY_SPOTTED(unit)
-    local button = Gladdy.buttons[unit]
-    if (not button) then
-        return
-    end
-    button.classColors = { r = RAID_CLASS_COLORS[button.class].r, g = RAID_CLASS_COLORS[button.class].g, b = RAID_CLASS_COLORS[button.class].b }
-end
-
 function RangeCheck.CheckRange(self)
     local button = self.parent
 
     local spell = Gladdy.db.rangeCheckDefaultSpells[RangeCheck.playerClass].min
 
-    if (not UnitIsConnected(button.unit) or not UnitInPhase(button.unit)) then
+    if (not UnitIsConnected(button.unit) or UnitPhaseReason(button.unit)) then
         RangeCheck:SetRangeAlpha(button, false)
     elseif (spell) then
         RangeCheck:SetRangeAlpha(button, LSR.IsSpellInRange(spell, button.unit) == 1)
@@ -268,6 +240,7 @@ function RangeCheck:GetOptions()
             childGroups = "tree",
             name = L["General"],
             order = 5,
+            disabled = function() return not Gladdy.db.rangeCheckEnabled end,
             args = {
                 general = {
                     type = "group",
@@ -340,6 +313,7 @@ function RangeCheck:GetOptions()
             childGroups = "tree",
             name = L["Spells"],
             order = 5,
+            disabled = function() return not Gladdy.db.rangeCheckEnabled end,
             args = RangeCheck:GetSpells(),
         },
     }
@@ -354,68 +328,47 @@ function RangeCheck:GetSpells()
         },
     }
     for i,class in ipairs(Gladdy.CLASSES) do
-        group[class] = {
-            type = "group",
-            name = LOCALIZED_CLASS_NAMES_MALE[class],
-            order = i + 1,
-            icon = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes",
-            iconCoords = CLASS_ICON_TCOORDS[class],
-            args = {
-                headerMin = {
-                    type = "header",
-                    name = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min) and format("|T%s:20|t %s - %d" .. L["yds"], select(3, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)), select(1, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)), select(6, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)))
-                            or "nil",
-                    order = 1,
-                },
-                min = {
-                    type = "input",
-                    name = "Spell ID", --format("|T%s:20|t %s", select(3, GetSpellInfo(k)), select(1, GetSpellInfo(k)))
-                    order = 2,
-                    width = "full",
-                    pattern = "%d+",
-                    validate = function(_, value)
-                        LibStub("AceConfigRegistry-3.0"):NotifyChange("Gladdy")
-                        return type(tonumber(value)) == "number"
-                    end,
-                    --image = select(3, GetSpellInfo(defaultSpells()[class].min)),
-                    get = function(_)
-                        return tostring(Gladdy.db.rangeCheckDefaultSpells[class].min)
-                        end,
-                    set = function(_, value)
-                        Gladdy.db.rangeCheckDefaultSpells[class].min = tonumber(value)
-                        --Gladdy.options.args["Range Check"].args.oorSpells.args[class].args.min.name = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min) and format("|T%s:20|t %s", select(3, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)), select(1, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)))
-                        --        or "nil"
-                        Gladdy.options.args["Range Check"].args.oorSpells.args[class].args.headerMin.name = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min) and format("|T%s:20|t %s - %d" .. L["yds"], select(3, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)), select(1, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)), select(6, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)))
-                                or "nil"
-                    end
-                },
-                --[[headerMax = {
-                    type = "header",
-                    name = L["Max"],
-                    order = 3,
-                },
-                max = {
-                    type = "input",
-                    name = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max) and format("|T%s:20|t %s", select(3, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max)), select(1, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max)))
-                            or "nil",
-                    order = 4,
-                    width = "full",
-                    pattern = "%d+",
-                    validate = function(_, value)
-                        return type(tonumber(value)) == "number"
-                    end,
-                    --image = select(3, GetSpellInfo(defaultSpells()[class].max)),
-                    get = function(_)
-                        return tostring(Gladdy.db.rangeCheckDefaultSpells[class].max)
-                    end,
-                    set = function(_, value)
-                        Gladdy.db.rangeCheckDefaultSpells[class].max = tonumber(value)
-                        Gladdy.options.args["Range Check"].args.oorSpells.args[class].args.max.name = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max) and format("|T%s:20|t %s", select(3, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max)), select(1, GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].max)))
-                                or "nil"
-                    end
-                }--]]
-            }
-        }
+    	if ( class == select(2, UnitClass("player")) ) then
+    		local name, _, icon, _, _, maxRange = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)
+
+	        group[class] = {
+	            type = "group",
+	            name = LOCALIZED_CLASS_NAMES_MALE[class],
+	            order = i + 1,
+	            icon = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes",
+	            iconCoords = CLASS_ICON_TCOORDS[class],
+	            args = {
+	                headerMin = {
+	                    type = "header",
+	                    name = name and format("|T%s:20|t %s - %d" .. L["yds"], icon, name, maxRange)
+	                            or "nil",
+	                    order = 1,
+	                },
+	                min = {
+	                    type = "input",
+	                    name = "Spell ID", --format("|T%s:20|t %s", select(3, GetSpellInfo(k)), select(1, GetSpellInfo(k)))
+	                    order = 2,
+	                    width = "full",
+	                    pattern = "%d+",
+	                    validate = function(_, value)
+	                        LibStub("AceConfigRegistry-3.0"):NotifyChange("Gladdy")
+	                        return type(tonumber(value)) == "number"
+	                    end,
+	                    --image = select(3, GetSpellInfo(defaultSpells()[class].min)),
+	                    get = function(_)
+	                        return tostring(Gladdy.db.rangeCheckDefaultSpells[class].min)
+	                        end,
+	                    set = function(_, value)
+	                        Gladdy.db.rangeCheckDefaultSpells[class].min = tonumber(value)
+
+	                        local name, _, icon, _, _, maxRange = GetSpellInfo(Gladdy.db.rangeCheckDefaultSpells[class].min)
+	                        Gladdy.options.args["Range Check"].args.oorSpells.args[class].args.headerMin.name = name and format("|T%s:20|t %s - %d" .. L["yds"], icon, name, maxRange)
+	                                or "nil"
+	                    end
+	                },
+	            }
+	        }
+    	end
     end
     return group
 end

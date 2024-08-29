@@ -1,5 +1,6 @@
-local pairs = pairs
-local floor = math.floor
+local pairs, ipairs = pairs, ipairs
+local floor, abs = math.floor, math.abs
+local str_find, str_gsub, str_sub, tinsert = string.find, string.gsub, string.sub, table.insert
 local UnitHealth, UnitHealthMax, UnitName, UnitExists, UnitIsDeadOrGhost = UnitHealth, UnitHealthMax, UnitName, UnitExists, UnitIsDeadOrGhost
 
 local CreateFrame = CreateFrame
@@ -16,6 +17,15 @@ local Healthbar = Gladdy:NewModule("Health Bar", 100, {
     healthBarBorderSize = 9,
     healthBarBorderColor = { r = 0, g = 0, b = 0, a = 1 },
     healthBarBgColor = { r = 0, g = 0, b = 0, a = 0.4 },
+    healthBarClassColored = true,
+    healthBarColoredByCurrentHp = false,
+    healthBarStatusBarColorMax = { r = 0, g = 1, b = 0, a = 1 },
+    healthBarStatusBarColorMid = { r = 1, g = 1, b = 0, a = 1 },
+    healthBarStatusBarColorMin = { r = 1, g = 0, b = 0, a = 1 },
+    healthFrameStrata = "MEDIUM",
+    healthFrameLevel = 1,
+    healthBarStealthColor = { r = 0.66, g = 0.66, b = 0.66, a = 1 },
+    --font
     healthBarFontColor = { r = 1, g = 1, b = 1, a = 1 },
     healthBarNameFontSize = 12,
     healthBarHealthFontSize = 12,
@@ -24,12 +34,23 @@ local Healthbar = Gladdy:NewModule("Health Bar", 100, {
     healthActual = false,
     healthMax = true,
     healthPercentage = true,
+    healthCustomTagsEnabled = false,
+    healthTextLeft = "[name]",
+    healthTextRight = "[percent|status]",
+    healthTextLeftOutline = false,
+    healthTextRightOutline = false,
+    healthTextLeftVOffset = 0,
+    healthTextLeftHOffset = 5,
+    healthTextRightVOffset = 0,
+    healthTextRightHOffset = -5,
 })
 
 function Healthbar:Initialize()
     self.frames = {}
     self:RegisterMessage("JOINED_ARENA")
     self:RegisterMessage("ENEMY_SPOTTED")
+    self:RegisterMessage("ENEMY_STEALTH")
+    self:RegisterMessage("UNIT_SPEC")
     self:RegisterMessage("UNIT_DESTROYED")
     self:RegisterMessage("UNIT_DEATH")
 end
@@ -41,48 +62,50 @@ function Healthbar:CreateFrame(unit)
     healthBar:EnableMouse(false)
     healthBar:SetBackdrop({ edgeFile = Gladdy:SMFetch("border", "healthBarBorderStyle"),
                                    edgeSize = Gladdy.db.healthBarBorderSize })
-    healthBar:SetBackdropBorderColor(Gladdy.db.healthBarBorderColor.r, Gladdy.db.healthBarBorderColor.g, Gladdy.db.healthBarBorderColor.b, Gladdy.db.healthBarBorderColor.a)
-    healthBar:SetFrameLevel(1)
+    healthBar:SetBackdropBorderColor(Gladdy:SetColor(Gladdy.db.healthBarBorderColor))
+    healthBar:SetFrameStrata(Gladdy.db.healthFrameStrata)
+    healthBar:SetFrameLevel(Gladdy.db.healthFrameLevel)
 
     healthBar.hp = CreateFrame("StatusBar", nil, healthBar)
     healthBar.hp:SetStatusBarTexture(Gladdy:SMFetch("statusbar", "healthBarTexture"))
     healthBar.hp:SetMinMaxValues(0, 100)
-    healthBar.hp:SetFrameLevel(0)
+    healthBar.hp:SetFrameStrata(Gladdy.db.healthFrameStrata)
+    healthBar.hp:SetFrameLevel(Gladdy.db.healthFrameLevel - 1)
 
     healthBar.bg = healthBar.hp:CreateTexture(nil, "BACKGROUND")
     healthBar.bg:SetTexture(Gladdy:SMFetch("statusbar", "healthBarTexture"))
     healthBar.bg:ClearAllPoints()
     healthBar.bg:SetAllPoints(healthBar.hp)
     healthBar.bg:SetAlpha(1)
-    healthBar.bg:SetVertexColor(Gladdy.db.healthBarBgColor.r, Gladdy.db.healthBarBgColor.g, Gladdy.db.healthBarBgColor.b, Gladdy.db.healthBarBgColor.a)
+    healthBar.bg:SetVertexColor(Gladdy:SetColor(Gladdy.db.healthBarBgColor))
 
-    healthBar.nameText = healthBar:CreateFontString(nil, "LOW", "GameFontNormalSmall")
+    healthBar.nameText = healthBar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     if (Gladdy.db.healthBarNameFontSize < 1) then
         healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarNameFont"), 1)
         healthBar.nameText:Hide()
     else
-        healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarNameFontSize)
+        healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarNameFontSize, Gladdy.db.healthTextLeftOutline and "OUTLINE")
         healthBar.nameText:Show()
     end
-    healthBar.nameText:SetTextColor(Gladdy.db.healthBarFontColor.r, Gladdy.db.healthBarFontColor.g, Gladdy.db.healthBarFontColor.b, Gladdy.db.healthBarFontColor.a)
+    healthBar.nameText:SetTextColor(Gladdy:SetColor(Gladdy.db.healthBarFontColor))
     healthBar.nameText:SetShadowOffset(1, -1)
     healthBar.nameText:SetShadowColor(0, 0, 0, 1)
     healthBar.nameText:SetJustifyH("CENTER")
-    healthBar.nameText:SetPoint("LEFT", 5, 0)
+    healthBar.nameText:SetPoint("LEFT", Gladdy.db.healthTextLeftHOffset, Gladdy.db.healthTextLeftVOffset)
 
-    healthBar.healthText = healthBar:CreateFontString(nil, "LOW")
+    healthBar.healthText = healthBar:CreateFontString(nil, "OVERLAY")
     if (Gladdy.db.healthBarHealthFontSize < 1) then
         healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), 1)
         healthBar.healthText:Hide()
     else
-        healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarHealthFontSize)
+        healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarHealthFontSize, Gladdy.db.healthTextRightOutline and "OUTLINE")
         healthBar.healthText:Hide()
     end
-    healthBar.healthText:SetTextColor(Gladdy.db.healthBarFontColor.r, Gladdy.db.healthBarFontColor.g, Gladdy.db.healthBarFontColor.b, Gladdy.db.healthBarFontColor.a)
+    healthBar.healthText:SetTextColor(Gladdy:SetColor(Gladdy.db.healthBarFontColor))
     healthBar.healthText:SetShadowOffset(1, -1)
     healthBar.healthText:SetShadowColor(0, 0, 0, 1)
     healthBar.healthText:SetJustifyH("CENTER")
-    healthBar.healthText:SetPoint("RIGHT", -5, 0)
+    healthBar.healthText:SetPoint("RIGHT", Gladdy.db.healthTextRightHOffset, Gladdy.db.healthTextRightVOffset)
 
     healthBar.unit = unit
     self.frames[unit] = healthBar
@@ -95,18 +118,9 @@ function Healthbar:CreateFrame(unit)
 end
 
 function Healthbar.OnEvent(self, event, unit)
-    local isDead = UnitExists(unit) and UnitIsDeadOrGhost(unit)
-    if event == "UNIT_HEALTH" then
-        if isDead then
-            Gladdy:SendMessage("UNIT_DEATH", unit)
-            return
-        end
-        local health = UnitHealth(unit)
-        local healthMax = UnitHealthMax(unit)
-        self.hp:SetMinMaxValues(0, healthMax)
-        self.hp:SetValue(UnitHealth(unit))
-        Healthbar:SetHealthText(self, health, healthMax)
-    elseif event == "UNIT_MAXHEALTH" then
+    local button = Gladdy.buttons[unit]
+    if (event == "UNIT_HEALTH" and not button.destroyed) or event == "UNIT_MAXHEALTH" then
+        local isDead = UnitExists(unit) and UnitIsDeadOrGhost(unit) and not Gladdy:isFeignDeath(unit)
         if isDead then
             Gladdy:SendMessage("UNIT_DEATH", unit)
             return
@@ -115,50 +129,116 @@ function Healthbar.OnEvent(self, event, unit)
         local healthMax = UnitHealthMax(unit)
         self.hp:SetMinMaxValues(0, healthMax)
         self.hp:SetValue(health)
-        Healthbar:SetHealthText(self, health, healthMax)
+        self.hp.current = health
+        self.hp.max = healthMax
+        Healthbar:SetText(unit, health, healthMax)
+        Healthbar:SetHealthStatusBarColor(unit, self.hp.current, self.hp.max)
     elseif event == "UNIT_NAME_UPDATE" then
         local name = UnitName(unit)
-        Gladdy.buttons[unit].name = name
-        if Gladdy.db.healthName and not Gladdy.db.healthNameToArenaId then
-            self.nameText:SetText(name)
-        end
+        button.name = name
+        Healthbar:SetText(unit, self.hp.current, self.hp.max)
     end
-    if not Gladdy.buttons[unit].class then
+    if not button.class then
         Gladdy:SpotEnemy(unit, true)
     end
 end
 
-function Healthbar:SetHealthText(healthBar, health, healthMax)
-    local healthText
-    local healthPercentage = floor(health * 100 / healthMax)
+local function getGradient(start, ending, percentage, factor)
+    return start * abs(-2 * percentage + 1) + ending * factor
+end
 
-    if health == 0 and UnitExists(healthBar.unit) and UnitIsDeadOrGhost(healthBar.unit) then
-        self:UNIT_DEATH(healthBar.unit)
+local rMax, gMax, bMax, rMid, gMid, bMid, rMin, gMin, bMin, rNow, gNow, bNow, percentage, factor, stealthAlpha
+function Healthbar:SetHealthStatusBarColor(unit, health, healthMax)
+    local button = Gladdy.buttons[unit]
+    if not button or not health or not healthMax then
         return
     end
 
-    if (Gladdy.db.healthActual) then
-        healthText = healthMax > 999 and ("%.1fk"):format(health / 1000) or health
+    local healthBar = Gladdy.buttons[unit].healthBar
+    if not healthBar.hp.oorFactor then
+        healthBar.hp.oorFactor = 1
     end
 
-    if (Gladdy.db.healthMax) then
-        local text = healthMax > 999 and ("%.1fk"):format(healthMax / 1000) or healthMax
-        if (healthText) then
-            healthText = ("%s/%s"):format(healthText, text)
+    healthBar.hp:SetMinMaxValues(0, healthMax)
+    healthBar.hp:SetValue(health)
+
+    if healthBar.hp.stealth then
+        stealthAlpha = Gladdy.db.healthBarStealthColor.a < Gladdy.db.healthBarBgColor.a and Gladdy.db.healthBarStealthColor.a or Gladdy.db.healthBarBgColor.a
+        healthBar.bg:SetVertexColor(Gladdy:SetColor(Gladdy.db.healthBarBgColor, nil, stealthAlpha))
+        healthBar.hp:SetStatusBarColor(Gladdy:SetColor(Gladdy.db.healthBarStealthColor))
+        return
+    else
+        healthBar.bg:SetVertexColor(Gladdy:SetColor(Gladdy.db.healthBarBgColor))
+    end
+
+    if not Gladdy.db.healthBarClassColored then
+        if Gladdy.db.healthBarColoredByCurrentHp then
+            rMax, gMax, bMax = Gladdy:SetColor(Gladdy.db.healthBarStatusBarColorMax)
+            rMid, gMid, bMid = Gladdy:SetColor(Gladdy.db.healthBarStatusBarColorMid)
+            rMin, gMin, bMin = Gladdy:SetColor(Gladdy.db.healthBarStatusBarColorMin)
+            percentage = health / healthMax
+            if percentage == 0.5 then
+                rNow, gNow, bNow = Gladdy:SetColor(Gladdy.db.healthBarStatusBarColorMid, healthBar.hp.oorFactor)
+            elseif percentage < 0.5 then
+                factor = percentage * 2
+                rNow = getGradient(rMin, rMid, percentage, factor)
+                gNow = getGradient(gMin, gMid, percentage, factor)
+                bNow = getGradient(bMin, bMid, percentage, factor)
+            elseif percentage > 0.5 then
+                factor = ((healthMax - health) / healthMax) * 2
+                rNow = getGradient(rMax, rMid, percentage, factor)
+                gNow = getGradient(gMax, gMid, percentage, factor)
+                bNow = getGradient(bMax, bMid, percentage, factor)
+            end
+            healthBar.hp:SetStatusBarColor(rNow / healthBar.hp.oorFactor, gNow / healthBar.hp.oorFactor, bNow / healthBar.hp.oorFactor, 1)
         else
-            healthText = text
+            healthBar.hp:SetStatusBarColor(Gladdy:SetColor(Gladdy.db.healthBarStatusBarColorMax, healthBar.hp.oorFactor))
         end
     end
-
-    if (Gladdy.db.healthPercentage) then
-        if (healthText) then
-            healthText = ("%s (%d%%)"):format(healthText, healthPercentage)
-        else
-            healthText = ("%d%%"):format(healthPercentage)
-        end
+    if button.class and Gladdy.db.healthBarClassColored then
+        healthBar.hp:SetStatusBarColor(
+                RAID_CLASS_COLORS[button.class].r / healthBar.hp.oorFactor,
+                RAID_CLASS_COLORS[button.class].g / healthBar.hp.oorFactor,
+                RAID_CLASS_COLORS[button.class].b / healthBar.hp.oorFactor, 1)
     end
+end
 
+function Healthbar:SetHealthText(healthBar, health, healthMax)
+    local healthText = ""
+    local healthPercentage = health and healthMax and floor(health * 100 / healthMax)
+
+    if health == 0 and UnitExists(healthBar.unit) and UnitIsDeadOrGhost(healthBar.unit) and not Gladdy:isFeignDeath(healthBar.unit) then
+        self:UNIT_DEATH(healthBar.unit)
+        return
+    end
+    if (Gladdy.db.healthPercentage and healthPercentage) then
+        healthText = ("%d%%"):format(healthPercentage)
+    end
     healthBar.healthText:SetText(healthText)
+end
+
+function Healthbar:SetText(unit, health, healthMax, status)
+    local button = Gladdy.buttons[unit]
+    if not Gladdy.buttons[unit] then
+        return
+    end
+    if Gladdy.db.healthCustomTagsEnabled then
+        button.healthBar.nameText:SetText(Gladdy:SetTag(unit, Gladdy.db.healthTextLeft, health, healthMax, status))
+        button.healthBar.healthText:SetText(Gladdy:SetTag(unit, Gladdy.db.healthTextRight, health, healthMax, status))
+    else
+        if Gladdy.db.healthName then
+            if Gladdy.db.healthNameToArenaId then
+                button.healthBar.nameText:SetText(str_gsub(unit, "arena", ""))
+            else
+                button.healthBar.nameText:SetText(Gladdy.buttons[unit].name)
+            end
+        end
+        if status then
+            button.healthBar.healthText:SetText(status)
+        else
+            Healthbar:SetHealthText(button.healthBar, health, healthMax)
+        end
+    end
 end
 
 function Healthbar:UpdateFrame(unit)
@@ -167,12 +247,17 @@ function Healthbar:UpdateFrame(unit)
         return
     end
 
+    healthBar:SetFrameStrata(Gladdy.db.healthFrameStrata)
+    healthBar:SetFrameLevel(Gladdy.db.healthFrameLevel)
+    healthBar.hp:SetFrameStrata(Gladdy.db.healthFrameStrata)
+    healthBar.hp:SetFrameLevel(Gladdy.db.healthFrameLevel - 1)
+
     healthBar.bg:SetTexture(Gladdy:SMFetch("statusbar", "healthBarTexture"))
-    healthBar.bg:SetVertexColor(Gladdy.db.healthBarBgColor.r, Gladdy.db.healthBarBgColor.g, Gladdy.db.healthBarBgColor.b, Gladdy.db.healthBarBgColor.a)
+    healthBar.bg:SetVertexColor(Gladdy:SetColor(Gladdy.db.healthBarBgColor))
 
     healthBar:SetBackdrop({ edgeFile = Gladdy:SMFetch("border", "healthBarBorderStyle"),
                             edgeSize = Gladdy.db.healthBarBorderSize })
-    healthBar:SetBackdropBorderColor(Gladdy.db.healthBarBorderColor.r, Gladdy.db.healthBarBorderColor.g, Gladdy.db.healthBarBorderColor.b, Gladdy.db.healthBarBorderColor.a)
+    healthBar:SetBackdropBorderColor(Gladdy:SetColor(Gladdy.db.healthBarBorderColor))
     healthBar:ClearAllPoints()
     healthBar:SetPoint("TOPLEFT", Gladdy.buttons[unit], "TOPLEFT", 0, 0)
     healthBar:SetPoint("BOTTOMRIGHT", Gladdy.buttons[unit], "BOTTOMRIGHT")
@@ -186,22 +271,26 @@ function Healthbar:UpdateFrame(unit)
         healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), 1)
         healthBar.healthText:Hide()
     else
-        healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarHealthFontSize)
+        healthBar.healthText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarHealthFontSize, Gladdy.db.healthTextRightOutline and "OUTLINE")
         healthBar.healthText:Show()
     end
     if (Gladdy.db.healthBarNameFontSize < 1) then
         healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarNameFont"), 1)
         healthBar.nameText:Hide()
     else
-        healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarNameFontSize)
-        if Gladdy.db.healthName then
+        healthBar.nameText:SetFont(Gladdy:SMFetch("font", "healthBarFont"), Gladdy.db.healthBarNameFontSize, Gladdy.db.healthTextLeftOutline and "OUTLINE")
+        if Gladdy.db.healthName or Gladdy.db.healthCustomTagsEnabled then
             healthBar.nameText:Show()
         else
             healthBar.nameText:Hide()
         end
     end
-    healthBar.nameText:SetTextColor(Gladdy.db.healthBarFontColor.r, Gladdy.db.healthBarFontColor.g, Gladdy.db.healthBarFontColor.b, Gladdy.db.healthBarFontColor.a)
-    healthBar.healthText:SetTextColor(Gladdy.db.healthBarFontColor.r, Gladdy.db.healthBarFontColor.g, Gladdy.db.healthBarFontColor.b, Gladdy.db.healthBarFontColor.a)
+    healthBar.nameText:SetTextColor(Gladdy:SetColor(Gladdy.db.healthBarFontColor))
+    healthBar.healthText:SetTextColor(Gladdy:SetColor(Gladdy.db.healthBarFontColor))
+    healthBar.nameText:SetPoint("LEFT", Gladdy.db.healthTextLeftHOffset, Gladdy.db.healthTextLeftVOffset)
+    healthBar.healthText:SetPoint("RIGHT", Gladdy.db.healthTextRightHOffset, Gladdy.db.healthTextRightVOffset)
+
+    Healthbar:SetHealthStatusBarColor(unit, healthBar.hp.current, healthBar.hp.max)
 end
 
 function Healthbar:ResetUnit(unit)
@@ -214,6 +303,8 @@ function Healthbar:ResetUnit(unit)
     healthBar.nameText:SetText("")
     healthBar.healthText:SetText("")
     healthBar.hp:SetValue(0)
+    healthBar.hp.current = nil
+    healthBar.hp.max = nil
 end
 
 function Healthbar:Test(unit)
@@ -223,17 +314,30 @@ function Healthbar:Test(unit)
         return
     end
 
-    self:JOINED_ARENA()
+    Gladdy:SendMessage("UNIT_HEALTH", unit, button.health, button.healthMax)
+    healthBar.hp.current = button.health
+    healthBar.hp.max = button.healthMax
     self:ENEMY_SPOTTED(unit)
-    self:UNIT_HEALTH(unit, button.health, button.healthMax)
+    self:SetText(unit, button.health, button.healthMax)
+    healthBar.hp:SetValue(button.health)
+    if unit == "arena1" then
+        self:UNIT_DEATH(unit)
+    end
+end
+
+function Healthbar:UNIT_SPEC(unit)
+    local button = Gladdy.buttons[unit]
+    if not button then
+        return
+    end
+    self:SetText(unit, button.healthBar.hp.current, button.healthBar.hp.max)
+    --button.healthBar.nameText:SetText(Gladdy:SetTag(unit, Gladdy.db.healthTextLeft, button.health, button.healthMax))
 end
 
 function Healthbar:JOINED_ARENA()
-    if Gladdy.db.healthNameToArenaId and Gladdy.db.healthName then
-        for i=1,Gladdy.curBracket do
-            local healthBar = self.frames["arena" .. i]
-            healthBar.nameText:SetText(i)
-        end
+    for i=1,Gladdy.curBracket do
+        local unit = "arena" .. i
+        self:SetText(unit, self.frames[unit].hp.current, self.frames[unit].hp.max)
     end
 end
 
@@ -249,53 +353,23 @@ function Healthbar:ENEMY_SPOTTED(unit)
         local healthMax = UnitHealthMax(unit)
         healthBar.hp:SetMinMaxValues(0, healthMax)
         healthBar.hp:SetValue(health)
-        Healthbar:SetHealthText(healthBar, health, healthMax)
+        healthBar.hp.current = health
+        healthBar.hp.max = healthMax
     end
-    if Gladdy.db.healthName and not Gladdy.db.healthNameToArenaId then
-        healthBar.nameText:SetText(button.name)
-    end
-
-    if button.class then
-        healthBar.hp:SetStatusBarColor(RAID_CLASS_COLORS[button.class].r, RAID_CLASS_COLORS[button.class].g, RAID_CLASS_COLORS[button.class].b, 1)
-    end
+    Healthbar:SetText(unit, healthBar.hp.current, healthBar.hp.max)
+    Healthbar:SetHealthStatusBarColor(unit, healthBar.hp.current, healthBar.hp.max)
 end
 
-function Healthbar:UNIT_HEALTH(unit, health, healthMax)
+function Healthbar:ENEMY_STEALTH(unit, stealth)
     local healthBar = self.frames[unit]
-    if (not healthBar) then
+    local button = Gladdy.buttons[unit]
+    if (not healthBar or not button) then
         return
     end
-    if not Gladdy.buttons[unit].class then
-        Gladdy:SpotEnemy(unit, true)
-    end
-    Gladdy:SendMessage("UNIT_HEALTH", unit, health, healthMax)
 
-    local healthPercentage = floor(health * 100 / healthMax)
-    local healthText
+    healthBar.hp.stealth = stealth
 
-    if (Gladdy.db.healthActual) then
-        healthText = healthMax > 999 and ("%.1fk"):format(health / 1000) or health
-    end
-
-    if (Gladdy.db.healthMax) then
-        local text = healthMax > 999 and ("%.1fk"):format(healthMax / 1000) or healthMax
-        if (healthText) then
-            healthText = ("%s/%s"):format(healthText, text)
-        else
-            healthText = text
-        end
-    end
-
-    if (Gladdy.db.healthPercentage) then
-        if (healthText) then
-            healthText = ("%s (%d%%)"):format(healthText, healthPercentage)
-        else
-            healthText = ("%d%%"):format(healthPercentage)
-        end
-    end
-
-    healthBar.healthText:SetText(healthText)
-    healthBar.hp:SetValue(healthPercentage)
+    Healthbar:SetHealthStatusBarColor(unit, healthBar.hp.current, healthBar.hp.max)
 end
 
 function Healthbar:UNIT_DEATH(unit)
@@ -305,7 +379,8 @@ function Healthbar:UNIT_DEATH(unit)
     end
 
     healthBar.hp:SetValue(0)
-    healthBar.healthText:SetText(L["DEAD"])
+    healthBar.hp.current = 0
+    Healthbar:SetText(unit, 0, 100, L["DEAD"])
 end
 
 function Healthbar:UNIT_DESTROYED(unit)
@@ -315,8 +390,8 @@ function Healthbar:UNIT_DESTROYED(unit)
     end
 
     healthBar.hp:SetValue(0)
-    healthBar.healthText:SetText(L["LEAVE"])
-    healthBar.nameText:SetText("")
+    healthBar.hp.current = 0
+    Healthbar:SetText(unit, 0, 100, L["LEAVE"])
 end
 
 local function option(params)
@@ -332,8 +407,10 @@ local function option(params)
             if Gladdy.db.healthBarBorderSize > Gladdy.db.healthBarHeight/2 then
                 Gladdy.db.healthBarBorderSize = Gladdy.db.healthBarHeight/2
             end
-            for i=1,Gladdy.curBracket do
-                Healthbar:Test("arena" .. i)
+            if Gladdy.frame.testing then
+                for i=1,Gladdy.curBracket do
+                    Healthbar:Test("arena" .. i)
+                end
             end
             Gladdy:UpdateFrame()
         end,
@@ -387,19 +464,76 @@ function Healthbar:GetOptions()
                             dialogControl = "LSM30_Statusbar",
                             values = AceGUIWidgetLSMlists.statusbar,
                         }),
+                    },
+                },
+                barColor = {
+                    type = "group",
+                    name = L["Bar Color"],
+                    order = 2,
+                    args = {
+                        headerAuras = {
+                            type = "header",
+                            name = L["Color"],
+                            order = 1,
+                        },
+                        healthBarClassColored = Gladdy:option({
+                            type = "toggle",
+                            name = L["Class colored"] .. " " .. L["Health Bar"],
+                            order = 2,
+                            width = "full",
+                        }),
+                        healthBarStealthColor = Gladdy:colorOption({
+                            type = "color",
+                            name = L["Stealth Color"],
+                            order = 3,
+                            hasAlpha = true,
+                        }),
                         healthBarBgColor = Gladdy:colorOption({
                             type = "color",
                             name = L["Background color"],
                             desc = L["Color of the status bar background"],
-                            order = 5,
+                            order = 4,
                             hasAlpha = true,
+                        }),
+                        headerAuras = {
+                            type = "header",
+                            name = L["Custom Colors"],
+                            order = 10,
+                        },
+                        healthBarColoredByCurrentHp = Gladdy:option({
+                            type = "toggle",
+                            name = L["Enable Custom Colors"],
+                            order = 11,
+                            width = "full",
+                            disabled = function() return Gladdy.db.healthBarClassColored end,
+                        }),
+                        healthBarStatusBarColorMax = Gladdy:colorOption({
+                            type = "color",
+                            name = L["100%"],
+                            order = 12,
+                            hasAlpha = false,
+                            disabled = function() return Gladdy.db.healthBarClassColored end,
+                        }),
+                        healthBarStatusBarColorMid = Gladdy:colorOption({
+                            type = "color",
+                            name = L["50%"],
+                            order = 13,
+                            hasAlpha = false,
+                            disabled = function() return Gladdy.db.healthBarClassColored end,
+                        }),
+                        healthBarStatusBarColorMin = Gladdy:colorOption({
+                            type = "color",
+                            name = L["0%"],
+                            order = 14,
+                            hasAlpha = false,
+                            disabled = function() return Gladdy.db.healthBarClassColored end,
                         }),
                     },
                 },
                 font = {
                     type = "group",
                     name = L["Font"],
-                    order = 2,
+                    order = 3,
                     args = {
                         header = {
                             type = "header",
@@ -421,11 +555,28 @@ function Healthbar:GetOptions()
                             order = 12,
                             hasAlpha = true,
                         }),
+                        healthTextLeftOutline = option({
+                            type = "toggle",
+                            name = L["Left Font Outline"],
+                            order = 13,
+                            width = "full",
+                        }),
+                        healthTextRightOutline = option({
+                            type = "toggle",
+                            name = L["Right Font Outline"],
+                            order = 14,
+                            width = "full",
+                        }),
+                        headerSize = {
+                            type = "header",
+                            name = L["Size"],
+                            order = 20,
+                        },
                         healthBarNameFontSize = option({
                             type = "range",
                             name = L["Name font size"],
                             desc = L["Size of the name text"],
-                            order = 13,
+                            order = 21,
                             step = 0.1,
                             min = 0,
                             max = 20,
@@ -435,10 +586,51 @@ function Healthbar:GetOptions()
                             type = "range",
                             name = L["Health font size"],
                             desc = L["Size of the health text"],
-                            order = 14,
+                            order = 22,
                             step = 0.1,
                             min = 0,
                             max = 20,
+                            width = "full",
+                        }),
+                        headerOffsets = {
+                            type = "header",
+                            name = L["Offsets"],
+                            order = 30,
+                        },
+                        healthTextLeftVOffset = option({
+                            type = "range",
+                            name = L["Left Text Vertical Offset"],
+                            order = 31,
+                            step = 0.1,
+                            min = -200,
+                            max = 200,
+                            width = "full",
+                        }),
+                        healthTextLeftHOffset = option({
+                            type = "range",
+                            name = L["Left Text Horizontal Offset"],
+                            order = 32,
+                            step = 0.1,
+                            min = -200,
+                            max = 200,
+                            width = "full",
+                        }),
+                        healthTextRightVOffset = option({
+                            type = "range",
+                            name = L["Right Text Vertical Offset"],
+                            order = 33,
+                            step = 0.1,
+                            min = -200,
+                            max = 200,
+                            width = "full",
+                        }),
+                        healthTextRightHOffset = option({
+                            type = "range",
+                            name = L["Right Text Horizontal Offset"],
+                            order = 34,
+                            step = 0.1,
+                            min = -200,
+                            max = 200,
                             width = "full",
                         }),
                     },
@@ -446,7 +638,7 @@ function Healthbar:GetOptions()
                 border = {
                     type = "group",
                     name = L["Border"],
-                    order = 3,
+                    order = 4,
                     args = {
                         header = {
                             type = "header",
@@ -479,10 +671,39 @@ function Healthbar:GetOptions()
                         }),
                     },
                 },
+                frameStrata = {
+                    type = "group",
+                    name = L["Frame Strata and Level"],
+                    order = 5,
+                    args = {
+                        headerAuraLevel = {
+                            type = "header",
+                            name = L["Frame Strata and Level"],
+                            order = 1,
+                        },
+                        healthFrameStrata = Gladdy:option({
+                            type = "select",
+                            name = L["Frame Strata"],
+                            order = 2,
+                            values = Gladdy.frameStrata,
+                            sorting = Gladdy.frameStrataSorting,
+                            width = "full",
+                        }),
+                        healthFrameLevel = Gladdy:option({
+                            type = "range",
+                            name = L["Frame Level"],
+                            min = 1,
+                            max = 500,
+                            step = 1,
+                            order = 3,
+                            width = "full",
+                        }),
+                    },
+                },
                 healthValues = {
                     type = "group",
                     name = L["Health Bar Text"],
-                    order = 4,
+                    order = 6,
                     args = {
                         header = {
                             type = "header",
@@ -495,6 +716,7 @@ function Healthbar:GetOptions()
                             desc = L["Show the units name"],
                             order = 2,
                             width = "full",
+                            disabled = function() return Gladdy.db.healthCustomTagsEnabled end,
                         }),
                         healthNameToArenaId = option({
                             type = "toggle",
@@ -502,21 +724,7 @@ function Healthbar:GetOptions()
                             desc = L["Show 1-5 as name instead"],
                             order = 3,
                             width = "full",
-                            disabled = function() return not Gladdy.db.healthName end
-                        }),
-                        healthActual = option({
-                            type = "toggle",
-                            name = L["Show the actual health"],
-                            desc = L["Show the actual health on the health bar"],
-                            order = 4,
-                            width = "full",
-                        }),
-                        healthMax = option({
-                            type = "toggle",
-                            name = L["Show max health"],
-                            desc = L["Show max health on the health bar"],
-                            order = 5,
-                            width = "full",
+                            disabled = function() return not Gladdy.db.healthName or Gladdy.db.healthCustomTagsEnabled end,
                         }),
                         healthPercentage = option({
                             type = "toggle",
@@ -524,7 +732,16 @@ function Healthbar:GetOptions()
                             desc = L["Show health percentage on the health bar"],
                             order = 6,
                             width = "full",
+                            disabled = function() return Gladdy.db.healthCustomTagsEnabled end,
                         }),
+                        header = {
+                            type = "header",
+                            name = L["Custom Tags"],
+                            order = 10,
+                        },
+                        healthCustomTagsEnabled = Gladdy:GetTagOption(L["Custom Tags Enabled"], 11, nil, option, true),
+                        healthTextLeft = Gladdy:GetTagOption(L["Left Text"], 12, "healthCustomTagsEnabled", option),
+                        healthTextRight = Gladdy:GetTagOption(L["Right Text"], 13, "healthCustomTagsEnabled", option),
                     },
                 },
             },

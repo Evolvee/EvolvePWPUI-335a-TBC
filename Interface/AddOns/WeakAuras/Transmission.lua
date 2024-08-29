@@ -18,8 +18,7 @@ Imports an aura from a table, which may or may not be encoded as a B64 string.
 If target is installed data, or is a uid which points to installed data, then the import will be an update to that aura
 
 ]]--
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -28,11 +27,15 @@ local tostring, string_char, strsplit = tostring, string.char, strsplit
 local pairs, type, unpack = pairs, type, unpack
 local error = error
 local bit_band, bit_lshift, bit_rshift = bit.band, bit.lshift, bit.rshift
+local coroutine = coroutine
 
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 
 local versionString = WeakAuras.versionString;
+
+local regionOptions = WeakAuras.regionOptions;
+local regionTypes = WeakAuras.regionTypes;
 
 -- Local functions
 local decodeB64, GenerateUniqueID
@@ -133,8 +136,7 @@ function CompressDisplay(data, version)
   end
 
   local copiedData = CopyTable(data)
-  local non_transmissable_fields = version >= 2000 and Private.non_transmissable_fields_v2000
-                                                       or Private.non_transmissable_fields
+  local non_transmissable_fields = version >= 2000 and Private.non_transmissable_fields_v2000 or Private.non_transmissable_fields
   stripNonTransmissableFields(copiedData, non_transmissable_fields)
   copiedData.tocversion = WeakAuras.BuildInfo
   return copiedData;
@@ -154,32 +156,21 @@ local function filterFunc(_, event, msg, player, l, cs, t, flag, channelId, ...)
       characterName = characterName:gsub("|c[Ff][Ff]......", ""):gsub("|r", "");
       displayName = displayName:gsub("|c[Ff][Ff]......", ""):gsub("|r", "");
       newMsg = newMsg..remaining:sub(1, start-1);
-      newMsg = newMsg.."|Hgarrmission:weakauras|h|cFF8800FF["..characterName.." |r|cFF8800FF- "..displayName.."]|h|r";
+      newMsg = newMsg.."|HBNplayer::weakauras|h|cFF8800FF["..characterName.." |r|cFF8800FF- "..displayName.."]|h|r";
       remaining = remaining:sub(finish + 1);
     else
       done = true;
     end
   until(done)
   if newMsg ~= "" then
-    local trimmedPlayer = Ambiguate(player, "none")
-    if event == "CHAT_MSG_WHISPER" and not UnitInRaid(trimmedPlayer) and not UnitInParty(trimmedPlayer) then -- XXX: Need a guild check
+    if event == "CHAT_MSG_WHISPER" and not UnitInRaid(player) and not UnitInParty(player) then -- XXX: Need a guild check
       local _, num = BNGetNumFriends()
       for i=1, num do
-        if C_BattleNet then -- introduced in 8.2.5 PTR
-          local toon = C_BattleNet.GetFriendNumGameAccounts(i)
-          for j=1, toon do
-            local gameAccountInfo = C_BattleNet.GetFriendGameAccountInfo(i, j);
-            if gameAccountInfo.characterName == trimmedPlayer and gameAccountInfo.clientProgram == "WoW" then
-              return false, newMsg, player, l, cs, t, flag, channelId, ...; -- Player is a real id friend, allow it
-            end
-          end
-        else -- keep old method for 8.2 and Classic
-          local toon = BNGetNumFriendGameAccounts(i)
-          for j=1, toon do
-            local _, rName, rGame = BNGetFriendGameAccountInfo(i, j)
-            if rName == trimmedPlayer and rGame == "WoW" then
-              return false, newMsg, player, l, cs, t, flag, channelId, ...; -- Player is a real id friend, allow it
-            end
+        local toon = BNGetNumFriendToons(i)
+        for j=1, toon do
+          local _, rName, rGame = BNGetFriendToonInfo(i, j)
+          if rName == player and rGame == "WoW" then
+            return false, newMsg, player, l, cs, t, flag, channelId, ...; -- Player is a real id friend, allow it
           end
         end
       end
@@ -203,16 +194,15 @@ ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", filterFunc)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", filterFunc)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_BN_WHISPER", filterFunc)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_BN_WHISPER_INFORM", filterFunc)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT", filterFunc)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT_LEADER", filterFunc)
+ChatFrame_AddMessageEventFilter("CHAT_MSG_BATTLEGROUND", filterFunc)
+ChatFrame_AddMessageEventFilter("CHAT_MSG_BATTLEGROUND_LEADER", filterFunc)
 
 local Compresser = LibStub:GetLibrary("LibCompress")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
 local Serializer = LibStub:GetLibrary("AceSerializer-3.0")
 local LibSerialize = LibStub("LibSerialize")
 local Comm = LibStub:GetLibrary("AceComm-3.0")
--- the biggest bottleneck by far is in transmission and printing; so use maximal compression
-local configForDeflate = {level = 9}
+local configForDeflate = {level = 9} -- the biggest bottleneck by far is in transmission and printing; so use maximal compression
 local configForLS = {
   errorOnUnserializableType =  false
 }
@@ -221,8 +211,8 @@ local tooltipLoading;
 local receivedData;
 
 hooksecurefunc("SetItemRef", function(link, text)
-  if(link == "garrmission:weakauras") then
-    local _, _, characterName, displayName = text:find("|Hgarrmission:weakauras|h|cFF8800FF%[([^%s]+) |r|cFF8800FF%- (.*)%]|h");
+  if(link == "BNplayer::weakauras") then
+    local _, _, characterName, displayName = text:find("|HBNplayer::weakauras|h|cFF8800FF%[([^%s]+) |r|cFF8800FF%- ([^%]]+)%]|h");
     if(characterName and displayName) then
       characterName = characterName:gsub("|c[Ff][Ff]......", ""):gsub("|r", "");
       displayName = displayName:gsub("|c[Ff][Ff]......", ""):gsub("|r", "");
@@ -316,23 +306,18 @@ function StringToTable(inString, fromChat)
   end
 
   if not decoded then
-    return L["Error decoding."]
+    return "Error decoding."
   end
 
-  local decompressed
+  local decompressed, errorMsg = nil, "unknown compression method"
   if encodeVersion > 0 then
     decompressed = LibDeflate:DecompressDeflate(decoded)
-    if not(decompressed) then
-      return L["Error decompressing"]
-    end
   else
-    -- We ignore the error message, since it's more likely not a weakaura.
-    decompressed = Compresser:Decompress(decoded)
-    if not(decompressed) then
-      return L["Error decompressing. This doesn't look like a WeakAuras import."]
-    end
+    decompressed, errorMsg = Compresser:Decompress(decoded)
   end
-
+  if not(decompressed) then
+    return "Error decompressing: " .. errorMsg
+  end
 
   local success, deserialized
   if encodeVersion < 2 then
@@ -341,7 +326,7 @@ function StringToTable(inString, fromChat)
     success, deserialized = LibSerialize:Deserialize(decompressed)
   end
   if not(success) then
-    return L["Error deserializing"]
+    return "Error deserializing "..deserialized
   end
   return deserialized
 end
@@ -451,16 +436,16 @@ function ShowTooltip(lines)
   ItemRefTooltip:Show()
 end
 
-local delayedImport = CreateFrame("Frame")
+local delayedImport = CreateFrame("FRAME")
 
-local function ImportNow(data, children, target, sender, callbackFunc)
+local function ImportNow(data, children, target, sender)
   if InCombatLockdown() then
     WeakAuras.prettyPrint(L["Importing will start after combat ends."])
 
     delayedImport:RegisterEvent("PLAYER_REGEN_ENABLED")
     delayedImport:SetScript("OnEvent", function()
       delayedImport:UnregisterEvent("PLAYER_REGEN_ENABLED")
-      ImportNow(data, children, target, sender, callbackFunc)
+      ImportNow(data, children, target, sender)
     end)
     return
   end
@@ -469,11 +454,11 @@ local function ImportNow(data, children, target, sender, callbackFunc)
     if not WeakAuras.IsOptionsOpen() then
       WeakAuras.OpenOptions()
     end
-    Private.OpenUpdate(data, children, target, sender, callbackFunc)
+    Private.OpenUpdate(data, children, target, sender)
   end
 end
 
-function WeakAuras.Import(inData, target, callbackFunc)
+function WeakAuras.Import(inData, target)
   local data, children, version
   if type(inData) == 'string' then
     -- encoded data
@@ -499,18 +484,6 @@ function WeakAuras.Import(inData, target, callbackFunc)
     return nil, "Invalid import data."
   end
 
-  local highestVersion = data.internalVersion or 0
-  if children then
-    for _, child in ipairs(children) do
-      highestVersion = max(highestVersion, child.internalVersion or 0)
-    end
-  end
-  if highestVersion > WeakAuras.InternalVersion() then
-    -- Do not run PreAdd but still show Import Window
-    tooltipLoading = nil;
-    return ImportNow(data, children, target, nil, callbackFunc)
-  end
-
   if version < 2000 then
     if children then
       data.controlledChildren = {}
@@ -521,6 +494,7 @@ function WeakAuras.Import(inData, target, callbackFunc)
     end
   end
 
+  local status, msg = true, ""
   if type(target) ~= 'nil' then
     local uid = type(target) == 'table' and target.uid or target
     local targetData = Private.GetDataByUID(uid)
@@ -528,9 +502,6 @@ function WeakAuras.Import(inData, target, callbackFunc)
       return false, "Invalid update target."
     else
       target = targetData
-    end
-    if data.uid and data.uid ~= target.uid then
-      return false, "Invalid update target, uids don't match."
     end
   end
   WeakAuras.PreAdd(data)
@@ -541,12 +512,13 @@ function WeakAuras.Import(inData, target, callbackFunc)
   end
 
   tooltipLoading = nil;
-  return ImportNow(data, children, target, nil, callbackFunc)
+  return ImportNow(data, children, target)
 end
 
 local function crossRealmSendCommMessage(prefix, text, target, queueName, callbackFn, callbackArg)
   local chattype = "WHISPER"
-  if target and not UnitIsSameServer(target) then
+--[[
+  if target then
     if UnitInRaid(target) then
       chattype = "RAID"
       text = ("§§%s:%s"):format(target, text)
@@ -555,13 +527,13 @@ local function crossRealmSendCommMessage(prefix, text, target, queueName, callba
       text = ("§§%s:%s"):format(target, text)
     end
   end
+]]
   Comm:SendCommMessage(prefix, text, chattype, target, queueName, callbackFn, callbackArg)
 end
 
 local safeSenders = {}
 function RequestDisplay(characterName, displayName)
   safeSenders[characterName] = true
-  safeSenders[Ambiguate(characterName, "none")] = true
   local transmit = {
     m = "dR",
     d = displayName
@@ -594,7 +566,7 @@ Comm:RegisterComm("WeakAurasProg", function(prefix, message, distribution, sende
     local dest, msg = string.match(message, "^§§(.+):(.+)$")
     if dest then
       local dName, dServer = string.match(dest, "^(.*)-(.*)$")
-      local myName, myServer = UnitFullName("player")
+      local myName, myServer = UnitName("player")
       if myName == dName and myServer == dServer then
         message = msg
       else
@@ -624,7 +596,7 @@ Comm:RegisterComm("WeakAuras", function(prefix, message, distribution, sender)
     local dest, msg = string.match(message, "^§§([^:]+):(.+)$")
     if dest then
       local dName, dServer = string.match(dest, "^(.*)-(.*)$")
-      local myName, myServer = UnitFullName("player")
+      local myName, myServer = UnitName("player")
       if myName == dName and myServer == dServer then
         message = msg
       else

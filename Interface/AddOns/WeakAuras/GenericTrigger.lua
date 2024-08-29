@@ -49,19 +49,13 @@ Returns the a tooltip for the additional properties.
 GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
 ]]--
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
 local tinsert, tconcat, wipe = table.insert, table.concat, wipe
-local tostring, pairs, type = tostring, pairs, type
+local tonumber, tostring, pairs, type = tonumber, tostring, pairs, type
 local error, setmetatable = error, setmetatable
-local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
-local GetItemCooldown = GetItemCooldown or (C_Container and C_Container.GetItemCooldown) or nil
-
--- WoW APIs
-local IsPlayerMoving = IsPlayerMoving
 
 WeakAurasAceEvents = setmetatable({}, {__tostring=function() return "WeakAuras" end});
 LibStub("AceEvent-3.0"):Embed(WeakAurasAceEvents);
@@ -70,10 +64,6 @@ local aceEvents = WeakAurasAceEvents
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 local GenericTrigger = {};
-local LCSA
-if WeakAuras.IsClassicEra() then
-  LCSA = LibStub("LibClassicSpellActionCount-1.0")
-end
 
 local event_prototypes = Private.event_prototypes;
 
@@ -82,33 +72,26 @@ local timer = WeakAuras.timer;
 local events = {}
 local loaded_events = {}
 local loaded_unit_events = {};
-local watched_trigger_events = Private.watched_trigger_events
-local delayTimerEvents = {}
 local loaded_auras = {}; -- id to bool map
+local timers = WeakAuras.timers;
 
 -- Local functions
 local LoadEvent, HandleEvent, HandleUnitEvent, TestForTriState, TestForToggle, TestForLongString, TestForMultiSelect
 local ConstructTest, ConstructFunction
 
-
-local nameplateExists = {}
-
 function WeakAuras.UnitExistsFixed(unit, smart)
-  if #unit > 9 and unit:sub(1, 9) == "nameplate" then
-    return nameplateExists[unit]
-  end
   if smart and IsInRaid() then
-    if unit:sub(1, 5) == "party" or unit == "player" or unit == "pet" then
+    if unit:sub(1, 5) == "party" or unit == "player" then
       return false
     end
   end
-  return UnitExists(unit) or UnitGUID(unit)
+  return UnitExists(unit) == 1 and true or false
 end
 
 function WeakAuras.split(input)
   input = input or "";
   local ret = {};
-  local split, element = true, nil
+  local split, element = true;
   split = input:find("[,%s]");
   while(split) do
     element, input = input:sub(1, split-1), input:sub(split+1);
@@ -174,9 +157,9 @@ function TestForMultiSelect(trigger, arg)
     if trigger[name] and trigger[name].multi then
       for value, _ in pairs(trigger[name].multi) do
         if not arg.test then
-          test = test..name.."=="..(tonumber(value) or ("[["..value.."]]")).." or ";
+          test = test..name.."=="..(tonumber(value) or "[["..value.."]]").." or ";
         else
-          test = test..arg.test:format(tonumber(value) or ("[["..value.."]]")).." or ";
+          test = test..arg.test:format(tonumber(value) or "[["..value.."]]").." or ";
         end
         any = true;
       end
@@ -194,106 +177,56 @@ function TestForMultiSelect(trigger, arg)
       return test;
     end
     if not arg.test then
-      test = trigger[name].single and "("..name.."=="..(tonumber(value) or ("[["..value.."]]"))..")";
+      test = trigger[name].single and "("..name.."=="..(tonumber(value) or "[["..value.."]]")..")";
     else
-      test = trigger[name].single and "("..arg.test:format(tonumber(value) or ("[["..value.."]]"))..")";
+      test = trigger[name].single and "("..arg.test:format(tonumber(value) or "[["..value.."]]")..")";
     end
   end
   return test;
 end
 
-local function singleTest(arg, trigger, name, value, operator, use_exact)
-  local number = tonumber(value)
-  if(arg.type == "tristate") then
-    return TestForTriState(trigger, arg);
-  elseif(arg.type == "multiselect") then
-    return TestForMultiSelect(trigger, arg);
-  elseif(arg.type == "toggle") then
-    return TestForToggle(trigger, arg);
-  elseif (arg.type == "spell" or arg.type == "item") then
-    if arg.test then
-      if arg.showExactOption then
-        return "("..arg.test:format(value, tostring(use_exact) or "false") ..")";
-      else
-        return "("..arg.test:format(value)..")";
-      end
-    else
-      return "(".. name .." and "..name.."==" ..(number or ("\""..(tostring(value) or "").."\""))..")";
-    end
-  elseif(arg.test) then
-    return "("..arg.test:format(tostring(value) or "")..")";
-  elseif(arg.type == "longstring" and operator) then
-    return TestForLongString(trigger, arg);
-  elseif (arg.type == "string" or arg.type == "select") then
-    return "(".. name .." and "..name.."==" ..(number or ("\""..(tostring(value) or "").."\""))..")";
-  elseif (arg.type == "number") then
-    return "(".. name .." and "..name..(operator or "==")..(number or 0) ..")";
-  else
-    -- Should be unused
-    return "(".. name .." and "..name..(operator or "==")..(number or ("\""..(tostring(value) or 0).."\""))..")";
-  end
-end
-
-function ConstructTest(trigger, arg, testGroups, preambleGroups)
+function ConstructTest(trigger, arg)
   local test
   local preamble
   local name = arg.name;
+  if(arg.hidden or arg.type == "tristate" or arg.type == "toggle" or (arg.type == "multiselect" and trigger["use_"..name] ~= nil) or ((trigger["use_"..name] or arg.required) and trigger[name])) then
+    local number = tonumber(trigger[name]);
+    if(arg.type == "tristate") then
+      test = TestForTriState(trigger, arg);
+    elseif(arg.type == "multiselect") then
+      test = TestForMultiSelect(trigger, arg);
+    elseif(arg.type == "toggle") then
+      test = TestForToggle(trigger, arg);
+    elseif (arg.type == "spell") then
+      if arg.test then
+        if arg.showExactOption then
+          test = "("..arg.test:format(trigger[name], tostring(trigger["use_exact_" .. name]) or "false") ..")";
+        else
+          test = "("..arg.test:format(trigger[name])..")";
+        end
+      else
+        test = "(".. name .." and "..name.."==" ..(number or "\""..(trigger[name] or "").."\"")..")";
+      end
+    elseif(arg.test) then
+      test = "("..arg.test:format(tostring(trigger[name]) or "")..")";
+    elseif(arg.type == "longstring" and trigger[name.."_operator"]) then
+      test = TestForLongString(trigger, arg);
+    elseif (arg.type == "string" or arg.type == "select" or arg.type == "item") then
+      test = "(".. name .." and "..name.."==" ..(number or "\""..(trigger[name] or "").."\"")..")";
+    else
+      if(type(trigger[name]) == "table") then
+        trigger[name] = "error";
+      end
+      -- number
+      test = "(".. name .." and "..name..(trigger[name.."_operator"] or "==")..(number or "\""..(trigger[name] or "").."\"")..")";
+    end
+  end
 
   if arg.preamble then
-    if not arg.preambleGroup or not preambleGroups[arg.preambleGroup] then
-      preamble = arg.preamble:format(trigger[name] or "")
-    end
-    if arg.preambleGroup then
-      preambleGroups[arg.preambleGroup] = true
-    end
+    preamble = arg.preamble:format(trigger[name] or "")
   end
 
-  if arg.hidden
-    or arg.type == "tristate"
-    or arg.type == "toggle"
-    or (arg.type == "multiselect" and trigger["use_"..name] ~= nil)
-    or ((trigger["use_"..name] or arg.required) and trigger[name])
-  then
-    if arg.multiEntry then
-      if type(trigger[name]) == "table" and #trigger[name] > 0 then
-        test = ""
-        for i, value in ipairs(trigger[name]) do
-          local operator = name and type(trigger[name.."_operator"]) == "table" and trigger[name.."_operator"][i]
-          local use_exact = name and type(trigger["use_exact_" .. name]) == "table" and trigger["use_exact_" .. name][i]
-
-          if arg.multiEntry.operator == "preamble" then
-            preamble = preamble and (preamble .. "\n") or ""
-            preamble = preamble .. arg.multiEntry.preambleAdd:format(value)
-          else
-            local single = singleTest(arg, trigger, name, value, operator, use_exact)
-            if single then
-              if test ~= "" then
-                test = test .. arg.multiEntry.operator
-              end
-              test = test .. single
-            end
-          end
-        end
-
-        if arg.multiEntry.operator == "preamble" then
-          test = arg.test
-        end
-
-        if test == "" then
-          test = nil
-        else
-          test = "(" .. test .. ")"
-        end
-      end
-    else
-      local value = trigger[name]
-      local operator = name and trigger[name.."_operator"]
-      local use_exact = name and trigger["use_exact_" .. name]
-      test = singleTest(arg, trigger, name, value, operator, use_exact)
-    end
-  end
-
-  if not test or test == "(true)" or arg.testGroup and testGroups[arg.testGroup] then
+  if (test == "(true)") then
     return nil, preamble
   end
 
@@ -307,17 +240,9 @@ function ConstructFunction(prototype, trigger)
 
   local input;
   if (prototype.statesParameter) then
-    if prototype.countEvents then
-      input = {"state", "counter", "event"};
-    else
-      input = {"state", "event"};
-    end
+    input = {"state", "event"};
   else
-    if prototype.countEvents then
-      input = {"counter", "event"};
-    else
-      input = {"event"};
-    end
+    input = {"event"};
   end
 
   local required = {};
@@ -326,9 +251,6 @@ function ConstructFunction(prototype, trigger)
   local store = {};
   local init;
   local preambles = "\n"
-  local orConjunctionGroups = {}
-  local preambleGroups = {}
-  local testGroups = {}
   if(prototype.init) then
     init = prototype.init(trigger);
   else
@@ -354,17 +276,12 @@ function ConstructFunction(prototype, trigger)
         if (arg.store) then
           tinsert(store, name);
         end
-        local test, preamble = ConstructTest(trigger, arg, testGroups, preambleGroups);
+        local test, preamble = ConstructTest(trigger, arg);
         if (test) then
           if(arg.required) then
             tinsert(required, test);
           else
-            if arg.orConjunctionGroup then
-              orConjunctionGroups[arg.orConjunctionGroup] = orConjunctionGroups[arg.orConjunctionGroup] or {}
-              tinsert(orConjunctionGroups[arg.orConjunctionGroup], test)
-            else
-              tinsert(tests, test);
-            end
+            tinsert(tests, test);
           end
           if(arg.debug) then
             tinsert(debug, arg.debug:format(trigger[name]));
@@ -376,11 +293,6 @@ function ConstructFunction(prototype, trigger)
       end
     end
   end
-
-  for _, orConjunctionGroup in pairs(orConjunctionGroups) do
-    tinsert(tests, "("..table.concat(orConjunctionGroup, " or ")..")")
-  end
-
   local ret = preambles .. "return function("..tconcat(input, ", ")..")\n";
   ret = ret..(init or "");
 
@@ -400,16 +312,6 @@ function ConstructFunction(prototype, trigger)
     ret = ret .. "  state.changed = true\n"
   end
 
-  if prototype.countEvents then
-    ret = ret .. "  local count = counter:GetNext()\n"
-    if trigger.use_count and type(trigger.count) == "string" and trigger.count ~= "" then
-      ret = ret .. "  local match = counter:Match()"
-      ret = ret .. "  if not match then return false end\n"
-    end
-    ret = ret .. "  state.count = count\n"
-    ret = ret .. "  state.changed = true\n"
-  end
-
   for _, v in ipairs(store) do
     ret = ret .. "    if (state." .. v .. " ~= " .. v .. ") then\n"
     ret = ret .. "      state." .. v .. " = " .. v .. "\n"
@@ -421,7 +323,7 @@ function ConstructFunction(prototype, trigger)
   return ret;
 end
 
-function Private.EndEvent(state)
+function Private.EndEvent(id, triggernum, force, state)
   if state then
     if (state.show ~= false and state.show ~= nil) then
       state.show = false;
@@ -433,14 +335,15 @@ function Private.EndEvent(state)
   end
 end
 
-local function RunOverlayFuncs(event, state, id, errorHandler)
+local function RunOverlayFuncs(event, state)
   state.additionalProgress = state.additionalProgress or {};
   local changed = false;
   for i, overlayFunc in ipairs(event.overlayFuncs) do
     state.additionalProgress[i] = state.additionalProgress[i] or {};
     local additionalProgress = state.additionalProgress[i];
-    local ok, a, b, c = xpcall(overlayFunc, errorHandler or Private.GetErrorHandlerId(id, L["Overlay %s"]:format(i)), event.trigger, state);
+    local ok, a, b, c = pcall(overlayFunc, event.trigger, state);
     if (not ok) then
+      geterrorhandler()(a)
       additionalProgress.min = nil;
       additionalProgress.max = nil;
       additionalProgress.direction = nil;
@@ -486,8 +389,15 @@ local function callFunctionForActivateEvent(func, trigger, fallback, errorHandle
   if not func then
     return fallback
   end
-  local ok, value = xpcall(func, errorHandler, trigger)
-  return ok and value or fallback
+  local ok, value = pcall(func, trigger)
+  if ok and value then
+    return value
+  else
+    if not ok then
+      errorHandler(value)
+    end
+    return fallback
+  end
 end
 
 function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
@@ -519,10 +429,15 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
     state.inverse = nil;
     state.autoHide = autoHide;
   elseif (data.durationFunc) then
-    local ok, arg1, arg2, arg3, inverse = xpcall(data.durationFunc, errorHandler or Private.GetErrorHandlerId(id, L["Duration Function"]), data.trigger);
-    arg1 = ok and type(arg1) == "number" and arg1 or 0;
-    arg2 = ok and type(arg2) == "number" and arg2 or 0;
-
+    local ok, arg1, arg2, arg3, inverse = pcall(data.durationFunc, data.trigger);
+    if not ok then
+      errorHandler(arg1);
+      arg1 = 0;
+      arg2 = 0;
+    else
+      arg1 = type(arg1) == "number" and arg1 or 0;
+      arg2 = type(arg2) == "number" and arg2 or 0;
+    end
 
     if (state.inverse ~= inverse) then
       state.inverse = inverse;
@@ -565,11 +480,6 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
       if (state.duration ~= arg1) then
         state.duration = arg1;
       end
-      -- The Icon's SetCooldown requires that the **startTime** is positive, so ensure that
-      -- the expirationTime is bigger than the duration
-      if arg2 <= arg1 then
-        arg2 = arg1
-      end
       if (state.expirationTime ~= arg2) then
         state.expirationTime = arg2;
         changed = true;
@@ -587,10 +497,10 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
     end
   end
 
-  local name = callFunctionForActivateEvent(data.nameFunc, data.trigger, state.name, errorHandler or Private.GetErrorHandlerId(id, L["Name Function"]))
-  local icon = callFunctionForActivateEvent(data.iconFunc, data.trigger, state.icon, errorHandler or Private.GetErrorHandlerId(id, L["Icon Function"]))
-  local texture = callFunctionForActivateEvent(data.textureFunc, data.trigger, state.texture, errorHandler or Private.GetErrorHandlerId(id, L["Texture Function"]))
-  local stacks = callFunctionForActivateEvent(data.stacksFunc, data.trigger, state.stacks, errorHandler or Private.GetErrorHandlerId(id, L["Stacks Function"]))
+  local name = callFunctionForActivateEvent(data.nameFunc, data.trigger, state.name, errorHandler)
+  local icon = callFunctionForActivateEvent(data.iconFunc, data.trigger, state.icon, errorHandler)
+  local texture = callFunctionForActivateEvent(data.textureFunc, data.trigger, state.texture, errorHandler)
+  local stacks = callFunctionForActivateEvent(data.stacksFunc, data.trigger, state.stacks, errorHandler)
 
   if (state.name ~= name) then
     state.name = name;
@@ -610,7 +520,7 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
   end
 
   if (data.overlayFuncs) then
-    RunOverlayFuncs(data, state, id, errorHandler);
+    RunOverlayFuncs(data, state);
   else
     state.additionalProgress = nil;
   end
@@ -626,7 +536,7 @@ end
 
 local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)
   local optionsEvent = event == "OPTIONS";
-  local errorHandler = (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or Private.GetErrorHandlerId(id, L["Trigger %s"]:format(triggernum))
+  local errorHandler = (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or geterrorhandler()
   local updateTriggerState = false;
 
   local unitForUnitTrigger
@@ -635,33 +545,27 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
   if(data.triggerFunc) then
     local untriggerCheck = false;
     if (data.statesParameter == "full") then
-      local ok, returnValue
-      if data.counter then
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, allStates, data.counter, event, arg1, arg2, ...);
-      else
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, allStates, event, arg1, arg2, ...);
-      end
-      if (ok and returnValue) then
+      local ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      if not ok then
+        errorHandler(returnValue)
+      elseif ok and returnValue then
         updateTriggerState = true;
       end
       for key, state in pairs(allStates) do
         if (type(state) ~= "table") then
-          errorHandler(string.format(L["All States table contains a non table at key: '%s'."], key))
+          errorHandler(string.format(L["Error in aura '%s' in %s. trigger. All States table contains a non table at key: '%s'."], id, triggernum, key))
           wipe(allStates)
           return
         end
       end
     elseif (data.statesParameter == "all") then
-      local ok, returnValue
-      if data.counter then
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, allStates, data.counter, event, arg1, arg2, ...);
-      else
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, allStates, event, arg1, arg2, ...);
-      end
-      if( (ok and returnValue) or optionsEvent) then
+      local ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      if not ok then
+        errorHandler(returnValue)
+      elseif (ok and returnValue) or optionsEvent then
         for id, state in pairs(allStates) do
           if (state.changed) then
-            if (Private.ActivateEvent(id, triggernum, data, state)) then
+            if (Private.ActivateEvent(id, triggernum, data, state, errorHandler)) then
               updateTriggerState = true;
             end
           end
@@ -670,6 +574,15 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         untriggerCheck = true;
       end
     elseif (data.statesParameter == "unit") then
+      if optionsEvent then
+        if Private.multiUnitUnits[data.trigger.unit] then
+          arg1 = next(Private.multiUnitUnits[data.trigger.unit])
+        else
+          arg1 = data.trigger.unit
+        end
+      elseif event == "FRAME_UPDATE" and not Private.multiUnitUnits[data.trigger.unit] then
+        arg1 = data.trigger.unit
+      end
       if arg1 then
         if Private.multiUnitUnits[data.trigger.unit] then
           unitForUnitTrigger = arg1
@@ -680,14 +593,11 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         end
         allStates[cloneIdForUnitTrigger] = allStates[cloneIdForUnitTrigger] or {};
         local state = allStates[cloneIdForUnitTrigger];
-        local ok, returnValue
-        if data.counter then
-          ok, returnValue = xpcall(data.triggerFunc, errorHandler, state, data.counter, event, unitForUnitTrigger, arg1, arg2, ...);
-        else
-          ok, returnValue = xpcall(data.triggerFunc, errorHandler, state, event, unitForUnitTrigger, arg1, arg2, ...);
-        end
-        if (ok and returnValue) or optionsEvent then
-          if(Private.ActivateEvent(id, triggernum, data, state)) then
+        local ok, returnValue = pcall(data.triggerFunc, state, event, unitForUnitTrigger, arg1, arg2, ...);
+        if not ok then
+          errorHandler(returnValue)
+        elseif (ok and returnValue) or optionsEvent then
+          if(Private.ActivateEvent(id, triggernum, data, state, errorHandler)) then
             updateTriggerState = true;
           end
         else
@@ -697,30 +607,24 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
     elseif (data.statesParameter == "one") then
       allStates[""] = allStates[""] or {};
       local state = allStates[""];
-      local ok, returnValue
-      if data.counter then
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, state, data.counter, event, arg1, arg2, ...);
-      else
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, state, event, arg1, arg2, ...);
-      end
-      if (ok and returnValue) or optionsEvent then
-        if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
+      local ok, returnValue = pcall(data.triggerFunc, state, event, arg1, arg2, ...);
+      if not ok then
+        errorHandler(returnValue)
+      elseif (ok and returnValue) or optionsEvent then
+        if(Private.ActivateEvent(id, triggernum, data, state, errorHandler)) then
           updateTriggerState = true;
         end
       else
         untriggerCheck = true;
       end
     else
-      local ok, returnValue
-      if data.counter then
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, data.counter, event, arg1, arg2, ...);
-      else
-        ok, returnValue = xpcall(data.triggerFunc, errorHandler, event, arg1, arg2, ...);
-      end
-      if (ok and returnValue) or optionsEvent then
+      local ok, returnValue = pcall(data.triggerFunc, event, arg1, arg2, ...);
+      if not ok then
+        errorHandler(returnValue)
+      elseif (ok and returnValue) or optionsEvent then
         allStates[""] = allStates[""] or {};
         local state = allStates[""];
-        if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
+        if(Private.ActivateEvent(id, triggernum, data, state, errorHandler)) then
           updateTriggerState = true;
         end
       else
@@ -728,14 +632,15 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       end
     end
     if (untriggerCheck and not optionsEvent) then
-      errorHandler = (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or Private.GetErrorHandlerId(id, L["Untrigger %s"]:format(triggernum))
       if (data.statesParameter == "all") then
         if data.untriggerFunc then
-          local ok, returnValue = xpcall(data.untriggerFunc, errorHandler, allStates, event, arg1, arg2, ...);
-          if ok and returnValue then
+          local ok, returnValue = pcall(data.untriggerFunc, allStates, event, arg1, arg2, ...);
+          if not ok then
+            errorHandler(returnValue)
+          elseif (ok and returnValue) or optionsEvent then
             for id, state in pairs(allStates) do
               if (state.changed) then
-                if (Private.EndEvent(state)) then
+                if (Private.EndEvent(id, triggernum, nil, state)) then
                   updateTriggerState = true;
                 end
               end
@@ -747,9 +652,11 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           if arg1 then
             local state = allStates[cloneIdForUnitTrigger]
             if state then
-              local ok, returnValue =  xpcall(data.untriggerFunc, errorHandler, state, event, unitForUnitTrigger, arg1, arg2, ...);
-              if ok and returnValue then
-                if (Private.EndEvent(state)) then
+              local ok, returnValue = pcall(data.untriggerFunc, state, event, unitForUnitTrigger, arg2, ...);
+              if not ok then
+                errorHandler(returnValue)
+              elseif ok and returnValue then
+                if (Private.EndEvent(id, triggernum, nil, state)) then
                   updateTriggerState = true;
                 end
               end
@@ -765,30 +672,30 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         allStates[""] = allStates[""] or {};
         local state = allStates[""];
         if data.untriggerFunc then
-          local ok, returnValue = xpcall(data.untriggerFunc, errorHandler, state, event, arg1, arg2, ...);
-          if (ok and returnValue) then
-            if (Private.EndEvent(state)) then
+          local ok, returnValue = pcall(data.untriggerFunc, state, event, arg1, arg2, ...);
+          if not ok then
+            errorHandler(returnValue)
+          elseif (ok and returnValue) then
+            if (Private.EndEvent(id, triggernum, nil, state)) then
               updateTriggerState = true;
             end
           end
         end
       else
         if data.untriggerFunc then
-          local ok, returnValue = xpcall(data.untriggerFunc, errorHandler, event, arg1, arg2, ...);
-          if ok and returnValue then
+          local ok, returnValue = pcall(data.untriggerFunc, event, arg1, arg2, ...);
+          if not ok then
+            errorHandler(returnValue)
+          elseif (ok and returnValue) then
             allStates[""] = allStates[""] or {};
             local state = allStates[""];
-            if(Private.EndEvent(state)) then
+            if(Private.EndEvent(id, triggernum, nil, state)) then
               updateTriggerState = true;
             end
           end
         end
       end
     end
-  end
-  if updateTriggerState and watched_trigger_events[id] and watched_trigger_events[id][triggernum] then
-    -- if this trigger's updates are requested to be sent into one of the Aura's custom triggers
-    Private.AddToWatchedTriggerDelay(id, triggernum)
   end
   return updateTriggerState;
 end
@@ -802,21 +709,19 @@ function WeakAuras.ScanEvents(event, arg1, arg2, ...)
     return
   end
   if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
-    local arg1, arg2 = CombatLogGetCurrentEventInfo();
-
     event_list = event_list[arg2];
     if (not event_list) then
       Private.StopProfileSystem("generictrigger " .. orgEvent )
       return;
     end
-    WeakAuras.ScanEventsInternal(event_list, event, CombatLogGetCurrentEventInfo());
+    WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
 
   elseif (event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
     -- This reverts the COMBAT_LOG_EVENT_UNFILTERED_CUSTOM workaround so that custom triggers that check the event argument will work as expected
     if(event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
       event = "COMBAT_LOG_EVENT_UNFILTERED";
     end
-    WeakAuras.ScanEventsInternal(event_list, event, CombatLogGetCurrentEventInfo());
+    WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
   else
     WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
   end
@@ -834,14 +739,9 @@ function WeakAuras.ScanUnitEvents(event, unit, ...)
         Private.ActivateAuraEnvironment(id);
         local updateTriggerState = false;
         for triggernum, data in pairs(triggers) do
-          local delay = GenericTrigger.GetDelay(data)
-          if delay == 0 then
-            local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
-            if (RunTriggerFunc(allStates, data, id, triggernum, event, unit, ...)) then
-              updateTriggerState = true;
-            end
-          else
-            Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, unit, ...)
+          local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
+          if (RunTriggerFunc(allStates, data, id, triggernum, event, unit, ...)) then
+            updateTriggerState = true;
           end
         end
         if (updateTriggerState) then
@@ -861,14 +761,9 @@ function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
     Private.ActivateAuraEnvironment(id);
     local updateTriggerState = false;
     for triggernum, data in pairs(triggers) do
-      local delay = GenericTrigger.GetDelay(data)
-      if delay == 0 then
-        local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
-        if (RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)) then
-          updateTriggerState = true
-        end
-      else
-        Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, arg1, arg2, ...)
+      local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
+      if (RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)) then
+        updateTriggerState = true;
       end
     end
     if (updateTriggerState) then
@@ -879,82 +774,7 @@ function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
   end
 end
 
-do
-  local function RunTriggerFuncForDelay(id, triggernum, data, event, ...)
-    Private.StartProfileAura(id)
-    Private.ActivateAuraEnvironment(id)
-    local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
-    if (RunTriggerFunc(allStates, data, id, triggernum, event, ...)) then
-      Private.UpdatedTriggerState(id)
-    end
-    Private.StopProfileAura(id)
-    Private.ActivateAuraEnvironment(nil)
-    -- clear expired timers
-    for i, t in ipairs_reverse(delayTimerEvents[id][triggernum]) do
-      if t.ends <= GetTime() then
-        table.remove(delayTimerEvents[id][triggernum], i)
-      end
-    end
-  end
-
-  function Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, ...)
-    delayTimerEvents[id] = delayTimerEvents[id] or {}
-    delayTimerEvents[id][triggernum] = delayTimerEvents[id][triggernum] or {}
-    local timerId = timer:ScheduleTimer(RunTriggerFuncForDelay, delay, id, triggernum, data, event, ...)
-    tinsert(delayTimerEvents[id][triggernum], timerId)
-  end
-end
-
-function Private.CancelDelayedTrigger(id)
-  if delayTimerEvents[id] then
-    for triggernum, timers in pairs(delayTimerEvents[id]) do
-      for _, timerId in ipairs(timers) do
-        timer:CancelTimer(timerId)
-      end
-    end
-    delayTimerEvents[id] = nil
-  end
-end
-
-function Private.CancelAllDelayedTriggers()
-  for id in pairs(delayTimerEvents) do
-    Private.CancelDelayedTrigger(id)
-  end
-end
-
-function Private.ScanEventsWatchedTrigger(id, watchedTriggernums)
-  if #watchedTriggernums == 0 then return end
-  Private.StartProfileAura(id);
-  Private.ActivateAuraEnvironment(id);
-  local updateTriggerState = false
-
-  for _, watchedTrigger in ipairs(watchedTriggernums) do
-    if watched_trigger_events[id] and watched_trigger_events[id][watchedTrigger] then
-      local updatedTriggerStates = WeakAuras.GetTriggerStateForTrigger(id, watchedTrigger)
-      for observerTrigger in pairs(watched_trigger_events[id][watchedTrigger]) do
-        local data = events and events[id] and events[id][observerTrigger]
-        local allstates = WeakAuras.GetTriggerStateForTrigger(id, observerTrigger)
-        if data and allstates and updatedTriggerStates then
-          if RunTriggerFunc(allstates, data, id, observerTrigger, "TRIGGER", watchedTrigger, updatedTriggerStates) then
-            updateTriggerState = true
-          end
-        end
-      end
-    end
-  end
-  if (updateTriggerState) then
-    Private.UpdatedTriggerState(id)
-  end
-  Private.StopProfileAura(id)
-  Private.ActivateAuraEnvironment(nil)
-end
-
-local function AddFakeInformation(state, eventData)
-  state.autoHide = false
-  local canHaveDuration = eventData.prototype and eventData.prototype.canHaveDuration == "timed"
-  if canHaveDuration and state.expirationTime == nil then
-    state.progressType = "timed"
-  end
+local function AddFakeTime(state)
   if state.progressType == "timed" then
     if state.expirationTime and state.expirationTime ~= math.huge and state.expirationTime > GetTime() then
       return
@@ -963,52 +783,38 @@ local function AddFakeInformation(state, eventData)
     state.expirationTime = GetTime() + 7
     state.duration = 7
   end
-  if eventData.prototype and eventData.prototype.GetNameAndIcon then
-    local name, icon = eventData.prototype.GetNameAndIcon(eventData.trigger)
-    if state.name == nil then
-      state.name = name
-    end
-    if state.icon == nil then
-      state.icon = icon
-    end
-  end
 end
 
 function GenericTrigger.CreateFakeStates(id, triggernum)
   local data = WeakAuras.GetData(id)
-  local eventData = events[id][triggernum]
 
   Private.ActivateAuraEnvironment(id);
   local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
+  RunTriggerFunc(allStates, events[id][triggernum], id, triggernum, "OPTIONS")
 
-
-  local arg1
-  if eventData.statesParameter == "unit" then
-    local unit = eventData.trigger.unit
-    if Private.multiUnitUnits[unit] then
-      arg1 = next(Private.multiUnitUnits[unit])
-    else
-      arg1 = unit
-    end
-  end
-
-  RunTriggerFunc(allStates, eventData, id, triggernum, "OPTIONS", arg1)
+  local canHaveDuration = events[id][triggernum].prototype and events[id][triggernum].prototype.canHaveDuration == "timed"
 
   local shown = 0
   for id, state in pairs(allStates) do
     if state.show then
       shown = shown + 1
     end
-
-    AddFakeInformation(state, eventData)
+    state.autoHide = false
+    if canHaveDuration and state.expirationTime == nil then
+      state.progressType = "timed"
+    end
+    AddFakeTime(state)
   end
 
   if shown == 0 then
     local state = {}
     GenericTrigger.CreateFallbackState(data, triggernum, state)
     allStates[""] = state
-
-    AddFakeInformation(state, eventData)
+    state.autoHide = false
+    if canHaveDuration and state.expirationTime == nil then
+      state.progressType = "timed"
+    end
+    AddFakeTime(state)
   end
 
   Private.ActivateAuraEnvironment(nil);
@@ -1050,18 +856,12 @@ end
 
 function HandleEvent(frame, event, arg1, arg2, ...)
   Private.StartProfileSystem("generictrigger " .. event);
-  if event == "NAME_PLATE_UNIT_ADDED" then
-    nameplateExists[arg1] = true
-  elseif event == "NAME_PLATE_UNIT_REMOVED" then
-    nameplateExists[arg1] = false
-  end
-
   if not(WeakAuras.IsPaused()) then
     if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
-      WeakAuras.ScanEvents(event);
+      WeakAuras.ScanEvents(event, arg1, arg2, ...);
       -- This triggers the scanning of "hacked" COMBAT_LOG_EVENT_UNFILTERED events that were renamed in order to circumvent
       -- the "proper" COMBAT_LOG_EVENT_UNFILTERED checks
-      WeakAuras.ScanEvents("COMBAT_LOG_EVENT_UNFILTERED_CUSTOM");
+      WeakAuras.ScanEvents("COMBAT_LOG_EVENT_UNFILTERED_CUSTOM", arg1, arg2, ...);
     else
       WeakAuras.ScanEvents(event, arg1, arg2, ...);
     end
@@ -1069,13 +869,10 @@ function HandleEvent(frame, event, arg1, arg2, ...)
   if (event == "PLAYER_ENTERING_WORLD") then
     timer:ScheduleTimer(function()
       Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
-      HandleEvent(frame, "WA_DELAYED_PLAYER_ENTERING_WORLD", arg1, arg2)
+      HandleEvent(frame, "WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.CheckCooldownReady();
       Private.StopProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.PreShowModels()
-      if WeakAuras.IsRetail() then
-        Private.CheckTalentsForLoad("WA_DELAYED_PLAYER_ENTERING_WORLD")
-      end
     end,
     0.8);  -- Data not available
 
@@ -1088,6 +885,7 @@ function HandleEvent(frame, event, arg1, arg2, ...)
 end
 
 function HandleUnitEvent(frame, event, unit, ...)
+  if frame.unit ~= unit then return end
   Private.StartProfileSystem("generictrigger " .. event .. " " .. unit);
   if not(WeakAuras.IsPaused()) then
     if (UnitIsUnit(unit, frame.unit)) then
@@ -1101,7 +899,6 @@ function GenericTrigger.UnloadAll()
   wipe(loaded_auras);
   wipe(loaded_events);
   wipe(loaded_unit_events);
-  Private.CancelAllDelayedTriggers();
   Private.UnregisterAllEveryFrameUpdate();
 end
 
@@ -1122,23 +919,17 @@ function GenericTrigger.UnloadDisplays(toUnload)
         auras[id] = nil;
       end
     end
-
-    Private.CancelDelayedTrigger(id);
     Private.UnregisterEveryFrameUpdate(id);
   end
 end
 
 local genericTriggerRegisteredEvents = {};
 local genericTriggerRegisteredUnitEvents = {};
-local frame = CreateFrame("Frame");
+local frame = CreateFrame("FRAME");
 frame.unitFrames = {};
-Private.frames["WeakAuras Generic Trigger Frame"] = frame;
+WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
-frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
-genericTriggerRegisteredEvents["NAME_PLATE_UNIT_ADDED"] = true;
-genericTriggerRegisteredEvents["NAME_PLATE_UNIT_REMOVED"] = true;
 frame:SetScript("OnEvent", HandleEvent);
 
 function GenericTrigger.Delete(id)
@@ -1168,24 +959,17 @@ function GenericTrigger.Rename(oldid, newid)
     end
   end
 
-  watched_trigger_events[newid] = watched_trigger_events[oldid]
-  watched_trigger_events[oldid] = nil
-
   Private.EveryFrameUpdateRename(oldid, newid)
 end
 
 local function MultiUnitLoop(Func, unit, includePets, ...)
   unit = string.lower(unit)
   if unit == "boss" then
-    for i = 1, 10 do
+    for i = 1, 4 do
       Func(unit..i, ...)
     end
   elseif unit == "arena" then
     for i = 1, 5 do
-      Func(unit..i, ...)
-    end
-  elseif unit == "nameplate" then
-    for i = 1, 40 do
       Func(unit..i, ...)
     end
   elseif unit == "group" then
@@ -1330,10 +1114,6 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
           end
         end
 
-        if data.counter then
-          data.counter:Reset()
-        end
-
         LoadEvent(id, triggernum, data);
       end
     end
@@ -1346,18 +1126,18 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
   end
 
   for event in pairs(eventsToRegister) do
-    xpcall(frame.RegisterEvent, trueFunction, frame, event)
+    pcall(frame.RegisterEvent, frame, event)
     genericTriggerRegisteredEvents[event] = true;
   end
 
   for unit, events in pairs(unitEventsToRegister) do
     for event in pairs(events) do
       if not frame.unitFrames[unit] then
-        frame.unitFrames[unit] = CreateFrame("Frame")
+        frame.unitFrames[unit] = CreateFrame("FRAME")
         frame.unitFrames[unit].unit = unit
         frame.unitFrames[unit]:SetScript("OnEvent", HandleUnitEvent);
       end
-      xpcall(frame.unitFrames[unit].RegisterUnitEvent, trueFunction, frame.unitFrames[unit], event, unit)
+      pcall(frame.unitFrames[unit].RegisterEvent, frame.unitFrames[unit], event, unit)
       genericTriggerRegisteredUnitEvents[unit] = genericTriggerRegisteredUnitEvents[unit] or {};
       genericTriggerRegisteredUnitEvents[unit][event] = true;
     end
@@ -1383,91 +1163,12 @@ end
 function GenericTrigger.FinishLoadUnload()
 end
 
-do
-  local function ParseCron(pattern)
-    local tests = {}
-    for test in pattern:gmatch("[^ ,]+") do
-      local startString, endString, intervalString = test:match("(%d*)-?(%d*)/?(%d*)")
-      local intervalNumber = tonumber(intervalString)
-      local startNumber = startString == "" and 0 or tonumber(startString) or 0
-      local endNumber = tonumber(endString)
-      if not endNumber then
-        endNumber = intervalNumber and math.huge or startNumber
-      end
-      intervalNumber = intervalNumber or 1
-
-      tinsert(tests, {
-        startNumber = startNumber,
-        endNumber = endNumber,
-        intervalNumber = intervalNumber,
-        Match = function(self, count)
-          return (count >= self.startNumber and count <= self.endNumber and (count - self.startNumber) % self.intervalNumber == 0)
-        end
-      })
-    end
-    return tests
-  end
-
-  function Private.ExecEnv.CreateTriggerCounter(pattern)
-    local counter = {
-      count = 0,
-      tests = {
-
-      },
-      fastMatches = {
-      },
-      Reset = function(self)
-        self.count = 0
-      end,
-      GetNext = function(self)
-        self.count = self.count + 1
-        return self.count
-      end,
-      SetCount = function(self, count)
-        self.count = count
-      end,
-    }
-    if pattern then
-      counter.tests = ParseCron(pattern)
-      counter.RunTests = function(self, count)
-        for _, test in ipairs(self.tests) do
-          if test:Match(count) then
-            return true
-          end
-        end
-        return false
-      end
-
-      for i = 1, 20 do
-        counter.fastMatches[i] = counter.RunTests(counter, i)
-      end
-
-      counter.Match = function(self)
-        if self.count <= 20 then
-          return counter.fastMatches[self.count]
-        end
-        return self:RunTests(self.count)
-      end
-
-    else
-      counter.Match = function(self)
-        return true
-      end
-    end
-
-    return counter
-  end
-end
-
 --- Adds a display, creating all internal data structures for all triggers.
---- @param data auraData
---- @param region table
+-- @param data
+-- @param region
 function GenericTrigger.Add(data, region)
   local id = data.id;
   events[id] = nil;
-  watched_trigger_events[id] = nil
-
-  local warnAboutCLEUEvents = false
 
   for triggernum, triggerData in ipairs(data.triggers) do
     local trigger, untrigger = triggerData.trigger, triggerData.untrigger
@@ -1481,14 +1182,12 @@ function GenericTrigger.Add(data, region)
         local trigger_unit_events = {};
         local includePets
         local trigger_subevents = {};
-        --- @type boolean|string|table
         local force_events = false;
         local durationFunc, overlayFuncs, nameFunc, iconFunc, textureFunc, stacksFunc, loadFunc;
         local tsuConditionVariables;
         local prototype = nil
         local automaticAutoHide
         local duration
-        local counter
         if(Private.category_event_prototype[triggerType]) then
           if not(trigger.event) then
             error("Improper arguments to WeakAuras.Add - trigger type is \"event\" but event is not defined");
@@ -1515,7 +1214,7 @@ function GenericTrigger.Add(data, region)
             triggerFuncStr = ConstructFunction(prototype, trigger);
 
             statesParameter = prototype.statesParameter;
-            triggerFunc = Private.LoadFunction(triggerFuncStr);
+            triggerFunc = WeakAuras.LoadFunction(triggerFuncStr, id);
 
             durationFunc = prototype.durationFunc;
             nameFunc = prototype.nameFunc;
@@ -1528,18 +1227,13 @@ function GenericTrigger.Add(data, region)
               overlayFuncs = {};
               local dest = 1;
               for i, v in ipairs(prototype.overlayFuncs) do
-                local enable = true
-                if type(v.enable) == "function" then
-                  enable = v.enable(trigger)
-                elseif type(v.enable) == "boolean" then
-                  enable = v.enable
-                end
-                if enable then
+                if (v.enable(trigger)) then
                   overlayFuncs[dest] = v.func;
                   dest = dest + 1;
                 end
               end
             end
+
 
             if (prototype.automaticrequired) then
               untriggerFunc = trueFunction
@@ -1548,14 +1242,6 @@ function GenericTrigger.Add(data, region)
               duration = tonumber(trigger.duration or "1")
             else
               WeakAuras.prettyPrint("Invalid Prototype found: " .. prototype.name)
-            end
-
-            if prototype.countEvents then
-              if trigger.use_count and type(trigger.count) == "string" and trigger.count ~= "" then
-                counter = Private.ExecEnv.CreateTriggerCounter(trigger.count)
-              else
-                counter = Private.ExecEnv.CreateTriggerCounter()
-              end
             end
 
             if(prototype) then
@@ -1592,44 +1278,44 @@ function GenericTrigger.Add(data, region)
             end
           end
         else -- CUSTOM
-          triggerFunc = WeakAuras.LoadFunction("return "..(trigger.custom or ""));
+          triggerFunc = WeakAuras.LoadFunction("return "..(trigger.custom or ""), id);
           if (trigger.custom_type == "stateupdate") then
             tsuConditionVariables = WeakAuras.LoadFunction("return function() return \n" .. (trigger.customVariables or "") .. "\n end");
             if not tsuConditionVariables then
-              tsuConditionVariables = function() end
+              tsuConditionVariables = function() return end
             end
           end
 
           if(trigger.custom_type == "status" or trigger.custom_type == "event" and trigger.custom_hide == "custom") then
-            untriggerFunc = WeakAuras.LoadFunction("return "..(untrigger.custom or ""));
+            untriggerFunc = WeakAuras.LoadFunction("return "..(untrigger.custom or ""), id);
             if (not untriggerFunc) then
               untriggerFunc = trueFunction;
             end
           end
 
           if(trigger.custom_type ~= "stateupdate" and trigger.customDuration and trigger.customDuration ~= "") then
-            durationFunc = WeakAuras.LoadFunction("return "..trigger.customDuration);
+            durationFunc = WeakAuras.LoadFunction("return "..trigger.customDuration, id);
           end
           if(trigger.custom_type ~= "stateupdate") then
             overlayFuncs = {};
             for i = 1, 7 do
               local property = "customOverlay" .. i;
               if (trigger[property] and trigger[property] ~= "") then
-                overlayFuncs[i] = WeakAuras.LoadFunction("return ".. trigger[property]);
+                overlayFuncs[i] = WeakAuras.LoadFunction("return ".. trigger[property], id);
               end
             end
           end
           if(trigger.custom_type ~= "stateupdate" and trigger.customName and trigger.customName ~= "") then
-            nameFunc = WeakAuras.LoadFunction("return "..trigger.customName);
+            nameFunc = WeakAuras.LoadFunction("return "..trigger.customName, id);
           end
           if(trigger.custom_type ~= "stateupdate" and trigger.customIcon and trigger.customIcon ~= "") then
-            iconFunc = WeakAuras.LoadFunction("return "..trigger.customIcon);
+            iconFunc = WeakAuras.LoadFunction("return "..trigger.customIcon, id);
           end
           if(trigger.custom_type ~= "stateupdate" and trigger.customTexture and trigger.customTexture ~= "") then
-            textureFunc = WeakAuras.LoadFunction("return "..trigger.customTexture);
+            textureFunc = WeakAuras.LoadFunction("return "..trigger.customTexture, id);
           end
           if(trigger.custom_type ~= "stateupdate" and trigger.customStacks and trigger.customStacks ~= "") then
-            stacksFunc = WeakAuras.LoadFunction("return "..trigger.customStacks);
+            stacksFunc = WeakAuras.LoadFunction("return "..trigger.customStacks, id);
           end
 
           if((trigger.custom_type == "status" or trigger.custom_type == "stateupdate") and trigger.check == "update") then
@@ -1641,23 +1327,18 @@ function GenericTrigger.Add(data, region)
               local trueEvent
               local hasParam = false
               local isCLEU = false
-              local isTrigger = false
               local isUnitEvent = false
-              if event == "CLEU" or event == "COMBAT_LOG_EVENT_UNFILTERED" then
-                warnAboutCLEUEvents = true
-              end
               for i in event:gmatch("[^:]+") do
                 if not trueEvent then
                   trueEvent = string.upper(i)
                   isCLEU = trueEvent == "CLEU" or trueEvent == "COMBAT_LOG_EVENT_UNFILTERED"
-                  isTrigger = trueEvent == "TRIGGER"
                 elseif isCLEU then
                   local subevent = string.upper(i)
                   if Private.IsCLEUSubevent(subevent) then
                     tinsert(trigger_subevents, subevent)
                     hasParam = true
                   end
-                elseif trueEvent:match("^UNIT_") or Private.UnitEventList[trueEvent] then
+                elseif trueEvent:match("^UNIT_") then
                   isUnitEvent = true
 
                   if string.lower(strsub(i, #i - 3)) == "pets" then
@@ -1670,17 +1351,6 @@ function GenericTrigger.Add(data, region)
 
                   trigger_unit_events[i] = trigger_unit_events[i] or {}
                   tinsert(trigger_unit_events[i], trueEvent)
-                elseif isTrigger then
-                  local requestedTriggernum = tonumber(i)
-                  if requestedTriggernum then
-                    if watched_trigger_events[id] and watched_trigger_events[id][triggernum] and watched_trigger_events[id][triggernum][requestedTriggernum] then
-                      -- if the request is reciprocal (2 custom triggers request each other which would cause a stack overflow) then prevent the reciprocal one being added.
-                    elseif requestedTriggernum and requestedTriggernum ~= triggernum then
-                      watched_trigger_events[id] = watched_trigger_events[id] or {}
-                      watched_trigger_events[id][requestedTriggernum] = watched_trigger_events[id][requestedTriggernum] or {}
-                      watched_trigger_events[id][requestedTriggernum][triggernum] = true
-                    end
-                  end
                 end
               end
               if isCLEU then
@@ -1695,15 +1365,11 @@ function GenericTrigger.Add(data, region)
                 end
               elseif isUnitEvent then
                 -- not added to trigger_events
-              elseif isTrigger then
-                -- not added to trigger_events
               else
                 tinsert(trigger_events, event)
               end
+              force_events = trigger.custom_type == "status" or trigger.custom_type == "stateupdate";
             end
-          end
-          if trigger.custom_type == "status" or trigger.custom_type == "stateupdate" then
-            force_events = data.information.forceEvents or "STATUS"
           end
           if (trigger.custom_type == "stateupdate") then
             statesParameter = "full";
@@ -1742,26 +1408,20 @@ function GenericTrigger.Add(data, region)
           automaticAutoHide = automaticAutoHide,
           tsuConditionVariables = tsuConditionVariables,
           prototype = prototype,
-          ignoreOptionsEventErrors = data.information.ignoreOptionsEventErrors,
-          counter = counter
+          ignoreOptionsEventErrors = data.information.ignoreOptionsEventErrors
         };
       end
     end
   end
 
-  if warnAboutCLEUEvents then
-    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning", "warning",
-                L["COMBAT_LOG_EVENT_UNFILTERED without a filter is generally advised against as it’s very performance costly.\nFind more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Custom-Triggers#events"])
-  else
-    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning")
-  end
+
 end
 
 do
   local update_clients = {};
   local update_clients_num = 0;
   local update_frame = nil
-  Private.frames["Custom Trigger Every Frame Updater"] = update_frame;
+  WeakAuras.frames["Custom Trigger Every Frame Updater"] = update_frame;
   local updating = false;
 
   function Private.RegisterEveryFrameUpdate(id)
@@ -1770,12 +1430,12 @@ do
       update_clients_num = update_clients_num + 1;
     end
     if not(update_frame) then
-      update_frame = CreateFrame("Frame");
+      update_frame = CreateFrame("FRAME");
     end
     if not(updating) then
-      update_frame:SetScript("OnUpdate", function(self, elapsed)
+      update_frame:SetScript("OnUpdate", function()
         if not(WeakAuras.IsPaused()) then
-          WeakAuras.ScanEvents("FRAME_UPDATE", elapsed);
+          WeakAuras.ScanEvents("FRAME_UPDATE");
         end
       end);
       updating = true;
@@ -1837,7 +1497,7 @@ local oldPowerTriggers = {
 do
   local mh = GetInventorySlotInfo("MainHandSlot")
   local oh = GetInventorySlotInfo("SecondaryHandSlot")
-  local ranged = WeakAuras.IsClassicEraOrWrath() and GetInventorySlotInfo("RangedSlot")
+  local ranged = GetInventorySlotInfo("RangedSlot")
 
   local swingTimerFrame;
   local lastSwingMain, lastSwingOff, lastSwingRange;
@@ -1846,8 +1506,6 @@ do
   local selfGUID;
   local mainSpeed, offSpeed = UnitAttackSpeed("player")
   local casting = false
-  local skipNextAttack, skipNextAttackCount
-  local isAttacking
 
   function WeakAuras.GetSwingTimerInfo(hand)
     if(hand == "main") then
@@ -1855,8 +1513,6 @@ do
       local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemId or 0);
       if(lastSwingMain) then
         return swingDurationMain, lastSwingMain + swingDurationMain - mainSwingOffset, name, icon;
-      elseif WeakAuras.IsRetail() and lastSwingRange then
-        return swingDurationRange, lastSwingRange + swingDurationRange, name, icon;
       else
         return 0, math.huge, name, icon;
       end
@@ -1881,10 +1537,6 @@ do
     return 0, math.huge;
   end
 
-  local function swingTriggerUpdate()
-    WeakAuras.ScanEvents("SWING_TIMER_UPDATE")
-  end
-
   local function swingEnd(hand)
     if(hand == "main") then
       lastSwingMain, swingDurationMain, mainSwingOffset = nil, nil, nil;
@@ -1893,94 +1545,74 @@ do
     elseif(hand == "ranged") then
       lastSwingRange, swingDurationRange = nil, nil;
     end
-    swingTriggerUpdate()
+    WeakAuras.ScanEvents("SWING_TIMER_END");
   end
 
-  local function swingStart(hand)
-    mainSpeed, offSpeed = UnitAttackSpeed("player")
-    offSpeed = offSpeed or 0
-    local currentTime = GetTime()
-    if hand == "main" then
-      lastSwingMain = currentTime
-      swingDurationMain = mainSpeed
-      mainSwingOffset = 0
-      if mainTimer then
-        timer:CancelTimer(mainTimer)
-      end
-      if mainSpeed and mainSpeed > 0 then
-        mainTimer = timer:ScheduleTimerFixed(swingEnd, mainSpeed, hand)
-      else
-        swingEnd(hand)
-      end
-    elseif hand == "off" then
-      lastSwingOff = currentTime
-      swingDurationOff = offSpeed
-      if offTimer then
-        timer:CancelTimer(offTimer)
-      end
-      if offSpeed and offSpeed > 0 then
-        offTimer = timer:ScheduleTimerFixed(swingEnd, offSpeed, hand)
-      else
-        swingEnd(hand)
-      end
-    elseif hand == "ranged" then
-      local rangeSpeed = UnitRangedDamage("player")
-      lastSwingRange = currentTime
-      swingDurationRange = rangeSpeed
-      if rangeTimer then
-        timer:CancelTimer(rangeTimer)
-      end
-      if rangeSpeed and rangeSpeed > 0 then
-        rangeTimer = timer:ScheduleTimerFixed(swingEnd, rangeSpeed, hand)
-      else
-        swingEnd(hand)
-      end
-    end
-  end
-
-  local function swingTimerCLEUCheck(ts, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
+  local function swingTimerCLEUCheck(ts, event, sourceGUID, _, _, destGUID, _, _, ...)
     Private.StartProfileSystem("generictrigger swing");
     if(sourceGUID == selfGUID) then
-      if event == "SPELL_EXTRA_ATTACKS" then
-        skipNextAttack = ts
-        skipNextAttackCount = select(4, ...)
-      elseif(event == "SWING_DAMAGE" or event == "SWING_MISSED") then
-        if tonumber(skipNextAttack) and (ts - skipNextAttack) < 0.04 and tonumber(skipNextAttackCount) then
-          if skipNextAttackCount > 0 then
-            skipNextAttackCount = skipNextAttackCount - 1
-            return
-          end
-        end
+      if(event == "SWING_DAMAGE" or event == "SWING_MISSED") then
         local isOffHand = select(event == "SWING_DAMAGE" and 10 or 2, ...);
-        if not isOffHand then
-          swingStart("main")
-        elseif(isOffHand) then
-          swingStart("off")
-        end
-        swingTriggerUpdate()
-      end
-    elseif (destGUID == selfGUID and (... == "PARRY" or select(4, ...) == "PARRY")) then
-      if (lastSwingMain) then
-        local timeLeft = lastSwingMain + swingDurationMain - GetTime() - (mainSwingOffset or 0);
-        if (timeLeft > 0.2 * swingDurationMain) then
-          local offset = 0.4 * swingDurationMain
-          if (timeLeft - offset < 0.2 * swingDurationMain) then
-            offset = timeLeft - 0.2 * swingDurationMain
-          end
+
+        local event;
+        local currentTime = GetTime();
+        mainSpeed, offSpeed = UnitAttackSpeed("player");
+        offSpeed = offSpeed or 0;
+        if not(lastSwingMain) then
+          lastSwingMain = currentTime;
+          swingDurationMain = mainSpeed;
+          mainSwingOffset = 0;
+          event = "SWING_TIMER_START";
           timer:CancelTimer(mainTimer);
-          mainTimer = timer:ScheduleTimerFixed(swingEnd, timeLeft - offset, "main");
-          mainSwingOffset = (mainSwingOffset or 0) + offset
-          swingTriggerUpdate()
+          mainTimer = timer:ScheduleTimer(swingEnd, mainSpeed, "main");
+        elseif(OffhandHasWeapon() and not lastSwingOff) then
+          lastSwingOff = currentTime;
+          swingDurationOff = offSpeed;
+          event = "SWING_TIMER_START";
+          timer:CancelTimer(offTimer);
+          offTimer = timer:ScheduleTimer(swingEnd, offSpeed, "off");
+        else
+          -- A swing occurred while both weapons are supposed to be on cooldown
+          -- Simply refresh the timer of the weapon swing which would have ended sooner
+          local mainRem, offRem = (lastSwingMain or math.huge) + mainSpeed - currentTime, (lastSwingOff or math.huge) + offSpeed - currentTime;
+          if(mainRem < offRem or not OffhandHasWeapon()) then
+            timer:CancelTimer(mainTimer, true);
+            lastSwingMain = currentTime;
+            swingDurationMain = mainSpeed;
+            event = "SWING_TIMER_CHANGE";
+            mainTimer = timer:ScheduleTimer(swingEnd, mainSpeed, "main");
+          else
+            timer:CancelTimer(mainTimer, true);
+            lastSwingOff = currentTime;
+            swingDurationOff = offSpeed;
+            event = "SWING_TIMER_CHANGE";
+            offTimer = timer:ScheduleTimer(swingEnd, offSpeed, "off");
+          end
+        end
+        WeakAuras.ScanEvents(event);
+      end
+    elseif (destGUID == selfGUID and (select(1, ...) == "PARRY" or select(4, ...) == "PARRY")) then
+      if (lastSwingMain) then
+        local timeLeft = lastSwingMain + swingDurationMain - GetTime();
+        if (timeLeft > 0.6 * swingDurationMain) then
+          timer:CancelTimer(mainTimer);
+          mainTimer = timer:ScheduleTimer(swingEnd, timeLeft - 0.4 * swingDurationMain, "main");
+          mainSwingOffset = 0.4 * swingDurationMain
+          WeakAuras.ScanEvents("SWING_TIMER_CHANGE");
+        elseif (timeLeft > 0.2 * swingDurationMain) then
+          timer:CancelTimer(mainTimer);
+          mainTimer = timer:ScheduleTimer(swingEnd, timeLeft - 0.2 * swingDurationMain, "main");
+          mainSwingOffset = 0.2 * swingDurationMain
+          WeakAuras.ScanEvents("SWING_TIMER_CHANGE");
         end
       end
     end
     Private.StopProfileSystem("generictrigger swing");
   end
 
-  local function swingTimerCheck(event, unit, guid, spell)
-    if event ~= "PLAYER_EQUIPMENT_CHANGED" and unit and unit ~= "player" then return end
+  local function swingTimerCheck(event, unit, spell)
+    if unit ~= "player" then return end
     Private.StartProfileSystem("generictrigger swing");
-    local now = GetTime()
     if event == "UNIT_ATTACK_SPEED" then
       local mainSpeedNew, offSpeedNew = UnitAttackSpeed("player")
       offSpeedNew = offSpeedNew or 0
@@ -1988,86 +1620,82 @@ do
         if mainSpeedNew ~= mainSpeed then
           timer:CancelTimer(mainTimer)
           local multiplier = mainSpeedNew / mainSpeed
-          local timeLeft = (lastSwingMain + swingDurationMain - now) * multiplier
+          local timeLeft = (lastSwingMain + swingDurationMain - GetTime()) * multiplier
           swingDurationMain = mainSpeedNew
-          mainSwingOffset = (lastSwingMain + swingDurationMain) - (now + timeLeft)
-          mainTimer = timer:ScheduleTimerFixed(swingEnd, timeLeft, "main")
+          mainTimer = timer:ScheduleTimer(swingEnd, timeLeft, "main")
+          WeakAuras.ScanEvents("SWING_TIMER_CHANGE")
         end
       end
       if lastSwingOff then
         if offSpeedNew ~= offSpeed then
           timer:CancelTimer(offTimer)
           local multiplier = offSpeedNew / mainSpeed
-          local timeLeft = (lastSwingOff + swingDurationOff - now) * multiplier
+          local timeLeft = (lastSwingOff + swingDurationOff - GetTime()) * multiplier
           swingDurationOff = offSpeedNew
-          offTimer = timer:ScheduleTimerFixed(swingEnd, timeLeft, "off")
+          offTimer = timer:ScheduleTimer(swingEnd, timeLeft, "off")
+          WeakAuras.ScanEvents("SWING_TIMER_CHANGE")
         end
       end
       mainSpeed, offSpeed = mainSpeedNew, offSpeedNew
-      swingTriggerUpdate()
     elseif casting and (event == "UNIT_SPELLCAST_INTERRUPTED" or event == "UNIT_SPELLCAST_FAILED") then
       casting = false
-    elseif event == "PLAYER_EQUIPMENT_CHANGED" and isAttacking then
-      swingStart("main")
-      swingStart("off")
-      swingStart("ranged")
-      swingTriggerUpdate()
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
       if Private.reset_swing_spells[spell] or casting then
         if casting then
           casting = false
         end
-        -- check next frame
-        swingTimerFrame:SetScript("OnUpdate", function(self)
-          if isAttacking then
-            swingStart("main")
-            swingTriggerUpdate()
-          end
-          self:SetScript("OnUpdate", nil)
-        end)
-      end
-      if Private.reset_ranged_swing_spells[spell] then
-        if WeakAuras.IsClassicEraOrWrath() then
-          swingStart("ranged")
+        local event;
+        mainSpeed, offSpeed = UnitAttackSpeed("player");
+        lastSwingMain = GetTime();
+        swingDurationMain = mainSpeed;
+        mainSwingOffset = 0;
+        if (lastSwingMain) then
+          timer:CancelTimer(mainTimer);
+          event = "SWING_TIMER_CHANGE";
         else
-          swingStart("main")
+          event = "SWING_TIMER_START";
         end
-        swingTriggerUpdate()
+        mainTimer = timer:ScheduleTimer(swingEnd, mainSpeed, "main");
+        WeakAuras.ScanEvents(event);
+      elseif Private.reset_ranged_swing_spells[spell] then
+        local event;
+        local currentTime = GetTime();
+        local speed = UnitRangedDamage("player");
+        if(lastSwingRange) then
+          timer:CancelTimer(rangeTimer, true)
+          event = "SWING_TIMER_CHANGE";
+        else
+          event = "SWING_TIMER_START";
+        end
+        lastSwingRange = currentTime;
+        swingDurationRange = speed;
+        rangeTimer = timer:ScheduleTimer(swingEnd, speed, "ranged");
+        WeakAuras.ScanEvents(event);
       end
     elseif event == "UNIT_SPELLCAST_START" then
-      if not Private.noreset_swing_spells[spell] then
-        -- pause swing timer
-        casting = true
-        lastSwingMain, swingDurationMain, mainSwingOffset = nil, nil, nil
-        lastSwingOff, swingDurationOff = nil, nil
-        swingTriggerUpdate()
-      end
-    elseif event == "PLAYER_ENTER_COMBAT" then
-      isAttacking = true
-    elseif event == "PLAYER_LEAVE_COMBAT" then
-      isAttacking = nil
+      -- pause swing timer
+      casting = true
+      lastSwingMain, swingDurationMain, mainSwingOffset = nil, nil, nil
+      lastSwingOff, swingDurationOff = nil, nil
+      WeakAuras.ScanEvents("SWING_TIMER_END")
     end
     Private.StopProfileSystem("generictrigger swing");
   end
 
   function WeakAuras.InitSwingTimer()
     if not(swingTimerFrame) then
-      swingTimerFrame = CreateFrame("Frame");
+      swingTimerFrame = CreateFrame("frame");
       swingTimerFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
       swingTimerFrame:RegisterEvent("PLAYER_ENTER_COMBAT");
-      swingTimerFrame:RegisterEvent("PLAYER_LEAVE_COMBAT");
-      swingTimerFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
-      swingTimerFrame:RegisterUnitEvent("UNIT_ATTACK_SPEED", "player");
-      swingTimerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
-      if WeakAuras.IsClassicEraOrWrath() then
-        swingTimerFrame:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
-        swingTimerFrame:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
-        swingTimerFrame:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", "player")
-      end
+      swingTimerFrame:RegisterEvent("UNIT_ATTACK_SPEED");
+      swingTimerFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+      swingTimerFrame:RegisterEvent("UNIT_SPELLCAST_START")
+      swingTimerFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+      swingTimerFrame:RegisterEvent("UNIT_SPELLCAST_FAILED")
       swingTimerFrame:SetScript("OnEvent",
         function(_, event, ...)
           if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-            swingTimerCLEUCheck(CombatLogGetCurrentEventInfo())
+            swingTimerCLEUCheck(...)
           else
             swingTimerCheck(event, ...)
           end
@@ -2081,18 +1709,10 @@ end
 do
   local cdReadyFrame;
 
-  --- @type table<number|string, boolean> Tracks which spells we want to fetch information on,
   local spells = {};
-  --- @type table<number, boolean>
-  local checkOverrideSpell = {}
-  --- @type table<number, boolean>
   local spellKnown = {};
 
-  local spellCharges = {};
-  local spellChargesMax = {};
   local spellCounts = {}
-  local spellChargeGainTime = {}
-  local spellChargeLostTime = {}
 
   local items = {};
   local itemCdDurs = {};
@@ -2116,15 +1736,11 @@ do
   local gcdSpellName;
   local gcdSpellIcon;
   local gcdEndCheck;
-  local gcdModrate
-
-  local shootStart
-  local shootDuration
 
   local function GetRuneDuration()
     local runeDuration = -100;
     for id, _ in pairs(runes) do
-      local _, duration = GetRuneCooldown(id);
+      local startTime, duration = GetRuneCooldown(id);
       duration = duration or 0;
       runeDuration = duration > 0 and duration or runeDuration
     end
@@ -2133,30 +1749,24 @@ do
 
   local function CheckGCD()
     local event;
-    local startTime, duration, _, modRate
-    if WeakAuras.IsClassicEraOrWrath() then
-      startTime, duration = GetSpellCooldown(29515);
-      shootStart, shootDuration = GetSpellCooldown(5019)
-    else
-      startTime, duration, _, modRate = GetSpellCooldown(61304);
-    end
+    local startTime, duration = GetSpellCooldown(61304);
     if(duration and duration > 0) then
       if not(gcdStart) then
         event = "GCD_START";
-      elseif(gcdStart ~= startTime or gcdDuration ~= duration or gcdModrate ~= modRate) then
+      elseif(gcdStart ~= startTime or gcdDuration ~= duration) then
         event = "GCD_CHANGE";
       end
-      gcdStart, gcdDuration, gcdModrate = startTime, duration, modRate
+      gcdStart, gcdDuration = startTime, duration;
       local endCheck = startTime + duration + 0.1;
       if(gcdEndCheck ~= endCheck) then
         gcdEndCheck = endCheck;
-        timer:ScheduleTimerFixed(CheckGCD, duration + 0.1);
+        timer:ScheduleTimer(CheckGCD, duration + 0.1);
       end
     else
       if(gcdStart) then
         event = "GCD_END"
       end
-      gcdStart, gcdDuration, gcdModrate = nil, nil, nil;
+      gcdStart, gcdDuration = nil, nil;
       gcdSpellName, gcdSpellIcon = nil, nil;
       gcdEndCheck = 0;
     end
@@ -2184,7 +1794,7 @@ do
 
         local duration = expirationTime - GetTime()
         if duration > 0 then
-          self.handles[id] = timer:ScheduleTimerFixed(self.Recheck, duration, self, id)
+          self.handles[id] = timer:ScheduleTimer(self.Recheck, duration, self, id)
           self.expirationTime[id] = expirationTime
         end
       end
@@ -2193,12 +1803,12 @@ do
 
   local function FetchSpellCooldown(self, id)
     if self.duration[id] and self.expirationTime[id] then
-      return self.expirationTime[id] - self.duration[id], self.duration[id], self.readyTime[id], self.modRate[id] or 1.0
+      return self.expirationTime[id] - self.duration[id], self.duration[id], self.readyTime[id]
     end
-    return 0, 0, nil, 1.0
+    return 0, 0, nil
   end
 
-  local function HandleSpell(self, id, startTime, duration, modRate)
+  local function HandleSpell(self, id, startTime, duration)
     local changed = false
     local nowReady = false
     local time = GetTime()
@@ -2216,9 +1826,7 @@ do
     end
 
     if duration > 0 then
-      if (startTime == gcdStart and duration == gcdDuration)
-          or (WeakAuras.IsClassicEraOrWrath() and duration == shootDuration and startTime == shootStart)
-      then
+      if startTime == gcdStart and duration == gcdDuration then
         -- GCD cooldown, this could mean that the spell reset!
         if self.expirationTime[id] and self.expirationTime[id] > endTime and self.expirationTime[id] ~= 0 then
           self.duration[id] = 0
@@ -2253,11 +1861,6 @@ do
       self.readyTime[id] = nil
     end
 
-    if self.modRate[id] ~= modRate then
-      self.modRate[id] = modRate
-      changed = true
-    end
-
     RecheckHandles:Schedule(endTime, id)
     return changed, nowReady
   end
@@ -2267,7 +1870,6 @@ do
       duration = {},
       expirationTime = {},
       readyTime = {},
-      modRate = {},
       handles = {}, -- Share handles, and use lowest time to schedule
       HandleSpell = HandleSpell,
       FetchSpellCooldown = FetchSpellCooldown
@@ -2277,85 +1879,37 @@ do
 
   local spellCds = CreateSpellCDHandler();
   local spellCdsRune = CreateSpellCDHandler();
-  local spellCdsOnlyCooldown = CreateSpellCDHandler();
-  local spellCdsOnlyCooldownRune = CreateSpellCDHandler();
-  local spellCdsCharges = CreateSpellCDHandler();
 
   local spellDetails = {}
-  local mark_ACTIONBAR_UPDATE_COOLDOWN, mark_PLAYER_ENTERING_WORLD
 
-  function Private.InitCooldownReady()
-    cdReadyFrame = CreateFrame("Frame");
-    cdReadyFrame.inWorld = 0
-    Private.frames["Cooldown Trigger Handler"] = cdReadyFrame
-    if WeakAuras.IsRetail() then
-      cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
-      cdReadyFrame:RegisterEvent("PLAYER_TALENT_UPDATE");
-      cdReadyFrame:RegisterEvent("PLAYER_PVP_TALENT_UPDATE");
-    else
-      cdReadyFrame:RegisterEvent("CHARACTER_POINTS_CHANGED");
-    end
+  function WeakAuras.InitCooldownReady()
+    cdReadyFrame = CreateFrame("FRAME");
+    WeakAuras.frames["Cooldown Trigger Handler"] = cdReadyFrame
+    cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
+    cdReadyFrame:RegisterEvent("RUNE_TYPE_UPDATE");
+    cdReadyFrame:RegisterEvent("PLAYER_TALENT_UPDATE");
+    cdReadyFrame:RegisterEvent("CHARACTER_POINTS_CHANGED");
     cdReadyFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
     cdReadyFrame:RegisterEvent("UNIT_SPELLCAST_SENT");
-    cdReadyFrame:RegisterEvent("BAG_UPDATE_DELAYED");
+    cdReadyFrame:RegisterEvent("BAG_UPDATE_COOLDOWN");
     cdReadyFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
     cdReadyFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
     cdReadyFrame:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN");
     cdReadyFrame:RegisterEvent("SPELLS_CHANGED");
     cdReadyFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-    cdReadyFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
-    if WeakAuras.IsWrathClassic() then
-      cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
-      cdReadyFrame:RegisterEvent("RUNE_TYPE_UPDATE");
-    end
-    cdReadyFrame.HandleEvent = function(self, event, ...)
-      if (event == "PLAYER_ENTERING_WORLD") then
-        cdReadyFrame.inWorld = GetTime()
-      end
-      if (event == "PLAYER_LEAVING_WORLD") then
-        cdReadyFrame.inWorld = nil
-      end
-      if not cdReadyFrame.inWorld then
-        return
-      end
-
-      if GetTime() - cdReadyFrame.inWorld < 2 then
-        mark_PLAYER_ENTERING_WORLD = true
-        cdReadyFrame:Show()
-        return
-      end
-      if (event == "ACTIONBAR_UPDATE_COOLDOWN") then
-        mark_ACTIONBAR_UPDATE_COOLDOWN = true
-        cdReadyFrame:Show()
-        return
-      end
-
+    cdReadyFrame:SetScript("OnEvent", function(self, event, ...)
       Private.StartProfileSystem("generictrigger cd tracking");
-      if type(event) == "number" then-- Called from OnUpdate!
-        if mark_PLAYER_ENTERING_WORLD then
-          Private.CheckSpellKnown()
-          Private.CheckCooldownReady()
-          Private.CheckItemSlotCooldowns()
-          mark_PLAYER_ENTERING_WORLD = nil
-          mark_ACTIONBAR_UPDATE_COOLDOWN = nil
-        elseif mark_ACTIONBAR_UPDATE_COOLDOWN then
-          Private.CheckCooldownReady()
-          mark_ACTIONBAR_UPDATE_COOLDOWN = nil
-        end
-      elseif(event == "SPELL_UPDATE_COOLDOWN" or event == "RUNE_POWER_UPDATE"
-        or event == "PLAYER_TALENT_UPDATE" or event == "PLAYER_PVP_TALENT_UPDATE"
-        or event == "CHARACTER_POINTS_CHANGED" or event == "RUNE_TYPE_UPDATE") then
-        if event == "SPELL_UPDATE_COOLDOWN" then
-          mark_ACTIONBAR_UPDATE_COOLDOWN = nil
-        end
+      if(event == "SPELL_UPDATE_COOLDOWN"
+        or event == "RUNE_POWER_UPDATE" or event == "RUNE_TYPE_UPDATE" or event == "ACTIONBAR_UPDATE_COOLDOWN"
+        or event == "PLAYER_TALENT_UPDATE"
+        or event == "CHARACTER_POINTS_CHANGED") then
         Private.CheckCooldownReady();
       elseif(event == "SPELLS_CHANGED") then
-        Private.CheckSpellKnown()
-        Private.CheckCooldownReady()
+        Private.CheckSpellKnown();
+        Private.CheckCooldownReady();
       elseif(event == "UNIT_SPELLCAST_SENT") then
-        local unit, guid, castGUID, name = ...;
+        local unit, name, _ = ...;
         if(unit == "player") then
-          name = GetSpellInfo(name);
           if(gcdSpellName ~= name) then
             local icon = GetSpellTexture(name);
             gcdSpellName = name;
@@ -2365,19 +1919,11 @@ do
             end
           end
         end
-      elseif(event == "UNIT_INVENTORY_CHANGED" or event == "BAG_UPDATE_DELAYED" or event == "PLAYER_EQUIPMENT_CHANGED") then
+      elseif(event == "UNIT_INVENTORY_CHANGED" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
         Private.CheckItemSlotCooldowns();
       end
       Private.StopProfileSystem("generictrigger cd tracking");
-      if mark_PLAYER_ENTERING_WORLD == nil and mark_ACTIONBAR_UPDATE_COOLDOWN == nil then
-        cdReadyFrame:Hide()
-      else
-        cdReadyFrame:Show()
-      end
-    end
-    cdReadyFrame:Hide()
-    cdReadyFrame:SetScript("OnEvent", cdReadyFrame.HandleEvent)
-    cdReadyFrame:SetScript("OnUpdate", cdReadyFrame.HandleEvent)
+    end);
   end
 
   function WeakAuras.GetRuneCooldown(id)
@@ -2388,158 +1934,27 @@ do
     end
   end
 
-  local initEssenceCooldown = false
-  local essenceCache = {{},{},{},{},{},{}}
-  function WeakAuras.InitEssenceCooldown()
-    if initEssenceCooldown then
-      return true
-    end
-    local EssenceEnum = Enum.PowerType.Essence
-    local lastFullValue = 0
-    local lastTime = 0
-    local essenceEventFrame = CreateFrame("Frame")
-    essenceEventFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
-    essenceEventFrame:RegisterUnitEvent("UNIT_MAXPOWER", "player")
-    essenceEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    essenceEventFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
-    local essenceEventHandler = function(self, event, unitTarget, powerType)
-      if powerType and powerType ~= "ESSENCE" then
-        return
-      end
-      local now = GetTime()
-      if lastTime == now then
-        return
-      end
-      Private.StartProfileSystem("generictrigger essence")
-      local power = UnitPower("player", EssenceEnum)
-      local total = UnitPowerMax("player", EssenceEnum)
-      local peace = GetPowerRegenForPowerType(EssenceEnum)
-      if peace == nil or peace == 0 then
-        peace = 0.2
-      end
-      local duration = 1 / peace
-      local partial = UnitPartialPower("player", EssenceEnum) / 1000
-
-      if (partial == 0) then
-        lastFullValue = now
-      elseif power ~= total then
-        -- UnitPartialPower is a rather poor api, which returns incorrect values
-        -- This almost mirrors what the default ui does, in that the default ui
-        -- starts an animation and only uses UnitPartialPower when that animation's
-        -- progress differs from UnitPartialPower by 0.1
-        -- This here uses a similar logic. We sync whenever partial is 0
-        -- and then estimate based on that. And as long as that
-        -- estimate is within 0.1 of UnitPartialPower we prefer the estimate
-        local estimatedPartial = (now - lastFullValue) / duration
-        estimatedPartial = estimatedPartial - floor(estimatedPartial)
-        if abs(estimatedPartial - partial) < 0.1 then
-          partial = estimatedPartial
-        end
-      end
-      for i = 1, 6 do
-        local essence = essenceCache[i]
-        if i > total then
-          essence.duration = nil
-          essence.expirationTime = nil
-          essence.remaining = nil
-          essence.paused = nil
-        elseif power >= i then
-          essence.duration = duration
-          essence.expirationTime = math.huge
-          essence.remaining = 0
-          essence.paused = true
-        elseif power + 1 == i then
-          essence.duration = duration
-          essence.expirationTime = GetTime() + (1 - partial) * duration
-          essence.paused = false
-        else
-          essence.duration = duration
-          essence.expirationTime = GetTime() + (1 - partial) * duration + (i - 1 - power) * duration
-          essence.remaining = duration
-          essence.paused = false
-        end
-      end
-      lastTime = now
-      Private.StopProfileSystem("generictrigger essence")
-      WeakAuras.ScanEvents("ESSENCE_UPDATE")
-    end
-    essenceEventFrame:SetScript("OnEvent", essenceEventHandler)
-    essenceEventFrame:Show()
-
-    essenceEventHandler()
-    initEssenceCooldown = true
-  end
-
-  function WeakAuras.GetEssenceCooldown(essence)
-    local power = UnitPower("player", Enum.PowerType.Essence)
-    local total = UnitPowerMax("player", Enum.PowerType.Essence)
-    if essence then
-      local cache = essenceCache[essence]
-      if cache and essence <= total then
-        return cache.duration, cache.expirationTime, cache.remaining, cache.paused, power, total
-      else
-        return nil, nil, nil, nil, essence, total
-      end
+  function WeakAuras.GetSpellCooldown(id, ignoreRuneCD, showgcd)
+    local startTime, duration, gcdCooldown, readyTime
+    if (ignoreRuneCD) then
+      startTime, duration, readyTime = spellCdsRune:FetchSpellCooldown(id)
     else
-      local cache = essenceCache[total]
-      if cache and cache.duration then
-        return total * cache.duration, cache.expirationTime, cache.remaining, cache.paused, power, total
-      else
-        return nil, nil, nil, nil, power, total
-      end
-    end
-  end
-
-  function WeakAuras.GetSpellCooldown(id, ignoreRuneCD, showgcd, ignoreSpellKnown, track, followOverride)
-    if followOverride then
-      if spellDetails[id] then
-        id = spellDetails[id].override or id
-      end
-    end
-
-    if (not spellKnown[id] and not ignoreSpellKnown) then
-      return;
-    end
-    local startTime, duration, gcdCooldown, readyTime, modRate
-    if track == "charges" then
-      startTime, duration, readyTime, modRate = spellCdsCharges:FetchSpellCooldown(id)
-    elseif track == "cooldown" then
-      if ignoreRuneCD then
-        startTime, duration, readyTime, modRate = spellCdsOnlyCooldownRune:FetchSpellCooldown(id)
-      else
-        startTime, duration, readyTime, modRate = spellCdsOnlyCooldown:FetchSpellCooldown(id)
-      end
-    elseif (ignoreRuneCD) then
-      startTime, duration, readyTime, modRate = spellCdsRune:FetchSpellCooldown(id)
-    else
-      startTime, duration, readyTime, modRate = spellCds:FetchSpellCooldown(id)
+      startTime, duration, readyTime = spellCds:FetchSpellCooldown(id)
     end
 
     if (showgcd) then
       if ((gcdStart or 0) + (gcdDuration or 0) > startTime + duration) then
-        if startTime == 0 then
-          gcdCooldown = true
-        end
         startTime = gcdStart;
         duration = gcdDuration;
-        modRate = gcdModrate
+        gcdCooldown = true;
       end
     end
 
-    return startTime, duration, gcdCooldown, readyTime, modRate
+    return startTime, duration, gcdCooldown, readyTime
   end
 
-  function WeakAuras.GetSpellCharges(id, ignoreSpellKnown, followoverride)
-    if followoverride then
-      if spellDetails[id] then
-        id = spellDetails[id].override or id
-      end
-    end
-
-    if (not spellKnown[id] and not ignoreSpellKnown) then
-      return;
-    end
-    return spellCharges[id], spellChargesMax[id], spellCounts[id], spellChargeGainTime[id], spellChargeLostTime[id]
+  function WeakAuras.GetSpellCharges(id)
+    return spellCounts[id];
   end
 
   function WeakAuras.GetItemCooldown(id, showgcd)
@@ -2551,11 +1966,9 @@ do
     end
     if (showgcd) then
       if ((gcdStart or 0) + (gcdDuration or 0) > startTime + duration) then
-        if startTime == 0 then
-          gcdCooldown = true
-        end
         startTime = gcdStart;
         duration = gcdDuration;
+        gcdCooldown = true;
       end
     end
     return startTime, duration, enabled, gcdCooldown;
@@ -2563,9 +1976,9 @@ do
 
   function WeakAuras.GetGCDInfo()
     if(gcdStart) then
-      return gcdDuration, gcdStart + gcdDuration, gcdSpellName or "Invalid", gcdSpellIcon or "Interface\\Icons\\INV_Misc_QuestionMark", gcdModrate;
+      return gcdDuration, gcdStart + gcdDuration, gcdSpellName or "Invalid", gcdSpellIcon or "Interface\\Icons\\INV_Misc_QuestionMark";
     else
-      return 0, math.huge, gcdSpellName or "Invalid", gcdSpellIcon or "Interface\\Icons\\INV_Misc_QuestionMark", 1.0;
+      return 0, math.huge, gcdSpellName or "Invalid", gcdSpellIcon or "Interface\\Icons\\INV_Misc_QuestionMark";
     end
   end
 
@@ -2587,11 +2000,9 @@ do
 
     if (showgcd) then
       if ((gcdStart or 0) + (gcdDuration or 0) > startTime + duration) then
-        if startTime == 0 then
-          gcdCooldown = true
-        end
         startTime = gcdStart;
         duration = gcdDuration;
+        gcdCooldown = true;
       end
     end
     return startTime, duration, enabled, gcdCooldown;
@@ -2620,12 +2031,10 @@ do
   end
 
   function Private.CheckRuneCooldown()
-    local runeDuration = -100;
     for id, _ in pairs(runes) do
       local startTime, duration = GetRuneCooldown(id);
       startTime = startTime or 0;
       duration = duration or 0;
-      runeDuration = duration > 0 and duration or runeDuration
       local time = GetTime();
 
       if(not startTime or startTime == 0) then
@@ -2641,7 +2050,7 @@ do
           -- New cooldown
           runeCdDurs[id] = duration;
           runeCdExps[id] = endTime;
-          runeCdHandles[id] = timer:ScheduleTimerFixed(RuneCooldownFinished, endTime - time, id);
+          runeCdHandles[id] = timer:ScheduleTimer(RuneCooldownFinished, endTime - time, id);
           WeakAuras.ScanEvents("RUNE_COOLDOWN_STARTED", id);
         elseif(runeCdExps[id] ~= endTime) then
           -- Cooldown is now different
@@ -2650,10 +2059,10 @@ do
           end
           runeCdDurs[id] = duration;
           runeCdExps[id] = endTime;
-          runeCdHandles[id] = timer:ScheduleTimerFixed(RuneCooldownFinished, endTime - time, id);
+          runeCdHandles[id] = timer:ScheduleTimer(RuneCooldownFinished, endTime - time, id);
           WeakAuras.ScanEvents("RUNE_COOLDOWN_CHANGED", id);
         end
-      elseif(duration > 0) then
+      elseif(startTime > 0 and duration > 0) then
       -- GCD, do nothing
       else
         if(runeCdExps[id]) then
@@ -2666,23 +2075,15 @@ do
         end
       end
     end
-    return runeDuration;
   end
 
   function WeakAuras.GetSpellCooldownUnified(id, runeDuration)
-    local startTimeCooldown, durationCooldown, enabled, modRate = GetSpellCooldown(id)
-    local charges, maxCharges, startTimeCharges, durationCharges, modRateCharges = GetSpellCharges(id);
+    local startTimeCooldown, durationCooldown, enabled = GetSpellCooldown(id)
 
     startTimeCooldown = startTimeCooldown or 0;
     durationCooldown = durationCooldown or 0;
 
-    startTimeCharges = startTimeCharges or 0;
-    durationCharges = durationCharges or 0;
-
-    modRate = modRate or 1.0;
-    modRateCharges = modRateCharges or 1.0;
-
-    -- WORKAROUND Sometimes the API returns very high bogus numbers causing client freezes, discard them here. CurseForge issue #1008
+    -- WORKAROUND Sometimes the API returns very high bogus numbers causing client freeezes, discard them here. WowAce issue #1008
     if (durationCooldown > 604800) then
       durationCooldown = 0;
       startTimeCooldown = 0;
@@ -2694,8 +2095,7 @@ do
       startTimeCooldown = startTimeCooldown - 2^32 / 1000
     end
 
-    -- Default to GetSpellCharges
-    local unifiedCooldownBecauseRune, cooldownBecauseRune = false, false;
+    local cooldownBecauseRune = false;
     if (enabled == 0) then
       startTimeCooldown, durationCooldown = 0, 0
     end
@@ -2703,61 +2103,12 @@ do
     local onNonGCDCD = durationCooldown and startTimeCooldown and durationCooldown > 0 and (durationCooldown ~= gcdDuration or startTimeCooldown ~= gcdStart);
     if (onNonGCDCD) then
       cooldownBecauseRune = runeDuration and durationCooldown and abs(durationCooldown - runeDuration) < 0.001;
-      unifiedCooldownBecauseRune = cooldownBecauseRune
     end
 
-    local startTime, duration, unifiedModRate = startTimeCooldown, durationCooldown, modRate
-    if (charges == nil) then
-      -- charges is nil if the spell has no charges.
-      -- Nothing to do in that case
-    elseif (charges == maxCharges) then
-      -- At max charges,
-      startTime, duration = 0, 0;
-      startTimeCharges, durationCharges = 0, 0
-    else
-      -- Spells can return both information via GetSpellCooldown and GetSpellCharges
-      -- E.g. Rune of Power see Github-Issue: #1060
-      -- So if GetSpellCooldown returned a cooldown, use that one, if it's a "significant" cooldown
-      --  Otherwise check GetSpellCharges
-      -- A few abilities have a minor cooldown just to prevent the user from triggering it multiple times,
-      -- ignore them since practically no one wants to see them
-      if duration and duration <= 1.5 or (duration == gcdDuration and startTime == gcdStart) then
-        startTime, duration, unifiedModRate = startTimeCharges, durationCharges, modRateCharges
-        unifiedCooldownBecauseRune = false
-      end
-    end
-
-    local count
-    if WeakAuras.IsClassicEra() then
-      count = LCSA:GetSpellReagentCount(id)
-    else
-      count = GetSpellCount(id)
-    end
-
-    return charges, maxCharges, startTime, duration, unifiedCooldownBecauseRune,
-           startTimeCooldown, durationCooldown, cooldownBecauseRune, startTimeCharges, durationCharges,
-           count, unifiedModRate, modRate, modRateCharges;
+    return startTimeCooldown, durationCooldown, cooldownBecauseRune, GetSpellCount(id);
   end
 
   function Private.CheckSpellKnown()
-    local overrides = {}
-    -- First check for overrides, if we don't yet track a specific override, add it
-    for id, _ in pairs(checkOverrideSpell) do
-      local override
-      if type(id) == "number" then
-        override = FindSpellOverrideByID(id)
-      else
-        local spellId = select(7, GetSpellInfo(id))
-        if spellId then
-          override = FindSpellOverrideByID(spellId)
-        end
-      end
-      if id ~= override and override and not spells[override] then
-        WeakAuras.WatchSpellCooldown(override, false, false)
-      end
-      overrides[id] = override
-    end
-
     for id, _ in pairs(spells) do
       local known = WeakAuras.IsSpellKnownIncludingPet(id);
       local changed = false
@@ -2766,7 +2117,7 @@ do
         changed = true
       end
 
-      local name, _, icon, _, _, _, spellId = GetSpellInfo(id)
+      local name, _, icon = GetSpellInfo(id)
       if spellDetails[id].name ~= name then
         spellDetails[id].name = name
         changed = true
@@ -2774,18 +2125,6 @@ do
       if spellDetails[id].icon ~= icon then
         spellDetails[id].icon = icon
         changed = true
-      end
-      if spellDetails[id].id ~= spellId then
-        spellDetails[id].id = spellId
-        changed = true
-      end
-
-      if checkOverrideSpell[id] then
-        local override = overrides[id]
-        if spellDetails[id].override ~= override then
-          spellDetails[id].override = override
-          changed = true
-        end
       end
 
       if changed and not WeakAuras.IsPaused() then
@@ -2795,43 +2134,22 @@ do
   end
 
   function Private.CheckSpellCooldown(id, runeDuration)
-    local charges, maxCharges, startTime, duration, unifiedCooldownBecauseRune,
-          startTimeCooldown, durationCooldown, cooldownBecauseRune, startTimeCharges, durationCharges,
-          spellCount, unifiedModRate, modRate, modRateCharges
-          = WeakAuras.GetSpellCooldownUnified(id, runeDuration);
+    local startTimeCooldown, durationCooldown, cooldownBecauseRune, spellCount = WeakAuras.GetSpellCooldownUnified(id, runeDuration);
 
     local time = GetTime();
-    local remaining = startTime + duration - time;
+    local remaining = startTimeCooldown + durationCooldown - time;
 
-    local chargesChanged = spellCharges[id] ~= charges or spellCounts[id] ~= spellCount
-                           or spellChargesMax[id] ~= maxCharges
-    local chargesDifference = (charges or spellCount or 0) - (spellCharges[id] or spellCounts[id] or 0)
-    spellCharges[id] = charges;
-    spellChargesMax[id] = maxCharges;
+    local chargesChanged = spellCounts[id] ~= spellCount;
+    local chargesDifference = (spellCount or 0) - (spellCount or 0)
     spellCounts[id] = spellCount
-    if chargesDifference ~= 0 then
-      if chargesDifference > 0 then
-        spellChargeGainTime[id] = time
-        spellChargeLostTime[id] = nil
-      else
-        spellChargeGainTime[id] = nil
-        spellChargeLostTime[id] = time
-      end
-    end
 
     local changed = false
-    changed = spellCds:HandleSpell(id, startTime, duration, unifiedModRate) or changed
-    if not unifiedCooldownBecauseRune then
-      changed = spellCdsRune:HandleSpell(id, startTime, duration, unifiedModRate) or changed
-    end
-    local cdChanged, nowReady = spellCdsOnlyCooldown:HandleSpell(id, startTimeCooldown, durationCooldown, modRate)
+
+    local cdChanged, nowReady = spellCds:HandleSpell(id, startTimeCooldown, durationCooldown)
     changed = cdChanged or changed
     if not cooldownBecauseRune then
-      changed = spellCdsOnlyCooldownRune:HandleSpell(id, startTimeCooldown, durationCooldown, modRate) or changed
+      changed = spellCdsRune:HandleSpell(id, startTimeCooldown, durationCooldown) or changed
     end
-    local chargeChanged, chargeNowReady = spellCdsCharges:HandleSpell(id, startTimeCharges, durationCharges, modRateCharges)
-    changed = chargeChanged or changed
-    nowReady = chargeNowReady or nowReady
 
     if not WeakAuras.IsPaused() then
       if nowReady then
@@ -2843,7 +2161,7 @@ do
       end
 
       if (chargesDifference ~= 0 ) then
-        WeakAuras.ScanEvents("SPELL_CHARGES_CHANGED", id, chargesDifference, charges or spellCount or 0);
+        WeakAuras.ScanEvents("SPELL_CHARGES_CHANGED", id, chargesDifference, spellCount or 0);
       end
     end
   end
@@ -2880,7 +2198,7 @@ do
           -- New cooldown
           itemCdDurs[id] = duration;
           itemCdExps[id] = endTime;
-          itemCdHandles[id] = timer:ScheduleTimerFixed(ItemCooldownFinished, endTime - time, id);
+          itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
             WeakAuras.ScanEvents("ITEM_COOLDOWN_STARTED", id)
           end
@@ -2892,7 +2210,7 @@ do
           end
           itemCdDurs[id] = duration;
           itemCdExps[id] = endTime;
-          itemCdHandles[id] = timer:ScheduleTimerFixed(ItemCooldownFinished, endTime - time, id);
+          itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
             WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED", id)
           end
@@ -2935,7 +2253,7 @@ do
           -- New cooldown
           itemSlotsCdDurs[id] = duration;
           itemSlotsCdExps[id] = endTime;
-          itemSlotsCdHandles[id] = timer:ScheduleTimerFixed(ItemSlotCooldownFinished, endTime - time, id);
+          itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
             WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_STARTED", id)
           end
@@ -2946,7 +2264,7 @@ do
           end
           itemSlotsCdDurs[id] = duration;
           itemSlotsCdExps[id] = endTime;
-          itemSlotsCdHandles[id] = timer:ScheduleTimerFixed(ItemSlotCooldownFinished, endTime - time, id);
+          itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
             WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_CHANGED", id)
           end
@@ -2976,21 +2294,21 @@ do
 
   function Private.CheckCooldownReady()
     CheckGCD();
-    local runeDuration = Private.CheckRuneCooldown();
-    Private.CheckSpellCooldows(runeDuration);
+    Private.CheckRuneCooldown();
+    Private.CheckSpellCooldows();
     Private.CheckItemCooldowns();
     Private.CheckItemSlotCooldowns();
   end
 
   function WeakAuras.WatchGCD()
     if not(cdReadyFrame) then
-      Private.InitCooldownReady();
+      WeakAuras.InitCooldownReady();
     end
   end
 
   function WeakAuras.WatchRuneCooldown(id)
     if not(cdReadyFrame) then
-      Private.InitCooldownReady();
+      WeakAuras.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -3010,76 +2328,47 @@ do
         runeCdDurs[id] = duration;
         runeCdExps[id] = endTime;
         if not(runeCdHandles[id]) then
-          runeCdHandles[id] = timer:ScheduleTimerFixed(RuneCooldownFinished, endTime - time, id);
+          runeCdHandles[id] = timer:ScheduleTimer(RuneCooldownFinished, endTime - time, id);
         end
       end
     end
   end
 
-  function WeakAuras.WatchSpellCooldown(id, ignoreRunes, followoverride)
+  function WeakAuras.WatchSpellCooldown(id, ignoreRunes)
     if not(cdReadyFrame) then
-      Private.InitCooldownReady();
+      WeakAuras.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
 
-    if ignoreRunes and WeakAuras.IsWrathOrRetail() then
+    if ignoreRunes then
       for i = 1, 6 do
         WeakAuras.WatchRuneCooldown(i);
       end
     end
 
-    if (spells[id] and not followoverride or checkOverrideSpell[id]) then
+    if (spells[id]) then
       return;
     end
     spells[id] = true;
-    checkOverrideSpell[id] = followoverride
-    local name, _, icon, _, _, _, spellId = GetSpellInfo(id)
+    local name, _, icon = GetSpellInfo(id)
     spellDetails[id] = {
       name = name,
-      icon = icon,
-      id = spellId
+      icon = icon
     }
-
-    if followoverride then
-      if type(id) == "number" then
-        spellDetails[id].override = FindSpellOverrideByID(id)
-      else
-        spellDetails[id].override = spellId and FindSpellOverrideByID(spellId) or nil
-      end
-    end
-
     spellKnown[id] = WeakAuras.IsSpellKnownIncludingPet(id);
 
-    local charges, maxCharges, startTime, duration, unifiedCooldownBecauseRune,
-          startTimeCooldown, durationCooldown, cooldownBecauseRune, startTimeCharges, durationCharges,
-          spellCount, unifiedModRate, modRate, modRateCharges
-          = WeakAuras.GetSpellCooldownUnified(id, GetRuneDuration());
-
-    spellCharges[id] = charges;
-    spellChargesMax[id] = maxCharges;
+    local startTimeCooldown, durationCooldown, cooldownBecauseRune, spellCount = WeakAuras.GetSpellCooldownUnified(id, GetRuneDuration());
     spellCounts[id] = spellCount
-    spellCds:HandleSpell(id, startTime, duration, unifiedModRate)
-    if not unifiedCooldownBecauseRune then
-      spellCdsRune:HandleSpell(id, startTime, duration, unifiedModRate)
-    end
-    spellCdsOnlyCooldown:HandleSpell(id, startTimeCooldown, durationCooldown, modRate)
+    spellCds:HandleSpell(id, startTimeCooldown, durationCooldown)
     if not cooldownBecauseRune then
-      spellCdsOnlyCooldownRune:HandleSpell(id, startTimeCooldown, durationCooldown, modRate)
-    end
-    spellCdsCharges:HandleSpell(id, startTimeCharges, durationCharges, modRateCharges)
-
-    if spellDetails[id].override then
-      -- If this spell is overridden and the option is on, track the overridden spell too
-      if spellDetails[id].override ~= id then
-        WeakAuras.WatchSpellCooldown(spellDetails[id].override, false, false)
-      end
+      spellCdsRune:HandleSpell(id, startTimeCooldown, durationCooldown)
     end
   end
 
   function WeakAuras.WatchItemCooldown(id)
     if not(cdReadyFrame) then
-      Private.InitCooldownReady();
+      WeakAuras.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -3100,7 +2389,7 @@ do
         itemCdDurs[id] = duration;
         itemCdExps[id] = endTime;
         if not(itemCdHandles[id]) then
-          itemCdHandles[id] = timer:ScheduleTimerFixed(ItemCooldownFinished, endTime - time, id);
+          itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
         end
       end
     end
@@ -3108,7 +2397,7 @@ do
 
   function WeakAuras.WatchItemSlotCooldown(id)
     if not(cdReadyFrame) then
-      Private.InitCooldownReady();
+      WeakAuras.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -3123,50 +2412,10 @@ do
         itemSlotsCdDurs[id] = duration;
         itemSlotsCdExps[id] = endTime;
         if not(itemSlotsCdHandles[id]) then
-          itemSlotsCdHandles[id] = timer:ScheduleTimerFixed(ItemSlotCooldownFinished, endTime - time, id);
+          itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
         end
       end
     end
-  end
-end
-
-do
-  local spellActivationSpells = {};
-  local spellActivationSpellsCurrent = {};
-  local spellActivationFrame;
-  local function InitSpellActivation()
-    spellActivationFrame = CreateFrame("Frame");
-    Private.frames["Spell Activation"] = spellActivationFrame;
-    spellActivationFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW");
-    spellActivationFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE");
-    spellActivationFrame:SetScript("OnEvent", function(self, event, spell)
-      Private.StartProfileSystem("generictrigger");
-      local spellName = GetSpellInfo(spell)
-      if (spellActivationSpells[spell] or spellActivationSpells[spellName]) then
-        local active = (event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
-        spellActivationSpellsCurrent[spell] = active
-        spellActivationSpellsCurrent[spellName] = active
-        if not WeakAuras.IsPaused() then
-          WeakAuras.ScanEvents("WA_UPDATE_OVERLAY_GLOW", spell)
-        end
-      end
-
-      Private.StopProfileSystem("generictrigger");
-    end);
-  end
-
-  function WeakAuras.WatchSpellActivation(id)
-    if (not id) then
-      return;
-    end
-    if (not spellActivationFrame) then
-      InitSpellActivation();
-    end
-    spellActivationSpells[id] = true;
-  end
-
-  function WeakAuras.SpellActivationActive(id)
-    return spellActivationSpellsCurrent[id];
   end
 end
 
@@ -3183,55 +2432,26 @@ end
 function WeakAuras.WatchUnitChange(unit)
   unit = string.lower(unit)
   if not watchUnitChange then
-    watchUnitChange = CreateFrame("Frame");
+    watchUnitChange = CreateFrame("FRAME");
     watchUnitChange.unitChangeGUIDS = {}
     watchUnitChange.unitRoles = {}
-    watchUnitChange.unitRaidRole = {}
     watchUnitChange.inRaid = IsInRaid()
-    watchUnitChange.nameplateFaction = {}
     watchUnitChange.raidmark = {}
 
-    Private.frames["Unit Change Frame"] = watchUnitChange;
+    WeakAuras.frames["Unit Change Frame"] = watchUnitChange;
     watchUnitChange:RegisterEvent("PLAYER_TARGET_CHANGED")
-    if not WeakAuras.IsClassicEra() then
-      watchUnitChange:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    else
-      watchUnitChange:RegisterEvent("PLAYER_ROLES_ASSIGNED")
-    end
-    watchUnitChange:RegisterEvent("PLAYER_SOFT_ENEMY_CHANGED")
-    watchUnitChange:RegisterEvent("PLAYER_SOFT_FRIEND_CHANGED")
+    watchUnitChange:RegisterEvent("PLAYER_FOCUS_CHANGED");
     watchUnitChange:RegisterEvent("UNIT_TARGET");
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
-    watchUnitChange:RegisterEvent("GROUP_ROSTER_UPDATE");
-    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-    watchUnitChange:RegisterEvent("UNIT_FACTION")
+    watchUnitChange:RegisterEvent("PARTY_MEMBERS_CHANGED");
+    watchUnitChange:RegisterEvent("RAID_ROSTER_UPDATE");
     watchUnitChange:RegisterEvent("PLAYER_ENTERING_WORLD")
     watchUnitChange:RegisterEvent("UNIT_PET")
     watchUnitChange:RegisterEvent("RAID_TARGET_UPDATE")
 
     watchUnitChange:SetScript("OnEvent", function(self, event, unit)
       Private.StartProfileSystem("generictrigger unit change");
-      if event == "NAME_PLATE_UNIT_ADDED" or event == "NAME_PLATE_UNIT_REMOVED" then
-        local newGuid = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit) or ""
-        local newMarker = GetRaidTargetIndex(unit) or 0
-        if newGuid ~= watchUnitChange.unitChangeGUIDS[unit] then
-          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-          watchUnitChange.unitChangeGUIDS[unit] = newGuid
-          watchUnitChange.raidmark[unit] = newMarker
-        end
-        if event == "NAME_PLATE_UNIT_ADDED" then
-          watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
-        end
-      elseif event == "UNIT_FACTION" then
-        if unit:sub(1, 9) == "nameplate" then
-          local reaction = WeakAuras.GetPlayerReaction(unit)
-          if reaction ~= watchUnitChange.nameplateFaction[unit] then
-            watchUnitChange.nameplateFaction[unit] = reaction
-            WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-          end
-        end
-      elseif event == "UNIT_PET" then
+      if event == "UNIT_PET" then
         local pet = WeakAuras.unitToPetUnit[unit]
         if pet then
           WeakAuras.ScanEvents("UNIT_CHANGED_" .. pet, pet)
@@ -3262,21 +2482,6 @@ function WeakAuras.WatchUnitChange(unit)
             -- If in raid changed we send a UNIT_CHANGED for the group units
             if inRaidChanged then
               WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-            else
-              if WeakAuras.IsClassicEraOrWrath() then
-                local newRaidRole = WeakAuras.UnitRaidRole(unit)
-                if watchUnitChange.unitRaidRole[unit] ~= newRaidRole then
-                  watchUnitChange.unitRaidRole[unit] = newRaidRole
-                  WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
-                end
-              end
-              if WeakAuras.IsWrathOrRetail() then
-                local newRole = UnitGroupRolesAssigned(unit)
-                if watchUnitChange.unitRoles[unit] ~= newRole then
-                  watchUnitChange.unitRoles[unit] = newRole
-                  WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
-                end
-              end
             end
           end
         end
@@ -3291,17 +2496,31 @@ function WeakAuras.WatchUnitChange(unit)
   watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
 end
 
+local equipmentItemIDs, equipmentSetItemIDs = {}, {}
 function WeakAuras.GetEquipmentSetInfo(itemSetName, partial)
   local bestMatchNumItems = 0;
   local bestMatchNumEquipped = 0;
   local bestMatchName = nil;
   local bestMatchIcon = nil;
 
-  local equipmentSetIds = C_EquipmentSet.GetEquipmentSetIDs();
-  for index, id in pairs(equipmentSetIds) do
-    local name, icon, _, _, numItems, numEquipped = C_EquipmentSet.GetEquipmentSetInfo(id);
+  for slot = 1, 19 do
+    equipmentItemIDs[slot] = GetInventoryItemID("player", slot) or 0
+  end
+
+  for id = 1, GetNumEquipmentSets() do
+    local numItems, numEquipped = 0, 0
+    local name, icon = GetEquipmentSetInfo(id);
     if (itemSetName == nil or (name and itemSetName == name)) then
       if (name ~= nil) then
+        equipmentSetItemIDs = GetEquipmentSetItemIDs(name, equipmentSetItemIDs)
+        for slot, item in ipairs(equipmentSetItemIDs) do
+          if item > 0 then
+            numItems = numItems + 1
+			if equipmentItemIDs[slot] == item then
+			  numEquipped = numEquipped + 1
+			end
+          end
+        end
         local match = (not partial and numItems == numEquipped)
           or (partial and (numEquipped or 0) > bestMatchNumEquipped);
         if (match) then
@@ -3316,7 +2535,421 @@ function WeakAuras.GetEquipmentSetInfo(itemSetName, partial)
   return bestMatchName, bestMatchIcon, bestMatchNumEquipped, bestMatchNumItems;
 end
 
-function Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemOperator)
+-- DBM
+do
+  local registeredDBMEvents = {}
+  local bars = {}
+  local nextExpire -- time of next expiring timer
+  local recheckTimer -- handle of timer
+  local currentStage = 0
+
+  local function dbmRecheckTimers()
+    local now = GetTime()
+    nextExpire = nil
+    for id, bar in pairs(bars) do
+      if bar.expirationTime < now then
+        bars[id] = nil
+        WeakAuras.ScanEvents("DBM_TimerStop", id)
+      elseif nextExpire == nil then
+        nextExpire = bar.expirationTime
+      elseif bar.expirationTime < nextExpire then
+        nextExpire = bar.expirationTime
+      end
+    end
+
+    if nextExpire then
+      recheckTimer = timer:ScheduleTimer(dbmRecheckTimers, nextExpire - now)
+    end
+  end
+
+  local function dbmEventCallback(event, ...)
+    if event == "DBM_TimerStart" then
+      local id, msg, duration, icon, timerType, spellId, dbmType = ...
+      local now = GetTime()
+      local expirationTime = now + duration
+      bars[id] = bars[id] or {}
+      local bar = bars[id]
+      bar.message = msg
+      bar.expirationTime = expirationTime
+      bar.duration = duration
+      bar.icon = icon
+      bar.timerType = timerType
+      bar.spellId = tostring(spellId)
+      bar.count = msg:match("(%d+)") or "0"
+      bar.dbmType = dbmType
+
+      local barOptions = DBM.Bars.options
+      local r, g, b = 0, 0, 0
+      if dbmType == 1 then
+        r, g, b = barOptions.StartColorAR, barOptions.StartColorAG, barOptions.StartColorAB
+      elseif dbmType == 2 then
+        r, g, b = barOptions.StartColorAER, barOptions.StartColorAEG, barOptions.StartColorAEB
+      elseif dbmType == 3 then
+        r, g, b = barOptions.StartColorDR, barOptions.StartColorDG, barOptions.StartColorDB
+      elseif dbmType == 4 then
+        r, g, b = barOptions.StartColorIR, barOptions.StartColorIG, barOptions.StartColorIB
+      elseif dbmType == 5 then
+        r, g, b = barOptions.StartColorRR, barOptions.StartColorRG, barOptions.StartColorRB
+      elseif dbmType == 6 then
+        r, g, b = barOptions.StartColorPR, barOptions.StartColorPG, barOptions.StartColorPB
+      elseif dbmType == 7 then
+        r, g, b = barOptions.StartColorUIR, barOptions.StartColorUIG, barOptions.StartColorUIB
+      else
+        r, g, b = barOptions.StartColorR, barOptions.StartColorG, barOptions.StartColorB
+      end
+      bar.dbmColor = {r, g, b}
+
+      WeakAuras.ScanEvents("DBM_TimerStart", id)
+      if nextExpire == nil then
+        recheckTimer = timer:ScheduleTimer(dbmRecheckTimers, expirationTime - now)
+        nextExpire = expirationTime
+      elseif expirationTime < nextExpire then
+        timer:CancelTimer(recheckTimer)
+        recheckTimer = timer:ScheduleTimer(dbmRecheckTimers, expirationTime - now)
+        nextExpire = expirationTime
+      end
+    elseif event == "DBM_TimerStop" then
+      local id = ...
+      bars[id] = nil
+      WeakAuras.ScanEvents("DBM_TimerStop", id)
+    elseif event == "kill" or event == "wipe" then -- Wipe or kill, removing all timers
+      local id = ...
+      bars = {}
+      WeakAuras.ScanEvents("DBM_TimerStopAll", id)
+    elseif event == "DBM_TimerUpdate" then
+      local id, elapsed, duration = ...
+      local now = GetTime()
+      local expirationTime = now + duration - elapsed
+      local bar = bars[id]
+      if bar then
+        bar.duration = duration
+        bar.expirationTime = expirationTime
+        if expirationTime < nextExpire then
+          timer:CancelTimer(recheckTimer)
+          recheckTimer = timer:ScheduleTimer(dbmRecheckTimers, duration - elapsed)
+          nextExpire = expirationTime
+        end
+      end
+      WeakAuras.ScanEvents("DBM_TimerUpdate", id)
+    elseif event == "DBM_SetStage" then
+      local mod, modId, stage = ...
+      currentStage = stage
+      WeakAuras.ScanEvents("DBM_SetStage", ...)
+    else -- DBM_Announce
+      WeakAuras.ScanEvents(event, ...)
+    end
+  end
+
+  function WeakAuras.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
+    if not bars[timerId] then
+      return false
+    end
+
+    local v = bars[timerId]
+    if id and id ~= "" and id ~= timerId then
+      return false
+    end
+    if spellId and spellId ~= "" and spellId ~= v.spellId then
+      return false
+    end
+    if message and message ~= "" and operator then
+      if operator == "==" then
+        if v.message ~= message then
+          return false
+        end
+      elseif operator == "find('%s')" then
+        if v.message == nil or not v.message:find(message, 1, true) then
+          return false
+        end
+      elseif operator == "match('%s')" then
+        if v.message == nil or not v.message:match(message) then
+          return false
+        end
+      end
+    end
+    if count and count ~= "" and count ~= v.count then
+      return false
+    end
+    if dbmType and dbmType ~= v.dbmType then
+      return false
+    end
+    return true
+  end
+
+  function WeakAuras.GetDBMStage()
+    return currentStage
+  end
+
+  function WeakAuras.GetDBMTimerById(id)
+    return bars[id]
+  end
+
+  function WeakAuras.GetAllDBMTimers()
+    return bars
+  end
+
+  function WeakAuras.GetDBMTimer(id, message, operator, spellId, extendTimer, dbmType, count)
+    local bestMatch
+    for timerId, bar in pairs(bars) do
+      if WeakAuras.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
+      and (bestMatch == nil or bar.expirationTime < bestMatch.expirationTime)
+      and bar.expirationTime + extendTimer > GetTime()
+      then
+        bestMatch = bar
+      end
+    end
+    return bestMatch
+  end
+
+  function WeakAuras.CopyBarToState(bar, states, id, extendTimer)
+    extendTimer = extendTimer or 0
+    if extendTimer + bar.duration < 0 then return end
+    states[id] = states[id] or {}
+    local state = states[id]
+    state.show = true
+    state.changed = true
+    state.icon = bar.icon
+    state.message = bar.message
+    state.name = bar.message
+    state.expirationTime = bar.expirationTime + extendTimer
+    state.progressType = 'timed'
+    state.duration = bar.duration + extendTimer
+    state.timerType = bar.timerType
+    state.spellId = bar.spellId
+    state.count = bar.count
+    state.dbmType = bar.dbmType
+    state.dbmColor = bar.dbmColor
+    state.extend = extendTimer
+    if extendTimer ~= 0 then
+      state.autoHide = true
+    end
+  end
+
+  function WeakAuras.RegisterDBMCallback(event)
+    if registeredDBMEvents[event] then
+      return
+    end
+    if DBM then
+      DBM:RegisterCallback(event, dbmEventCallback)
+      registeredDBMEvents[event] = true
+    end
+  end
+
+  function WeakAuras.GetDBMTimers()
+    return bars
+  end
+
+  local scheduled_scans = {}
+
+  local function doDbmScan(fireTime)
+    scheduled_scans[fireTime] = nil
+    WeakAuras.ScanEvents("DBM_TimerUpdate")
+  end
+  function WeakAuras.ScheduleDbmCheck(fireTime)
+    if not scheduled_scans[fireTime] then
+      scheduled_scans[fireTime] = timer:ScheduleTimer(doDbmScan, fireTime - GetTime() + 0.1, fireTime)
+    end
+  end
+end
+
+-- BigWigs
+do
+  local registeredBigWigsEvents = {}
+  local bars = {}
+  local nextExpire -- time of next expiring timer
+  local recheckTimer -- handle of timer
+
+  local function recheckTimers()
+    local now = GetTime()
+    nextExpire = nil
+    for id, bar in pairs(bars) do
+      if bar.expirationTime < now then
+        bars[id] = nil
+        WeakAuras.ScanEvents("BigWigs_StopBar", id)
+      elseif nextExpire == nil then
+        nextExpire = bar.expirationTime
+      elseif bar.expirationTime < nextExpire then
+        nextExpire = bar.expirationTime
+      end
+    end
+
+    if nextExpire then
+      recheckTimer = timer:ScheduleTimer(recheckTimers, nextExpire - now)
+    end
+  end
+
+  local function bigWigsEventCallback(event, ...)
+    if event == "BigWigs_Message" then
+      WeakAuras.ScanEvents("BigWigs_Message", ...)
+    elseif event == "BigWigs_StartBar" then
+      local addon, spellId, text, duration, icon = ...
+      local now = GetTime()
+      local expirationTime = now + duration
+
+      local newBar
+      bars[text] = bars[text] or {}
+      local bar = bars[text]
+      bar.addon = addon
+      bar.spellId = tostring(spellId)
+      bar.text = text
+      bar.duration = duration
+      bar.expirationTime = expirationTime
+      bar.icon = icon
+      local BWColorModule = BigWigs:GetPlugin("Colors")
+      bar.bwBarColor = BWColorModule:GetColorTable("barColor", addon, spellId)
+      bar.bwTextColor = BWColorModule:GetColorTable("barText", addon, spellId)
+      bar.bwBackgroundColor = BWColorModule:GetColorTable("barBackground", addon, spellId)
+      local BWEmphasizedModule = BigWigs:GetPlugin("Super Emphasize")
+      bar.emphasized = BWEmphasizedModule:IsSuperEmphasized(addon, spellId) and true or false
+      bar.count = text:match("(%d+)") or "0"
+      bar.cast = not(text:match("^[^<]") and true)
+
+      WeakAuras.ScanEvents("BigWigs_StartBar", text)
+      if nextExpire == nil then
+        recheckTimer = timer:ScheduleTimer(recheckTimers, expirationTime - now)
+        nextExpire = expirationTime
+      elseif expirationTime < nextExpire then
+        timer:CancelTimer(recheckTimer)
+        recheckTimer = timer:ScheduleTimer(recheckTimers, expirationTime - now)
+        nextExpire = expirationTime
+      end
+    elseif event == "BigWigs_StopBar" then
+      local addon, text = ...
+      if bars[text] then
+        bars[text] = nil
+        WeakAuras.ScanEvents("BigWigs_StopBar", text)
+      end
+    elseif event == "BigWigs_StopBars"
+    or event == "BigWigs_OnBossDisable"
+    or event == "BigWigs_OnPluginDisable"
+    then
+      local addon = ...
+      for id, bar in pairs(bars) do
+        if bar.addon == addon then
+          bars[id] = nil
+          WeakAuras.ScanEvents("BigWigs_StopBar", id)
+        end
+      end
+    end
+  end
+
+  function WeakAuras.RegisterBigWigsCallback(event)
+    if registeredBigWigsEvents[event] then
+      return
+    end
+    if BigWigsLoader then
+      BigWigsLoader.RegisterMessage(WeakAuras, event, bigWigsEventCallback)
+      registeredBigWigsEvents[event] = true
+    end
+  end
+
+  function WeakAuras.RegisterBigWigsTimer()
+    WeakAuras.RegisterBigWigsCallback("BigWigs_StartBar")
+    WeakAuras.RegisterBigWigsCallback("BigWigs_StopBar")
+    WeakAuras.RegisterBigWigsCallback("BigWigs_StopBars")
+    WeakAuras.RegisterBigWigsCallback("BigWigs_OnBossDisable")
+  end
+
+  function WeakAuras.CopyBigWigsTimerToState(bar, states, id, extendTimer)
+    extendTimer = extendTimer or 0
+    if extendTimer + bar.duration < 0 then return end
+    states[id] = states[id] or {}
+    local state = states[id]
+    state.show = true
+    state.changed = true
+    state.addon = bar.addon
+    state.spellId = bar.spellId
+    state.text = bar.text
+    state.name = bar.text
+    state.duration = bar.duration + extendTimer
+    state.expirationTime = bar.expirationTime + extendTimer
+    state.bwBarColor = bar.bwBarColor
+    state.bwTextColor = bar.bwTextColor
+    state.bwBackgroundColor = bar.bwBackgroundColor
+    state.emphasized = bar.emphasized
+    state.count = bar.count
+    state.cast = bar.cast
+    state.progressType = "timed"
+    state.icon = bar.icon
+    state.extend = extendTimer
+    if extendTimer ~= 0 then
+      state.autoHide = true
+    end
+  end
+
+  function WeakAuras.BigWigsTimerMatches(id, message, operator, spellId, emphasized, count, cast)
+    if not bars[id] then
+      return false
+    end
+
+    local v = bars[id]
+    local bestMatch
+    if spellId and spellId ~= "" and spellId ~= v.spellId then
+      return false
+    end
+    if message and message ~= "" and operator then
+      if operator == "==" then
+        if v.text ~= message then
+          return false
+        end
+      elseif operator == "find('%s')" then
+        if v.text == nil or not v.text:find(message, 1, true) then
+          return false
+        end
+      elseif operator == "match('%s')" then
+        if v.text == nil or not v.text:match(message) then
+          return false
+        end
+      end
+    end
+    if emphasized ~= nil and v.emphasized ~= emphasized then
+      return false
+    end
+    if count and count ~= "" and count ~= v.count then
+      return false
+    end
+    if cast ~= nil and v.cast ~= cast then
+      return false
+    end
+    return true
+  end
+
+  function WeakAuras.GetAllBigWigsTimers()
+    return bars
+  end
+
+  function WeakAuras.GetBigWigsTimerById(id)
+    return bars[id]
+  end
+
+  function WeakAuras.GetBigWigsTimer(text, operator, spellId, extendTimer, emphasized, count, cast)
+    local bestMatch
+    for id, bar in pairs(bars) do
+      if WeakAuras.BigWigsTimerMatches(id, text, operator, spellId, emphasized, count, cast)
+      and (bestMatch == nil or bar.expirationTime < bestMatch.expirationTime)
+      and bar.expirationTime + extendTimer > GetTime()
+      then
+        bestMatch = bar
+      end
+    end
+    return bestMatch
+  end
+
+  local scheduled_scans = {}
+
+  local function doBigWigsScan(fireTime)
+    scheduled_scans[fireTime] = nil
+    WeakAuras.ScanEvents("BigWigs_Timer_Update")
+  end
+
+  function WeakAuras.ScheduleBigWigsCheck(fireTime)
+    if not scheduled_scans[fireTime] then
+      scheduled_scans[fireTime] = timer:ScheduleTimer(doBigWigsScan, fireTime - GetTime() + 0.1, fireTime)
+    end
+  end
+end
+
+function WeakAuras.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemOperator)
   if not totemName or totemName == "" then
     return false
   end
@@ -3344,150 +2977,50 @@ function Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTote
   return true
 end
 
--- Queueable Spells
-if WeakAuras.IsClassicEraOrWrath() then
-  local queueableSpells
-  local classQueueableSpells = {
-    ["WARRIOR"] = {
-      78,    -- Heroic Strike
-      845,   -- Cleave
-    },
-    ["HUNTER"] = {
-      2973,  -- Raptor Strike
-    },
-    ["DRUID"] = {
-      6807,  -- Maul
-    },
-    ["DEATHKNIGHT"] = {
-      56815, -- Rune Strike
-    },
-  }
-  local class = select(2, UnitClass("player"))
-  queueableSpells = classQueueableSpells[class]
-
-  local queuedSpellFrame
-  function WeakAuras.WatchForQueuedSpell()
-    if not queuedSpellFrame then
-      queuedSpellFrame = CreateFrame("Frame")
-      Private.frames["Queued Spell Handler"] = queuedSpellFrame
-      queuedSpellFrame:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
-
-      queuedSpellFrame:SetScript("OnEvent", function(self, event)
-        local newQueuedSpell
-        if queueableSpells then
-          for _, spellID in ipairs(queueableSpells) do
-            -- Check the highest known rank
-            local maxRank = select(7, GetSpellInfo(GetSpellInfo(spellID)))
-            if IsCurrentSpell(maxRank) then
-              newQueuedSpell = maxRank
-              break
-            end
-          end
-        end
-        if newQueuedSpell ~= self.queuedSpell then
-          self.queuedSpell = newQueuedSpell
-          WeakAuras.ScanEvents("WA_UNIT_QUEUED_SPELL_CHANGED", "player")
-        end
-      end)
-    end
-  end
-
-  function WeakAuras.GetQueuedSpell()
-    return queuedSpellFrame and queuedSpellFrame.queuedSpell
-  end
-end
-
-function WeakAuras.GetSpellCost(powerTypeToCheck)
-  local spellID = select(9, WeakAuras.UnitCastingInfo("player"))
-  if WeakAuras.IsClassicEraOrWrath() and not spellID then
-    spellID = WeakAuras.GetQueuedSpell()
-  end
-  if spellID then
-    local costTable = GetSpellPowerCost(spellID);
-    for _, costInfo in pairs(costTable) do
-      -- When there is no required aura for a power cost, the API returns an aura ID of 0 and false for hasRequiredAura despite being valid.
-      if costInfo.type == powerTypeToCheck and (costInfo.requiredAuraID == 0 or costInfo.hasRequiredAura) then
-        return costInfo.cost;
-      end
-    end
-  end
-end
-
 -- Weapon Enchants
 do
   local mh = GetInventorySlotInfo("MainHandSlot")
   local oh = GetInventorySlotInfo("SecondaryHandSlot")
 
-  local mh_name, mh_shortenedName, mh_exp, mh_dur, mh_charges, mh_EnchantID;
-  --- @type string?
-  local mh_icon = GetInventoryItemTexture("player", mh) or "Interface\\Icons\\INV_Misc_QuestionMark"
+  local mh_name, mh_shortenedName, mh_exp, mh_dur, mh_charges;
+  local mh_icon = GetInventoryItemTexture("player", mh);
 
-  local oh_name, oh_shortenedName, oh_exp, oh_dur, oh_charges, oh_EnchantID;
-  --- @type string?
-  local oh_icon = GetInventoryItemTexture("player", oh) or "Interface\\Icons\\INV_Misc_QuestionMark"
+  local oh_name, oh_shortenedName, oh_exp, oh_dur, oh_charges;
+  local oh_icon = GetInventoryItemTexture("player", oh);
 
   local tenchFrame = nil
-  Private.frames["Temporary Enchant Handler"] = tenchFrame;
+  WeakAuras.frames["Temporary Enchant Handler"] = tenchFrame;
   local tenchTip;
 
   function WeakAuras.TenchInit()
     if not(tenchFrame) then
       tenchFrame = CreateFrame("Frame");
       tenchFrame:RegisterEvent("UNIT_INVENTORY_CHANGED");
-      tenchFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-      if WeakAuras.IsClassicEraOrWrath() then
-        tenchFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
-      end
 
-      local getTenchName
-      if WeakAuras.IsRetail() then
-        getTenchName = function(id)
-          local tooltipData = C_TooltipInfo.GetInventoryItem("player", id)
-          if tooltipData and tooltipData.lines then
-            for _, line in ipairs(tooltipData.lines) do
-              if line.leftText then
-                -- Format based on ITEM_ENCHANT_TIME_LEFT_MIN, ITEM_ENCHANT_TIME_LEFT_SEC
-                local _, _, name, shortenedName = line.leftText:find("^((.-) ?+?[VI%d]*) ?%(%d+%D.+%)$");
-                if(name and name ~= "") then
-                  return name, shortenedName;
-                end
-                _, _, name, shortenedName = line.leftText:find("^((.-) ?+?[VI%d]*)%（%d+%D.+%）$");
-                if(name and name ~= "") then
-                  return name, shortenedName;
-                end
+      tenchTip = WeakAuras.GetHiddenTooltip();
+
+      local function getTenchName(id)
+        tenchTip:SetInventoryItem("player", id);
+        local lines = { tenchTip:GetRegions() };
+        for i,v in ipairs(lines) do
+          if(v:GetObjectType() == "FontString") then
+            local text = v:GetText();
+            if(text) then
+              local _, _, name, shortenedName = text:find("^((.-) ?+?[VI%d]*) %(%d+ .+%)$");
+              if(name) then
+                return name, shortenedName;
               end
             end
           end
         end
-      else
-        getTenchName = function(id)
-          tenchTip = WeakAuras.GetHiddenTooltip();
-          tenchTip:SetInventoryItem("player", id);
-          local lines = { tenchTip:GetRegions() };
-          for i,v in ipairs(lines) do
-            if(v:GetObjectType() == "FontString") then
-              local text = v:GetText();
-              if(text) then
-                local _, _, name, shortenedName = text:find("^((.-) ?+?[VI%d]*) ?%(%d+%D+%)$");
-                if(name and name ~= "") then
-                  return name, shortenedName;
-                end
-                _, _, name, shortenedName = text:find("^((.-) ?+?[VI%d]*)%（%d+.%D%）$");
-                if(name and name ~= "") then
-                  return name, shortenedName;
-                end
-              end
-            end
-          end
 
-          return "Unknown", "Unknown";
-        end
+        return "Unknown", "Unknown";
       end
 
       local function tenchUpdate()
         Private.StartProfileSystem("generictrigger");
         local _, mh_rem, oh_rem
-        _, mh_rem, mh_charges, mh_EnchantID, _, oh_rem, oh_charges, oh_EnchantID = GetWeaponEnchantInfo();
+        _, mh_rem, mh_charges, _, oh_rem, oh_charges = GetWeaponEnchantInfo();
         local time = GetTime();
         local mh_exp_new = mh_rem and (time + (mh_rem / 1000));
         local oh_exp_new = oh_rem and (time + (oh_rem / 1000));
@@ -3515,9 +3048,11 @@ do
         Private.StopProfileSystem("generictrigger");
       end
 
-      tenchFrame:SetScript("OnEvent", function()
+      tenchFrame:SetScript("OnEvent", function(self, event, arg1)
         Private.StartProfileSystem("generictrigger");
-        timer:ScheduleTimer(tenchUpdate, 0.1);
+        if (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") then
+          timer:ScheduleTimer(tenchUpdate, 0.1);
+        end
         Private.StopProfileSystem("generictrigger");
       end);
 
@@ -3526,23 +3061,24 @@ do
   end
 
   function WeakAuras.GetMHTenchInfo()
-    return mh_exp, mh_dur, mh_name, mh_shortenedName, mh_icon, mh_charges, mh_EnchantID;
+    return mh_exp, mh_dur, mh_name, mh_shortenedName, mh_icon, mh_charges;
   end
 
   function WeakAuras.GetOHTenchInfo()
-    return oh_exp, oh_dur, oh_name, oh_shortenedName, oh_icon, oh_charges, oh_EnchantID;
+    return oh_exp, oh_dur, oh_name, oh_shortenedName, oh_icon, oh_charges;
   end
 end
 
 -- Pets
 do
   local petFrame = nil
-  Private.frames["Pet Use Handler"] = petFrame;
+  WeakAuras.frames["Pet Use Handler"] = petFrame;
   function WeakAuras.WatchForPetDeath()
     if not(petFrame) then
-      petFrame = CreateFrame("Frame");
-      petFrame:RegisterUnitEvent("UNIT_PET", "player")
-      petFrame:SetScript("OnEvent", function(event, unit)
+      petFrame = CreateFrame("frame");
+      petFrame:RegisterEvent("UNIT_PET")
+      petFrame:SetScript("OnEvent", function(_, event, unit)
+        if unit ~= "player" then return end
         Private.StartProfileSystem("generictrigger")
         WeakAuras.ScanEvents("PET_UPDATE", "pet")
         Private.StopProfileSystem("generictrigger")
@@ -3553,123 +3089,157 @@ end
 
 -- Cast Latency
 do
-  local castLatencyFrame
-
+  local castLatencyFrame = nil
+  WeakAuras.frames["Cast Latency Handler"] = castLatencyFrame
   function WeakAuras.WatchForCastLatency()
     if not castLatencyFrame then
       castLatencyFrame = CreateFrame("Frame")
-      Private.frames["Cast Latency Handler"] = castLatencyFrame
       castLatencyFrame:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_START", "player")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_STOP", "player")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_STOP", "player")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
-      castLatencyFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-
-      -- on dragonflight UNIT_SPELLCAST_EMPOWER_START and UNIT_SPELLCAST_EMPOWER_STOP OnEvent are
-      -- triggered from cacheEmpoweredFrame after updating cache use by WeakAuras.UnitChannelInfo
-
-      castLatencyFrame:SetScript("OnEvent", function(self, event, ...)
-        if event == "CURRENT_SPELL_CAST_CHANGED" then
-          castLatencyFrame.sendTime = GetTime()
-          return
-        end
-        if event == "UNIT_SPELLCAST_SUCCEEDED" or event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_INTERRUPTED" then
-          castLatencyFrame.sendTime = nil
-          return
-        end
-
-        if castLatencyFrame.sendTime then
-          castLatencyFrame.timeDiff = (GetTime() - castLatencyFrame.sendTime)
-        else
-          castLatencyFrame.timeDiff = nil
-        end
+      castLatencyFrame:SetScript("OnEvent", function(event)
+        Private.LAST_CURRENT_SPELL_CAST_CHANGED = GetTime()
       end)
     end
   end
-
-  function WeakAuras.GetCastLatency()
-    return castLatencyFrame and castLatencyFrame.timeDiff or 0
-  end
-
 end
 
+-- Mounted Frame
 do
-  local nameplateTargetFrame = nil
-  local nameplateTargets = {}
+  local mountedFrame
+  local elapsed = 0;
+  local delay = 0.5;
+  local isMounted = IsMounted();
 
-  local function nameplateTargetOnEvent(self, event, unit)
-    if event == "NAME_PLATE_UNIT_ADDED" then
-      nameplateTargets[unit] = UnitGUID(unit.."-target") or true
-    elseif event == "NAME_PLATE_UNIT_REMOVED" then
-      nameplateTargets[unit] = nil
+  local function checkForMounted(self, elaps)
+    Private.StartProfileSystem("generictrigger");
+    elapsed = elapsed + elaps
+    if(isMounted ~= IsMounted()) then
+      isMounted = IsMounted();
+      WeakAuras.ScanEvents("MOUNTED_UPDATE");
+      mountedFrame:SetScript("OnUpdate", nil);
     end
+    if(elapsed > delay) then
+      mountedFrame:SetScript("OnUpdate", nil);
+    end
+    Private.StopProfileSystem("generictrigger");
   end
 
-  local tick_throttle = 0.2
-  local throttle_update = tick_throttle
-  local function nameplateTargetOnUpdate(self, delta)
-    throttle_update = throttle_update - delta
-    if throttle_update < 0 then
-      for unit, targetGUID in pairs(nameplateTargets) do
-        local newTargetGUID = UnitGUID(unit.."-target")
-        if (newTargetGUID == nil and targetGUID ~= true)
-        or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
-        then
-          nameplateTargets[unit] = newTargetGUID or true
-          WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
-        end
-      end
-      throttle_update = tick_throttle
-    end
-  end
-
-  Private.frames["Nameplate Target Handler"] = nameplateTargetFrame
-  function WeakAuras.WatchForNameplateTargetChange()
-    if not nameplateTargetFrame then
-      nameplateTargetFrame = CreateFrame("Frame")
-      nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
-      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-      nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
+  function WeakAuras.WatchForMounts()
+    if not(mountedFrame) then
+      mountedFrame = CreateFrame("frame");
+	  WeakAuras.frames["Mount Use Handler"] = mountedFrame;
+      mountedFrame:RegisterEvent("COMPANION_UPDATE");
+      mountedFrame:SetScript("OnEvent", function()
+       elapsed = 0;
+       mountedFrame:SetScript("OnUpdate", checkForMounted);
+      end)
     end
   end
 end
 
 -- Player Moving
 do
-  --- @class PlayerMovingFrame
-  --- @field moving integer|nil
-  --- @field speed integer|nil
-
-  --- @type PlayerMovingFrame|Frame|nil
   local playerMovingFrame = nil
 
-  local function PlayerMoveUpdate()
+  local function PlayerMoveSpeedUpdate()
     Private.StartProfileSystem("generictrigger");
-    local moving = IsPlayerMoving()
-    if (playerMovingFrame.moving ~= moving or playerMovingFrame.moving == nil) then
-      playerMovingFrame.moving = moving
-      WeakAuras.ScanEvents("PLAYER_MOVING_UPDATE")
-    end
-
     local speed = GetUnitSpeed("player")
-    if playerMovingFrame.speed ~= speed then
+    if speed ~= playerMovingFrame.speed then
       playerMovingFrame.speed = speed
       WeakAuras.ScanEvents("PLAYER_MOVE_SPEED_UPDATE")
     end
     Private.StopProfileSystem("generictrigger");
   end
 
-  function WeakAuras.WatchForPlayerMoving()
+  function WeakAuras.WatchPlayerMoveSpeed()
     if not(playerMovingFrame) then
-      playerMovingFrame = CreateFrame("Frame");
-      --- @cast playerMovingFrame PlayerMovingFrame
-      Private.frames["Player Moving Frame"] =  playerMovingFrame;
-      playerMovingFrame.speed = GetUnitSpeed("player")
+      playerMovingFrame = CreateFrame("frame");
+      WeakAuras.frames["Player Moving Frame"] =  playerMovingFrame;
     end
-    playerMovingFrame:SetScript("OnUpdate", PlayerMoveUpdate)
+    playerMovingFrame.speed = GetUnitSpeed("player")
+    playerMovingFrame:SetScript("OnUpdate", PlayerMoveSpeedUpdate)
+  end
+end
+
+-- Nameplates
+do
+  local watchNameplates
+
+  local select = select
+  local gsub = string.gsub
+
+  local WorldFrame = WorldFrame
+  local WorldGetChildren = WorldFrame.GetChildren
+  local WorldGetNumChildren = WorldFrame.GetNumChildren
+
+  local lastUpdate = 0
+  local lastChildern, numChildren = 0, 0
+  local nameplateList = {}
+  local visibleNameplates = {}
+
+  local OVERLAY = [=[Interface\TargetingFrame\UI-TargetingFrame-Flash]=]
+  local FSPAT = "%s*"..(gsub(gsub(FOREIGN_SERVER_LABEL, "^%s", ""), "[%*()]", "%%%1")).."$"
+
+  local function nameplateShow(self)
+    Private.StartProfileSystem("nameplatetrigger")
+    local name = gsub(self.nameText:GetText() or "", FSPAT, "")
+    visibleNameplates[self] = name
+    WeakAuras.ScanEvents("NP_SHOW", self, name)
+	Private.StopProfileSystem("nameplatetrigger")
+  end
+
+  local function nameplateHide(self)
+    Private.StartProfileSystem("nameplatetrigger")
+    visibleNameplates[self] = nil
+    WeakAuras.ScanEvents("NP_HIDE", self, gsub(self.nameText:GetText() or "", FSPAT, ""))
+    Private.StopProfileSystem("nameplatetrigger")
+  end
+
+  local function findNewPlate(...)
+    for i = lastChildern + 1, numChildren do
+      local frame = select(i, ...)
+      local region, _, _, _, _, _, nameText = frame:GetRegions()
+      if (frame.UnitFrame or (region and region:GetObjectType() == "Texture" and region:GetTexture() == OVERLAY)) and not nameplateList[frame] then
+        frame.nameText = nameText
+        frame:HookScript("OnShow", nameplateShow)
+        frame:HookScript("OnHide", nameplateHide)
+        nameplateShow(frame)
+        nameplateList[frame] = true
+      end
+    end
+  end
+
+  local function nameplatesUpdate(_, elaps)
+    lastUpdate = lastUpdate + elaps
+    if lastUpdate < 1 then return end
+    numChildren = WorldGetNumChildren(WorldFrame)
+    if lastChildern ~= numChildren then
+      Private.StartProfileSystem("nameplatetrigger")
+      findNewPlate(WorldGetChildren(WorldFrame))
+      Private.StopProfileSystem("nameplatetrigger")
+      lastChildern = numChildren
+    end
+    lastUpdate = 0
+  end
+
+  local resultNameplates = {}
+  function WeakAuras.GetUnitNameplate(name, results)
+    if not name or name == "" then return end
+    results = results or resultNameplates
+    wipe(results)
+    for frame, nameplateName in pairs(visibleNameplates) do
+      if name == nameplateName then
+        results[#results + 1] = frame
+      end
+    end
+    return results[1], results
+  end
+
+  function WeakAuras.WatchNamePlates()
+    if not(watchNameplates) then
+      watchNameplates = CreateFrame("Frame")
+      WeakAuras.frames["Watch NamePlates Frames"] = watchNameplates
+    end
+    watchNameplates:SetScript("OnUpdate", nameplatesUpdate)
   end
 end
 
@@ -3677,9 +3247,10 @@ end
 local itemCountWatchFrame;
 function WeakAuras.RegisterItemCountWatch()
   if not(itemCountWatchFrame) then
-    itemCountWatchFrame = CreateFrame("Frame");
-    itemCountWatchFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
-    itemCountWatchFrame:SetScript("OnEvent", function()
+    itemCountWatchFrame = CreateFrame("frame");
+    itemCountWatchFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+    itemCountWatchFrame:SetScript("OnEvent", function(_, _, unit)
+      if unit ~= "player" then return end
       Private.StartProfileSystem("generictrigger");
       timer:ScheduleTimer(WeakAuras.ScanEvents, 0.2, "ITEM_COUNT_UPDATE");
       timer:ScheduleTimer(WeakAuras.ScanEvents, 0.5, "ITEM_COUNT_UPDATE");
@@ -3688,13 +3259,59 @@ function WeakAuras.RegisterItemCountWatch()
   end
 end
 
--- LibSpecWrapper
--- We always register, because it's probably not that often called, and ScanEvents checks
--- early if anyone wants the event
-if WeakAuras.IsRetail() then
-  Private.LibSpecWrapper.Register(function(unit)
-    WeakAuras.ScanEvents("UNIT_SPEC_CHANGED_" .. unit, unit)
-  end)
+-- Queued Action
+do
+  local GetActionInfo, GetMacroSpell, GetSpellLink = GetActionInfo, GetMacroSpell, GetSpellLink
+
+  local queuedActionFrame = nil
+  local buttonIDList = {}
+  local spellIDList = {}
+
+  local function GetActionSpellID(slot)
+    local actionType, id, _, spellId = GetActionInfo(slot)
+    if actionType == "spell" then
+      return spellId
+    elseif actionType == "macro" then
+      local name, rank = GetMacroSpell(id)
+      if name then
+        local spellLink = GetSpellLink(name, rank or "")
+        if spellLink then
+          return tonumber(spellLink:match("spell:(%d+)"))
+        end
+      end
+    end
+  end
+
+  function WeakAuras.WatchQueuedAction()
+    if not(queuedActionFrame) then
+      queuedActionFrame = CreateFrame("frame");
+      WeakAuras.frames["Queued Action Frame"] = queuedActionFrame
+      for slotID = 1, 120 do
+        local spellID = GetActionSpellID(slotID)
+        if spellID then
+          buttonIDList[slotID] = spellID
+          spellIDList[spellID] = slotID
+        end
+      end
+    end
+    queuedActionFrame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
+    queuedActionFrame:SetScript("OnEvent", function(_, _, slotID)
+      Private.StartProfileSystem("generictrigger");
+      local spellID = GetActionSpellID(slotID)
+      if spellID then
+        buttonIDList[slotID] = spellID
+        spellIDList[spellID] = slotID
+      elseif buttonIDList[slotID] then
+        spellIDList[buttonIDList[slotID]] = nil
+        buttonIDList[slotID] = nil
+      end
+      Private.StopProfileSystem("generictrigger");
+    end)
+  end
+
+  function WeakAuras.FindSpellActionButtons(spellID)
+    return spellIDList[spellID]
+  end
 end
 
 do
@@ -3704,11 +3321,11 @@ do
     scheduled_scans[event][fireTime] = nil;
     WeakAuras.ScanEvents(event);
   end
-  function Private.ExecEnv.ScheduleScan(fireTime, event)
+  function WeakAuras.ScheduleScan(fireTime, event)
     event = event or "COOLDOWN_REMAINING_CHECK"
     scheduled_scans[event] = scheduled_scans[event] or {}
     if not(scheduled_scans[event][fireTime]) then
-      scheduled_scans[event][fireTime] = timer:ScheduleTimerFixed(doScan, fireTime - GetTime() + 0.1, fireTime, event);
+      scheduled_scans[event][fireTime] = timer:ScheduleTimer(doScan, fireTime - GetTime() + 0.1, fireTime, event);
     end
   end
 end
@@ -3720,10 +3337,10 @@ do
     scheduled_scans[unit][firetime] = nil;
     WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
   end
-  function Private.ExecEnv.ScheduleCastCheck(fireTime, unit)
+  function WeakAuras.ScheduleCastCheck(fireTime, unit)
     scheduled_scans[unit] = scheduled_scans[unit] or {}
     if not(scheduled_scans[unit][fireTime]) then
-      scheduled_scans[unit][fireTime] = timer:ScheduleTimerFixed(doCastScan, fireTime - GetTime() + 0.1, fireTime, unit);
+      scheduled_scans[unit][fireTime] = timer:ScheduleTimer(doCastScan, fireTime - GetTime() + 0.1, fireTime, unit);
     end
   end
 end
@@ -3734,37 +3351,28 @@ function WeakAuras.GetUniqueCloneId()
   return uniqueId;
 end
 
---- @type fun(trigger: triggerData) : prototypeData
-function GenericTrigger.GetPrototype(trigger)
-  if trigger.type and trigger.event then
-    if Private.category_event_prototype[trigger.type] then
-      return Private.event_prototypes[trigger.event]
-    end
-  end
-end
-
---- @type fun(data: auraData, triggernum: number) : "timed"|boolean, boolean?
 function GenericTrigger.CanHaveDuration(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
 
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    if prototype.durationFunc then
-      if(type(prototype.init) == "function") then
-        prototype.init(trigger);
+  if (Private.category_event_prototype[trigger.type]) then
+    if trigger.event and Private.event_prototypes[trigger.event] then
+      if Private.event_prototypes[trigger.event].durationFunc then
+        if(type(Private.event_prototypes[trigger.event].init) == "function") then
+          Private.event_prototypes[trigger.event].init(trigger);
+        end
+        local current, maximum, custom = Private.event_prototypes[trigger.event].durationFunc(trigger);
+        current = type(current) ~= "number" and current or 0
+        maximum = type(maximum) ~= "number" and maximum or 0
+        if(custom) then
+          return {current = current, maximum = maximum};
+        else
+          return "timed";
+        end
+      elseif Private.event_prototypes[trigger.event].canHaveDuration then
+        return Private.event_prototypes[trigger.event].canHaveDuration
+      elseif Private.event_prototypes[trigger.event].timedrequired then
+        return "timed"
       end
-      local current, maximum, custom = prototype.durationFunc(trigger);
-      current = type(current) ~= "number" and current or 0
-      maximum = type(maximum) ~= "number" and maximum or 0
-      if(custom) then
-        return {current = current, maximum = maximum};
-      else
-        return "timed";
-      end
-    elseif prototype.canHaveDuration then
-      return prototype.canHaveDuration, prototype.useModRate
-    elseif prototype.timedrequired then
-      return "timed"
     end
   elseif (trigger.type == "custom") then
     if trigger.custom_type == "event" and trigger.custom_hide == "timed" and trigger.duration then
@@ -3778,47 +3386,19 @@ function GenericTrigger.CanHaveDuration(data, triggernum)
   return false
 end
 
---- @type fun(data: auraData): number?
-function GenericTrigger.GetDelay(data)
-  if data.event then
-    local prototype = GenericTrigger.GetPrototype(data.trigger)
-    if prototype and prototype.delayEvents then
-      local trigger = data.trigger
-      if trigger.use_delay and type(trigger.delay) == "number" and trigger.delay > 0 then
-        return trigger.delay
-      end
-    end
-  end
-  return 0
-end
-
-function GenericTrigger.GetTsuConditionVariables(id, triggernum)
-  local ok, variables = xpcall(events[id][triggernum].tsuConditionVariables, Private.GetErrorHandlerId(id, L["Custom Variables"]));
-  if ok then
-    return variables
-  end
-end
-
 --- Returns a table containing the names of all overlays
---- @param data auraData
---- @param triggernum number
+-- @param data
+-- @param triggernum
 function GenericTrigger.GetOverlayInfo(data, triggernum)
   local result;
 
   local trigger = data.triggers[triggernum].trigger
 
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if (prototype and prototype.overlayFuncs) then
+  if (trigger.type ~= "custom" and trigger.event and Private.event_prototypes[trigger.event] and Private.event_prototypes[trigger.event].overlayFuncs) then
     result = {};
     local dest = 1;
-    for i, v in ipairs(prototype.overlayFuncs) do
-      local enable = true
-      if type(v.enable) == "function" then
-        enable = v.enable(trigger)
-      elseif type(v.enable) == "boolean" then
-        enable = v.enable
-      end
-      if enable then
+    for i, v in ipairs(Private.event_prototypes[trigger.event].overlayFuncs) do
+      if (v.enable(trigger)) then
         result[dest] = v.name;
         dest = dest + 1;
       end
@@ -3828,7 +3408,7 @@ function GenericTrigger.GetOverlayInfo(data, triggernum)
   if (trigger.type == "custom") then
     if (trigger.custom_type == "stateupdate") then
       local count = 0;
-      local variables = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
+      local variables = events[data.id][triggernum].tsuConditionVariables();
       if (type(variables) == "table") then
         if (type(variables.additionalProgress) == "table") then
           count = #variables.additionalProgress;
@@ -3871,20 +3451,16 @@ function GenericTrigger.CanHaveClones(data)
   return false;
 end
 
---- @type fun(data: auraData, triggernum: number): string?, string?
 function GenericTrigger.GetNameAndIcon(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
   local icon, name
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    if prototype.GetNameAndIcon then
-      return prototype.GetNameAndIcon(trigger)
-    else
-      if prototype.iconFunc then
-        icon = prototype.iconFunc(trigger)
+  if (Private.category_event_prototype[trigger.type]) then
+    if(trigger.event and Private.event_prototypes[trigger.event]) then
+      if(Private.event_prototypes[trigger.event].iconFunc) then
+        icon = Private.event_prototypes[trigger.event].iconFunc(trigger);
       end
-      if prototype.nameFunc then
-        name = prototype.nameFunc(trigger)
+      if(Private.event_prototypes[trigger.event].nameFunc) then
+        name = Private.event_prototypes[trigger.event].nameFunc(trigger);
       end
     end
   end
@@ -3893,17 +3469,18 @@ function GenericTrigger.GetNameAndIcon(data, triggernum)
 end
 
 ---Returns the type of tooltip to show for the trigger.
---- @param data auraData
---- @param triggernum number
---- @return boolean|string
+-- @param data
+-- @param triggernum
+-- @return string
 function GenericTrigger.CanHaveTooltip(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    if prototype.hasSpellID then
-      return "spell";
-    elseif prototype.hasItemID then
-      return "item";
+  if (Private.category_event_prototype[trigger.type]) then
+    if (trigger.event and Private.event_prototypes[trigger.event]) then
+      if(Private.event_prototypes[trigger.event].hasSpellID) then
+        return "spell";
+      elseif(Private.event_prototypes[trigger.event].hasItemID) then
+        return "item";
+      end
     end
   end
 
@@ -3946,50 +3523,47 @@ function GenericTrigger.SetToolTip(trigger, state)
     end
   end
 
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    if prototype.hasSpellID then
-      GameTooltip:SetSpellByID(trigger.spellName);
-      return true
-    elseif prototype.hasItemID then
-      GameTooltip:SetHyperlink("item:"..trigger.itemName..":0:0:0:0:0:0:0")
-      return true
+  if (Private.category_event_prototype[trigger.type]) then
+    if (trigger.event and Private.event_prototypes[trigger.event]) then
+      if(Private.event_prototypes[trigger.event].hasSpellID) then
+        GameTooltip:SetSpellByID(trigger.spellName);
+        return true
+      elseif(Private.event_prototypes[trigger.event].hasItemID) then
+        GameTooltip:SetHyperlink("item:"..trigger.itemName..":0:0:0:0:0:0:0")
+        return true
+      end
     end
   end
   return false
 end
 
---- @type fun(data: auraData, triggernum: number): string
 function GenericTrigger.GetAdditionalProperties(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
   local ret = "";
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    local found = false;
-    local additional = ""
-    for _, v in pairs(prototype.args) do
-      local enable = true
-      if(type(v.enable) == "function") then
-        enable = v.enable(trigger)
-      elseif type(v.enable) == "boolean" then
-        enable = v.enable
+  if (Private.category_event_prototype[trigger.type]) then
+    if (trigger.event and Private.event_prototypes[trigger.event]) then
+      local found = false;
+      local additional = ""
+      for _, v in pairs(Private.event_prototypes[trigger.event].args) do
+        local enable = true
+        if(type(v.enable) == "function") then
+          enable = v.enable(trigger)
+        elseif type(v.enable) == "boolean" then
+          enable = v.enable
+        end
+        if (enable and v.store and v.name and v.display) then
+          found = true;
+          additional = additional .. "|cFFFF0000%".. triggernum .. "." .. v.name .. "|r - " .. v.display .. "\n";
+        end
       end
-      if (enable and v.store and v.name and v.display) then
-        found = true;
-        additional = additional .. "|cFFFF0000%".. triggernum .. "." .. v.name .. "|r - " .. v.display .. "\n";
-      end
-    end
-    if prototype.countEvents then
-      found = true;
-      additional = additional .. "|cFFFF0000%".. triggernum .. ".count|r - " .. L["Count"] .. "\n";
-    end
 
-    if (found) then
-      ret = ret .. additional;
+      if (found) then
+        ret = ret .. additional;
+      end
     end
   else
     if (trigger.custom_type == "stateupdate") then
-      local variables = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
+      local variables = events[data.id][triggernum].tsuConditionVariables();
       if (type(variables) == "table") then
         for var, varData in pairs(variables) do
           if (type(varData) == "table") then
@@ -4010,26 +3584,9 @@ local commonConditions = {
     display = L["Remaining Duration"],
     type = "timer",
   },
-  expirationTimeModRate = {
-    display = L["Remaining Duration"],
-    type = "timer",
-    useModRate = true
-  },
   duration = {
     display = L["Total Duration"],
     type = "number",
-  },
-  durationModRate = {
-    display = L["Total Duration"],
-    type = "number",
-    useModRate = true
-  },
-  paused = {
-    display =L["Is Paused"],
-    type = "bool",
-    test = function(state, needle)
-      return (state.paused and 1 or 0) == needle
-    end
   },
   value = {
     display = L["Progress Value"],
@@ -4070,98 +3627,85 @@ function Private.ExpandCustomVariables(variables)
   end
 end
 
---- @type fun(data: auraData, triggernum: number): table
 function GenericTrigger.GetTriggerConditions(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
 
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    local result = {};
+  if (Private.category_event_prototype[trigger.type]) then
+    if (trigger.event and Private.event_prototypes[trigger.event]) then
+      local result = {};
 
-    local canHaveDuration, modRated = GenericTrigger.CanHaveDuration(data, triggernum);
-    local timedDuration = canHaveDuration;
-    local valueDuration = canHaveDuration;
-    if (canHaveDuration == "timed") then
-      valueDuration = false;
-    elseif (type(canHaveDuration) == "table") then
-      timedDuration = false;
-    end
+      local canHaveDuration = GenericTrigger.CanHaveDuration(data, triggernum);
+      local timedDuration = canHaveDuration;
+      local valueDuration = canHaveDuration;
+      if (canHaveDuration == "timed") then
+        valueDuration = false;
+      elseif (type(canHaveDuration) == "table") then
+        timedDuration = false;
+      end
 
-    if (timedDuration) then
-      if modRated then
-        result.expirationTime = commonConditions.expirationTimeModRate;
-        result.duration = commonConditions.durationModRate;
-      else
+      if (timedDuration) then
         result.expirationTime = commonConditions.expirationTime;
         result.duration = commonConditions.duration;
       end
-      result.paused = commonConditions.paused
-    end
 
-    if (valueDuration) then
-      result.value = commonConditions.value;
-      result.total = commonConditions.total;
-    end
+      if (valueDuration) then
+        result.value = commonConditions.value;
+        result.total = commonConditions.total;
+      end
 
-    if prototype.stacksFunc then
-      result.stacks = commonConditions.stacks;
-    end
+      if (Private.event_prototypes[trigger.event].stacksFunc) then
+        result.stacks = commonConditions.stacks;
+      end
 
-    if prototype.nameFunc then
-      result.name = commonConditions.name;
-    end
+      if (Private.event_prototypes[trigger.event].nameFunc) then
+        result.name = commonConditions.name;
+      end
 
-    for _, v in pairs(prototype.args) do
-      if (v.conditionType and v.name and v.display) then
-        local enable = true;
-        if (v.enable ~= nil) then
-          if type(v.enable) == "function" then
-            enable = v.enable(trigger);
-          elseif type(v.enable) == "boolean" then
-            enable = v.enable
-          end
-        end
-
-        if (enable) then
-          result[v.name] = {
-            display = v.display,
-            type = v.conditionType
-          }
-          if (result[v.name].type == "select" or result[v.name].type == "unit") then
-            if (v.conditionValues) then
-              result[v.name].values = Private[v.conditionValues] or WeakAuras[v.conditionValues];
-            else
-              if type(v.values) == "function" then
-                result[v.name].values = v.values()
-              else
-                result[v.name].values = Private[v.values] or WeakAuras[v.values];
-              end
+      for _, v in pairs(Private.event_prototypes[trigger.event].args) do
+        if (v.conditionType and v.name and v.display) then
+          local enable = true;
+          if (v.enable ~= nil) then
+            if type(v.enable) == "function" then
+              enable = v.enable(trigger);
+            elseif type(v.enable) == "boolean" then
+              enable = v.enable
             end
           end
-          if (v.conditionPreamble) then
-            result[v.name].preamble = v.conditionPreamble;
-          end
-          if (v.conditionTest) then
-            result[v.name].test = v.conditionTest;
-          end
-          if (v.conditionEvents) then
-            result[v.name].events = v.conditionEvents;
-          end
-          if (v.operator_types) then
-            result[v.name].operator_types = v.operator_types;
+
+          if (enable) then
+            result[v.name] = {
+              display = v.display,
+              type = v.conditionType
+            }
+            if (result[v.name].type == "select" or result[v.name].type == "unit") then
+              if (v.conditionValues) then
+                result[v.name].values = Private[v.conditionValues] or WeakAuras[v.conditionValues];
+              else
+                if type(v.values) == "function" then
+                  result[v.name].values = v.values()
+                else
+                  result[v.name].values = Private[v.values] or WeakAuras[v.values];
+                end
+              end
+            end
+            if (v.conditionPreamble) then
+              result[v.name].preamble = v.conditionPreamble;
+            end
+            if (v.conditionTest) then
+              result[v.name].test = v.conditionTest;
+            end
+            if (v.conditionEvents) then
+              result[v.name].events = v.conditionEvents;
+            end
+            if (v.operator_types) then
+              result[v.name].operator_types = v.operator_types;
+            end
           end
         end
       end
-    end
 
-    if prototype.countEvents then
-      result.count = {
-        display = L["Count"],
-        type = "number"
-      }
+      return result;
     end
-
-    return result;
   elseif(trigger.type == "custom") then
     if (trigger.custom_type == "status" or trigger.custom_type == "event") then
       local result = {};
@@ -4193,7 +3737,7 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
     elseif (trigger.custom_type == "stateupdate") then
       if (events[data.id][triggernum] and events[data.id][triggernum].tsuConditionVariables) then
         Private.ActivateAuraEnvironment(data.id, nil, nil, nil, true)
-        local result = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
+        local result = events[data.id][triggernum].tsuConditionVariables()
         Private.ActivateAuraEnvironment(nil)
         if (type(result)) ~= "table" then
           return nil;
@@ -4225,42 +3769,55 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
   local event = events[data.id][triggernum];
 
   Private.ActivateAuraEnvironment(data.id, "", state);
-  local trigger = data.triggers[triggernum].trigger
-
-  if event.GetNameAndIcon then
-    local ok, name, icon = xpcall(event.GetNameAndIcon, Private.GetErrorHandlerUid(data.uid, L["GetNameAndIcon Function (fallback state)"]), trigger);
-    state.name = ok and name or nil;
-    state.icon = ok and icon or nil;
-  else
-    if (event.nameFunc) then
-      local ok, name = xpcall(event.nameFunc, Private.GetErrorHandlerUid(data.uid, L["Name Function (fallback state)"]), trigger);
-      state.name = ok and name or nil;
+  local firstTrigger = data.triggers[1].trigger
+  if (event.nameFunc) then
+    local ok, name = pcall(event.nameFunc, firstTrigger);
+    if not ok then
+      geterrorhandler()(name)
+      state.name = nil
+    else
+      state.name = name or nil
     end
-    if (event.iconFunc) then
-      local ok, icon = xpcall(event.iconFunc, Private.GetErrorHandlerUid(data.uid, L["Icon Function (fallback state)"]), trigger);
-      state.icon = ok and icon or nil;
+  end
+  if (event.iconFunc) then
+    local ok, icon = pcall(event.iconFunc, firstTrigger);
+    if not ok then
+      geterrorhandler()(icon)
+      state.icon = nil
+    else
+      state.icon = icon or nil
     end
   end
 
   if (event.textureFunc ) then
-    local ok, texture = xpcall(event.textureFunc, Private.GetErrorHandlerUid(data.uid, L["Texture Function (fallback state)"]), trigger);
-    state.texture = ok and texture or nil;
+    local ok, texture = pcall(event.textureFunc, firstTrigger);
+    if not ok then
+      geterrorhandler()(texture)
+      state.texture = nil
+    else
+      state.texture = texture or nil
+    end
   end
 
   if (event.stacksFunc) then
-    local ok, stacks = xpcall(event.stacksFunc, Private.GetErrorHandlerUid(data.uid, L["Stacks Function (fallback state)"]), trigger);
-    state.stacks = ok and stacks or nil;
+    local ok, stacks = pcall(event.stacksFunc, firstTrigger);
+    if not ok then
+      geterrorhandler()(stacks)
+      state.stacks = nil
+    else
+      state.stacks = stacks or nil
+    end
   end
 
   if (event.durationFunc) then
-    local ok, arg1, arg2, arg3, inverse = xpcall(event.durationFunc, Private.GetErrorHandlerUid(data.uid, L["Duration Function (fallback state)"]), trigger);
-    if (not ok) then
+    local ok, arg1, arg2, arg3, inverse = pcall(event.durationFunc, firstTrigger);
+    if not ok then
+      geterrorhandler()(arg1)
       state.progressType = "timed";
       state.duration = 0;
       state.expirationTime = math.huge;
       state.value = nil;
       state.total = nil;
-      Private.ActivateAuraEnvironment(nil)
       return;
     end
     arg1 = type(arg1) == "number" and arg1 or 0;
@@ -4298,7 +3855,7 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
     state.total = nil;
   end
   if (event.overlayFuncs) then
-    RunOverlayFuncs(event, state, data.id);
+    RunOverlayFuncs(event, state);
   end
   Private.ActivateAuraEnvironment(nil);
 end
@@ -4309,9 +3866,8 @@ end
 
 function GenericTrigger.GetTriggerDescription(data, triggernum, namestable)
   local trigger = data.triggers[triggernum].trigger
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    tinsert(namestable, {L["Trigger:"], (prototype.name or L["Undefined"])});
+  if (Private.category_event_prototype[trigger.type]) then
+    tinsert(namestable, {L["Trigger:"], (Private.event_prototypes[trigger.event].name or L["Undefined"])});
     if(trigger.event == "Combat Log" and trigger.subeventPrefix and trigger.subeventSuffix) then
       tinsert(namestable, {L["Message type:"], (Private.subevent_prefix_types[trigger.subeventPrefix] or L["Undefined"]).." "..(Private.subevent_suffix_types[trigger.subeventSuffix] or L["Undefined"])});
     end
@@ -4322,109 +3878,40 @@ end
 
 do
   -- Based on Code by DejaCharacterStats. Ugly code to figure out the GCD
+  local GetCombatRatingBonus = GetCombatRatingBonus
+  local CR_HASTE_MELEE = CR_HASTE_MELEE
+  local CR_HASTE_RANGED = CR_HASTE_RANGED
+  local CR_HASTE_SPELL = CR_HASTE_SPELL
+
   local class = select(2, UnitClass("player"))
-  if class == "DEMONHUNTER"
-    or class == "HUNTER" or class == "SHAMAN"
-    or class == "MAGE" or class == "PRIEST" or class == "WARLOCK"
-    or class == "DEATHKNIGHT" or class == "PALADIN" or class == "WARRIOR"
-    or class == "EVOKER"
-  then
+  if class == "DRUID" then
     function WeakAuras.CalculatedGcdDuration()
-      local haste = GetHaste()
-      return max(0.75, 1.5 * 100 / (100+haste))
-    end
-  elseif class == "DRUID" then
-    function WeakAuras.CalculatedGcdDuration()
-      local id = GetShapeshiftFormID()
-      local haste = GetHaste()
-      return id == 1 and 1 or max(0.75, 1.5 * 100 / (100+haste))
-    end
-  elseif class == "MONK" then
-    function WeakAuras.CalculatedGcdDuration()
-      local spec = GetSpecialization()
-      local primaryStat = select(6, GetSpecializationInfo(spec))
-      if primaryStat == LE_UNIT_STAT_AGILITY then
-        return 1
-      end
-      local haste = GetHaste()
-      return max(0.75, 1.5 * 100 / (100+haste))
+      return GetShapeshiftForm() == 3 and 1 or max(0.75, 1.5 * 100 / (100 + GetCombatRatingBonus(CR_HASTE_SPELL)))
     end
   elseif class == "ROGUE" then
     function WeakAuras.CalculatedGcdDuration()
       return 1
     end
-  end
-end
-
-local findIdInLink = function(id, itemLink, startPos)
-  local findID = ":" .. tostring(id:trim())
-  return itemLink:find(findID .. ":", startPos, true) or itemLink:find(findID .. "|", startPos, true)
-end
-
-WeakAuras.CheckForItemBonusId = function(ids)
-  for id in tostring(ids):gmatch('([^,]+)') do
-    for slot in pairs(Private.item_slot_types) do
-      local itemLink = GetInventoryItemLink('player', slot)
-      if itemLink then
-        local startPos = itemLink:find(":", 1, true)
-        startPos = itemLink:find(":", startPos + 1 , true)
-        if findIdInLink(id, itemLink, startPos) then
-          return true
-        end
-      end
-    end
-  end
-  return false
-end
-
-
-WeakAuras.GetBonusIdInfo = function(ids, specificSlot)
-  local checkSlots = specificSlot and {[specificSlot] = true} or Private.item_slot_types
-  for id in tostring(ids):gmatch('([^,]+)') do
-    for slot in pairs(checkSlots) do
-      local itemLink = GetInventoryItemLink('player', slot)
-      if itemLink and findIdInLink(id, itemLink, 1) then
-        local itemID, _, _, _, icon = GetItemInfoInstant(itemLink)
-        local itemName = itemLink:match("%[(.*)%]")
-        return id, itemID, itemName, icon, slot, Private.item_slot_types[slot]
-      end
-    end
-  end
-end
-
-WeakAuras.CheckForItemEquipped = function(itemName, specificSlot)
-  if not specificSlot then
-    return IsEquippedItem(itemName)
   else
-    local item = Item:CreateFromEquipmentSlot(specificSlot)
-    if item and not item:IsItemEmpty() then
-      return itemName == item:GetItemName()
+    local GetHaste
+    if class == "HUNTER" then
+      function GetHaste()
+        return GetCombatRatingBonus(CR_HASTE_RANGED)
+      end
+    elseif class == "DEATHKNIGHT" or class == "PALADIN" or class == "WARRIOR" then
+      function GetHaste()
+        return GetCombatRatingBonus(CR_HASTE_MELEE)
+      end
+    else
+      function GetHaste()
+        return GetCombatRatingBonus(CR_HASTE_SPELL)
+      end
+    end
+    function WeakAuras.CalculatedGcdDuration()
+      return max(0.75, 1.5 * 100 / (100 + GetHaste()))
     end
   end
 end
-
-Private.ExecEnv.GetItemSubClassInfo = function(i)
-  local subClassId = i % 256
-  local classId = (i - subClassId) / 256
-  return GetItemSubClassInfo(classId, subClassId)
-end
-
-WeakAuras.GetCritChance = function()
-  -- Based on what the wow paper doll does
-  local spellCrit = 0
-  for i = 2, MAX_SPELL_SCHOOLS or 7 do -- MAX_SPELL_SCHOOLS is nil on classic_era
-    spellCrit = max(spellCrit, GetSpellCritChance(i))
-  end
-  return max(spellCrit, GetRangedCritChance(), GetCritChance())
-end
-
-WeakAuras.GetHitChance = function()
-  local melee = (GetCombatRatingBonus(CR_HIT_MELEE) or 0) + (GetHitModifier() or 0)
-  local ranged = (GetCombatRatingBonus(CR_HIT_RANGED) or 0) + (GetHitModifier() or 0)
-  local spell = (GetCombatRatingBonus(CR_HIT_SPELL) or 0) + (GetSpellHitModifier() or 0)
-  return max(melee, ranged, spell)
-end
-
 
 local types = {}
 tinsert(types, "custom")

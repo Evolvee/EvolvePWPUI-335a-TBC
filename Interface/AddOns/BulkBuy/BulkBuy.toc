@@ -1,0 +1,7 @@
+﻿## Interface: 40300
+## Title: Bulk Buy
+## Version: 1.0
+## Author: Choonster
+## Notes: Allows you to buy vendor items in quantities greater than a single stack size.
+
+core.lua

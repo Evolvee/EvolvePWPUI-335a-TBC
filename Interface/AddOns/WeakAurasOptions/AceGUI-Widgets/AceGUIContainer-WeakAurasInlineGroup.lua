@@ -3,9 +3,7 @@ WeakAurasInlineGroup based on InlineGroup Container
 Simple container widget that has the same API as a InlineGroup, without actually
 showing any borders or a title.
 -------------------------------------------------------------------------------]]
-if not WeakAuras.IsLibsOK() then return end
-
-local Type, Version = "WeakAurasInlineGroup", 2
+local Type, Version = "WeakAurasInlineGroup", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -62,7 +60,6 @@ local function Constructor()
 	content:SetPoint("TOPLEFT", 0, 0)
 	content:SetPoint("BOTTOMRIGHT", 0, 0)
 
-  --- @type table<string, any>
 	local widget = {
 		frame     = frame,
 		content   = content,

@@ -1,8 +1,11 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
+-- Lua APIs
+local strtrim, strsub = strtrim, strsub
+
 -- WoW APIs
-local CreateFrame = CreateFrame
+local GetTime, CreateFrame = GetTime, CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -14,14 +17,18 @@ local importexport
 local function ConstructImportExport(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -16);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
   group:SetLayout("flow");
 
+  local title = AceGUI:Create("Label")
+  title:SetFontObject(GameFontNormalHuge)
+  title:SetFullWidth(true)
+  group:AddChild(title)
+
   local input = AceGUI:Create("MultiLineEditBox");
   input:DisableButton(true)
-  input.frame:SetClipsChildren(true);
   input:SetFullWidth(true)
   input:SetFullHeight(true)
   group:AddChild(input);
@@ -45,7 +52,7 @@ local function ConstructImportExport(frame)
     frame.window = "importexport";
     frame:UpdateFrameVisible()
     if(mode == "export" or mode == "table") then
-      OptionsPrivate.SetTitle(L["Exporting"])
+      title:SetText(L["Exporting"])
       if(id) then
         local displayStr;
         if(mode == "export") then
@@ -53,16 +60,10 @@ local function ConstructImportExport(frame)
         elseif(mode == "table") then
           displayStr = OptionsPrivate.Private.DataToString(id);
         end
-        --input.editBox:SetMaxBytes(nil); Dragonflight doesn't accept nil
-        input.editBox:SetScript("OnEscapePressed", function()
-          group:Close();
-        end);
-        input.editBox:SetScript("OnTextChanged", function()
-          input:SetText(displayStr); input.editBox:HighlightText();
-        end);
-        input.editBox:SetScript("OnMouseUp", function()
-          input.editBox:HighlightText();
-        end);
+        input.editBox:SetMaxBytes(nil);
+        input.editBox:SetScript("OnEscapePressed", function() group:Close(); end);
+        input.editBox:SetScript("OnTextChanged", function() input:SetText(displayStr); input.editBox:HighlightText(); end);
+        input.editBox:SetScript("OnMouseUp", function() input.editBox:HighlightText(); end);
         input:SetLabel(id.." - "..#displayStr);
         input.button:Hide();
         input:SetText(displayStr);
@@ -70,7 +71,7 @@ local function ConstructImportExport(frame)
         input:SetFocus();
       end
     elseif(mode == "import") then
-      OptionsPrivate.SetTitle(L["Importing"])
+      title:SetText(L["Importing"])
       input.editBox:SetScript("OnTextChanged", function(self)
         local pasted = self:GetText()
         pasted = pasted:match("^%s*(.-)%s*$")
@@ -87,7 +88,7 @@ local function ConstructImportExport(frame)
     group:DoLayout()
   end
 
-  function group.Close()
+  function group.Close(self)
     input:ClearFocus();
     frame.window = "default";
     frame:UpdateFrameVisible()

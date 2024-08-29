@@ -151,7 +151,7 @@ function OmniBar:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnEnable")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnEnable")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	--self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE", "GetSpecs")
 	self:RegisterComm("OmniBarSpell", function(_, payload, _, sender)
 		if (not UnitExists(sender)) or sender == PLAYER_NAME then return end
@@ -346,7 +346,7 @@ function OmniBar:Delete(key, keepProfile)
 	bar:UnregisterEvent("PLAYER_TARGET_CHANGED")
 	bar:UnregisterEvent("PLAYER_REGEN_DISABLED")
 	bar:UnregisterEvent("GROUP_ROSTER_UPDATE")
-	bar:UnregisterEvent("UPDATE_BATTLEFIELD_SCORE")
+	--bar:UnregisterEvent("UPDATE_BATTLEFIELD_SCORE")
 	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
 		bar:UnregisterEvent("PLAYER_FOCUS_CHANGED")
 		bar:UnregisterEvent("ARENA_OPPONENT_UPDATE")
@@ -542,7 +542,7 @@ function OmniBar:Initialize(key, name)
 		f:RegisterEvent("PVP_MATCH_ACTIVE", "OnEvent")
 	end
 
-	f:RegisterEvent("UPDATE_BATTLEFIELD_SCORE", "OnEvent")
+	--f:RegisterEvent("UPDATE_BATTLEFIELD_SCORE", "OnEvent")
 
 	table.insert(self.bars, f)
 end
@@ -584,8 +584,9 @@ end
 local Masque = LibStub and LibStub("Masque", true)
 
 -- create a lookup table to translate spec names into IDs
-local SPEC_ID_BY_NAME = {}
+local SPEC_ID_BY_NAME
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	SPEC_ID_BY_NAME = {}
 	for classID = 1, MAX_CLASSES do
 		local _, classToken = GetClassInfo(classID)
 		SPEC_ID_BY_NAME[classToken] = {}
@@ -872,7 +873,7 @@ function OmniBar:AddSpellCast(event, sourceGUID, sourceName, sourceFlags, spellI
 	-- and if it is a shared cooldown make sure we don't overwrite
 	if  self.spellCasts[name] and
 		self.spellCasts[name][spellID] and
-		(customDuration or self.spellCasts[name][spellID].serverTime == serverTime)
+		((customDuration and (self.spellCasts[name][spellID].expires > now)) or self.spellCasts[name][spellID].serverTime == serverTime)
 	then
 		return
 	end
@@ -924,7 +925,9 @@ function OmniBar:AlertGroup(...)
 end
 
 -- Needed to track PvP trinkets and possibly other spells that do not show up in COMBAT_LOG_EVENT_UNFILTERED
-function OmniBar:UNIT_SPELLCAST_SUCCEEDED(event, unit, _, spellID)
+function OmniBar:UNIT_SPELLCAST_SUCCEEDED(event, unit, spellName, _)
+	local spellID = SPELL_ID_BY_NAME and SPELL_ID_BY_NAME[spellName]
+
 	if (not addon.Cooldowns[spellID]) then return end
 
 	local sourceFlags = 0
@@ -940,8 +943,8 @@ function OmniBar:UNIT_SPELLCAST_SUCCEEDED(event, unit, _, spellID)
 	self:AddSpellCast(event, UnitGUID(unit), GetUnitName(unit, true), sourceFlags, spellID)
 end
 
-function OmniBar:COMBAT_LOG_EVENT_UNFILTERED()
-	local _, event, _, sourceGUID, sourceName, sourceFlags, _,_,_,_,_, spellID, spellName = CombatLogGetCurrentEventInfo()
+function OmniBar:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
+	local _, event, _, sourceGUID, sourceName, sourceFlags, _,_,_,_,_, spellID, spellName = CombatLogGetCurrentEventInfo(...)
 	if (event == "SPELL_CAST_SUCCESS" or event == "SPELL_AURA_APPLIED") then
 		if spellID == 0 and SPELL_ID_BY_NAME then spellID = SPELL_ID_BY_NAME[spellName] end
 		self:AddSpellCast(event, sourceGUID, sourceName, sourceFlags, spellID)
@@ -1359,11 +1362,10 @@ end
 
 function OmniBar_StartCooldown(self, icon, start)
 	icon.cooldown:SetCooldown(start, icon.duration)
+	icon.cooldown_hider:SetCooldown(start, icon.duration - 1)
 	icon.cooldown.finish = start + icon.duration
 	icon.cooldown:SetSwipeColor(0, 0, 0, self.settings.swipeAlpha or 0.65)
 	icon:SetAlpha(1)
-	-- hackfix to have a round texture, replace when upgrading to new omnibar version in the future!
-	icon.cooldown:SetSwipeTexture("Interface\\AddOns\\TextureScript\\Swipe")
 end
 
 function OmniBar_AddIcon(self, info)
@@ -1412,15 +1414,17 @@ function OmniBar_AddIcon(self, info)
 	-- We couldn't find a frame to use
 	if (not icon) then return end
 
+	local now = GetTime()
+
 	icon.class = addon.Cooldowns[info.spellID].class
 	icon.sourceGUID = info.sourceGUID
 	icon.sourceName = info.ownerName or info.sourceName
 	icon.specID = info.specID and info.specID or self.specs[icon.sourceName]
 	icon.icon:SetTexture(addon.Cooldowns[info.spellID].icon)
 	icon.spellID = info.spellID
-	icon.timestamp = info.test and GetTime() or info.timestamp
+	icon.timestamp = info.test and now or info.timestamp
 	icon.duration = info.test and math.random(5,30) or info.duration
-	icon.added = GetTime()
+	icon.added = now
 
 	if icon.charges and info.charges and icon:IsVisible() then
 		local start, duration = icon.cooldown:GetCooldownTimes()
@@ -1472,7 +1476,7 @@ function OmniBar_AddIcon(self, info)
 
 	if (icon.timestamp) then
 		OmniBar_StartCooldown(self, icon, icon.timestamp)
-		if (GetTime() == icon.timestamp) then OmniBar_StartAnimation(self, icon) end
+		if ((now - icon.timestamp) < .02) then OmniBar_StartAnimation(self, icon) end
 	end
 
 	return icon

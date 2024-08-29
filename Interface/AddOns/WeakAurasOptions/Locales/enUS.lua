@@ -1,4 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 
 local L = WeakAuras.L
 
@@ -106,26 +106,19 @@ L["Crusader"] = "Crusader"
 L["Custom Code"] = "Custom Code"
 L["Custom Trigger"] = "Custom Trigger"
 L["Custom trigger event tooltip"] = [=[
-Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
-
-• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
-• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
-• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+Choose which events cause the custom trigger to be checked.
+Multiple events can be specified using commas or spaces.
 
 |cFF4444FFFor example:|r
-UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+UNIT_POWER_UPDATE, UNIT_AURA PLAYER_TARGET_CHANGED
 ]=]
 L["Custom trigger status tooltip"] = [=[
-Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
-
-• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
-• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
-• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
-
+Choose which events cause the custom trigger to be checked.
 Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+Multiple events can be specified using commas or spaces.
 
 |cFF4444FFFor example:|r
-UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+UNIT_POWER_UPDATE, UNIT_AURA PLAYER_TARGET_CHANGED
 ]=]
 L["Custom Untrigger"] = "Custom Untrigger"
 L["Custom untrigger event tooltip"] = [=[
@@ -211,8 +204,8 @@ If the entered number is a whole number (e.g. 5), the number of affected units w
 If the entered number is a decimal (e.g. 0.5), fraction (e.g. 1/2), or percentage (e.g. 50%%), then that fraction of the %s must be affected.
 
 |cFF4444FFFor example:|r
-|cFF00CC00> 0|r will trigger when any unit of type '%s' is affected
-|cFF00CC00= 100%%|r will trigger when every unit of type '%s' is affected
+|cFF00CC00> 0|r will trigger when any unit of type '%s' is is affected
+|cFF00CC00= 100%%|r will trigger when ever unit of type '%s' is affected
 |cFF00CC00!= 2|r will trigger when the number of units of type '%s' affected is not exactly 2
 |cFF00CC00<= 0.8|r will trigger when less than 80%% of the units of type '%s' is affected (4 of 5 party members, 8 of 10 or 20 of 25 raid members)
 |cFF00CC00> 1/2|r will trigger when more than half of the units of type '%s' is affected

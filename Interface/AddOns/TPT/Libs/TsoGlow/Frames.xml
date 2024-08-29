@@ -1,0 +1,87 @@
+<Ui>
+	<Frame name="TGlowFlash" setAllPoints="true" virtual="true">
+		<Layers>
+			<Layer level="OVERLAY">
+				<!-- Zoom, Border, White -->
+				<Texture parentKey="A" file="Interface\AddOns\TPT\Libs\TsoGlow\Border">
+					<Size x="42" y="41"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+					<TexCoords left="0.52343750" right="0.97656250" top="0.25781250" bottom="0.36914063"/>
+					<Animations>
+						<AnimationGroup parentKey="A">
+							<Scale startDelay="0.15" duration="0.2" scaleX="1.381" scaleY="1.381"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+				<Texture parentKey="B" file="Interface\AddOns\TPT\Libs\TsoGlow\Border">
+					<Size x="58" y="57"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+					<TexCoords left="0.52343750" right="0.97656250" top="0.38476563" bottom="0.49609375"/>
+					<Animations>
+						<AnimationGroup parentKey="A">
+							<Alpha endDelay="0.22" change="-1.0" duration="0.13"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+				<Texture parentKey="C" file="Interface\AddOns\TPT\Libs\TsoGlow\White" alpha="0">
+					<Size x="58" y="57"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+					<TexCoords left="0.00781250" right="0.50781250" top="0.53515625" bottom="0.78515625"/>
+					<Animations>
+						<AnimationGroup parentKey="A">
+							<Alpha duration="0.15" change="1.0" order="1"/>
+							<Alpha duration="0.15" change="-1.0" order="2"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Animations>
+			<AnimationGroup parentKey="D">
+				<Alpha duration="0.35" change="1"/>
+				<Scripts>
+					<OnPlay>
+						local F = self:GetParent()
+
+						F:Show()
+
+						F.C.A:Play()
+						F.B.A:Play()
+						F.A.A:Play()
+					</OnPlay>
+
+					<OnFinished>
+						self:GetParent():Hide()
+					</OnFinished>
+				</Scripts>
+			</AnimationGroup>
+		</Animations>
+	</Frame>
+	<Frame name="TGlow" setAllPoints="true" virtual="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="B" file="Interface\AddOns\TPT\Libs\TsoGlow\Border">
+					<Size x="58" y="57"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+					<TexCoords left="0.52343750" right="0.97656250" top="0.38476563" bottom="0.49609375"/>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture parentKey="A" file="Interface\AddOns\TPT\Libs\TsoGlow\Ants">
+					<Size x="44" y="44"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+</Ui>

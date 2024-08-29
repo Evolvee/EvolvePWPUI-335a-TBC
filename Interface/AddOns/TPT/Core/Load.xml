@@ -1,0 +1,5 @@
+<Ui>
+	<Script file="Init.lua"/>
+	<Include file="Options\Load.xml"/>
+	<Script file="Main.lua"/>
+</Ui>

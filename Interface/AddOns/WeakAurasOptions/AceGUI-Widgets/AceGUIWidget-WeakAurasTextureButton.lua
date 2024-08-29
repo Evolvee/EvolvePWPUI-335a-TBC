@@ -1,9 +1,8 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 
-local Type, Version = "WeakAurasTextureButton", 25
+local Type, Version = "WeakAurasTextureButton", 23
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
-local GetAtlasInfo = C_Texture and  C_Texture.GetAtlasInfo or GetAtlasInfo
 
 local function Hide_Tooltip()
   GameTooltip:Hide();
@@ -28,56 +27,42 @@ local methods = {
   end,
   ["OnRelease"] = function(self)
     self:ClearPick();
-    self:SetOnUpdate(nil)
     self.texture:SetTexture();
   end,
-  ["SetTexture"] = function(self, texturePath, name, IsStopMotion)
-    self.texture:SetTexCoord(0, 1, 0, 1)
-    local atlasInfo = GetAtlasInfo(texturePath)
-    if atlasInfo then
-      self.texture:SetAtlas(texturePath, false);
-      self.texture.IsAtlas = true
-      if atlasInfo.width > atlasInfo.height then
-        self.texture:SetSize(120, 120 * (atlasInfo.height / atlasInfo.width))
-      elseif atlasInfo.height > atlasInfo.width then
-        self.texture:SetSize(120 * (atlasInfo.width / atlasInfo.height), 120)
-      else
-        self.texture:SetSize(120, 120)
-      end
-    else
-      self.texture:SetSize(120, 120)
-      self.texture:SetTexture(texturePath, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE");
-      self.texture.IsAtlas = nil
-    end
+  ["SetTexture"] = function(self, texturePath, name)
+    self.texture:SetTexture(texturePath);
     self.texture.path = texturePath;
     self.texture.name = name;
-    self.texture.IsStopMotion = IsStopMotion
   end,
-  ["ChangeTexture"] = function(self, r, g, b, a, texRotation, auraRotation, mirror, blendMode)
-    if not self.texture.IsAtlas then
-      local ulx,uly , llx,lly , urx,ury , lrx,lry;
-      local angle = rad(135 - texRotation)
+  ["ChangeTexture"] = function(self, r, g, b, a, rotate, discrete_rotation, rotation, mirror, blendMode)
+    local ulx,uly , llx,lly , urx,ury , lrx,lry;
+    if(rotate) then
+      local angle = rad(135 - rotation);
       local vx = math.cos(angle);
       local vy = math.sin(angle);
+
       ulx,uly , llx,lly , urx,ury , lrx,lry = 0.5+vx,0.5-vy , 0.5-vy,0.5-vx , 0.5+vy,0.5+vx , 0.5-vx,0.5+vy;
-      if(mirror) then
-        self.texture:SetTexCoord(urx,ury , lrx,lry , ulx,uly , llx,lly);
-      else
-        self.texture:SetTexCoord(ulx,uly , llx,lly , urx,ury , lrx,lry);
-      end
     else
-      self.texture:SetAtlas(self.texture.path)
+      if(discrete_rotation == 0 or discrete_rotation == 360) then
+        ulx,uly , llx,lly , urx,ury , lrx,lry = 0,0 , 0,1 , 1,0 , 1,1;
+      elseif(discrete_rotation == 90) then
+        ulx,uly , llx,lly , urx,ury , lrx,lry = 1,0 , 0,0 , 1,1 , 0,1;
+      elseif(discrete_rotation == 180) then
+        ulx,uly , llx,lly , urx,ury , lrx,lry = 1,1 , 1,0 , 0,1 , 0,0;
+      elseif(discrete_rotation == 270) then
+        ulx,uly , llx,lly , urx,ury , lrx,lry = 0,1 , 1,1 , 0,0 , 1,0;
+      end
+    end
+    if(mirror) then
+      self.texture:SetTexCoord(urx,ury , lrx,lry , ulx,uly , llx,lly);
+    else
+      self.texture:SetTexCoord(ulx,uly , llx,lly , urx,ury , lrx,lry);
     end
     self.texture:SetVertexColor(r, g, b, a);
     self.texture:SetBlendMode(blendMode);
-    self.texture:SetRotation(auraRotation / 180 * math.pi)
   end,
   ["SetTexCoord"] = function(self, left, right, top, bottom)
-    if self.texture.IsAtlas and not self.texture.IsStopMotion then
-      self.texture:SetAtlas(self.texture.path)
-    else
-      self.texture:SetTexCoord(left, right, top, bottom);
-    end
+    self.texture:SetTexCoord(left, right, top, bottom);
   end,
   ["SetOnUpdate"] = function(self, func)
     self.frame:SetScript("OnUpdate", func);
@@ -102,10 +87,7 @@ Constructor
 
 local function Constructor()
   local name = "WeakAurasTextureButton"..AceGUI:GetNextWidgetNum(Type);
-  local button = CreateFrame("Button", name, UIParent, "OptionsListButtonTemplate");
-  if BackdropTemplateMixin then
-    Mixin(button, BackdropTemplateMixin)
-  end
+  local button = CreateFrame("BUTTON", name, UIParent, "OptionsListButtonTemplate");
   button:SetHeight(128);
   button:SetWidth(128);
   button:SetBackdrop({
@@ -114,7 +96,7 @@ local function Constructor()
     tile = true, tileSize = 16, edgeSize = 16,
     insets = { left = 4, right = 4, top = 4, bottom = 4 }
   });
-  button:SetBackdropColor(0.1,0.1,0.1,0.2);
+  button:SetBackdropColor(0.1,0.1,0.1);
   button:SetBackdropBorderColor(0.4,0.4,0.4);
 
   local highlighttexture = button:CreateTexture(nil, "OVERLAY");
@@ -125,8 +107,8 @@ local function Constructor()
   button:SetHighlightTexture(highlighttexture);
 
   local texture = button:CreateTexture(nil, "OVERLAY");
-  texture:SetPoint("CENTER")
-  texture:SetSize(120, 120)
+  texture:SetPoint("BOTTOMLEFT", button, 4, 4);
+  texture:SetPoint("TOPRIGHT", button, -4, -4);
 
   button:SetScript("OnEnter", function() Show_Tooltip(button, texture.name, texture.path:gsub("\\", "\n")) end);
   button:SetScript("OnLeave", Hide_Tooltip);

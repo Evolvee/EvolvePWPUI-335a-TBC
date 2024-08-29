@@ -1,4 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -53,12 +53,6 @@ local function createOptions(id, data)
           data.width = data.height;
           data.height = temp;
           data.icon_side = data.icon_side == "LEFT" and "RIGHT" or "LEFT";
-
-          if(data.rotateText == "LEFT" or data.rotateText == "RIGHT") then
-            data.rotateText = "NONE";
-          elseif(data.rotateText == "NONE") then
-            data.rotateText = "LEFT"
-          end
         end
 
         data.orientation = v;
@@ -92,46 +86,25 @@ local function createOptions(id, data)
       name = L["Bar Color Settings"],
       order = 39
     },
-    enableGradient = {
-      type = "toggle",
-      width = WeakAuras.normalWidth,
-      name = L["Enable Gradient"],
-      order = 39.1
-    },
-    gradientOrientation = {
-      type = "select",
-      width = WeakAuras.normalWidth,
-      values = OptionsPrivate.Private.gradient_orientations,
-      name = L["Gradient Orientation"],
-      order = 39.2
-    },
     barColor = {
       type = "color",
       width = WeakAuras.normalWidth,
-      name = L["Bar Color/Gradient Start"],
+      name = L["Bar Color"],
       hasAlpha = true,
-      order = 39.3
-    },
-    barColor2 = {
-      type = "color",
-      width = WeakAuras.normalWidth,
-      name = L["Gradient End"],
-      hasAlpha = true,
-      order = 39.4
+      order = 39.1
     },
     backgroundColor = {
       type = "color",
       width = WeakAuras.normalWidth,
       name = L["Background Color"],
       hasAlpha = true,
-      order = 39.5
+      order = 39.2
     },
     alpha = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Bar Alpha"],
-      order = 39.6,
+      order = 39.3,
       min = 0,
       max = 1,
       bigStep = 0.01,
@@ -233,7 +206,6 @@ local function createOptions(id, data)
     },
     zoom = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Zoom"],
       order = 40.91,
@@ -320,7 +292,6 @@ local function createOptions(id, data)
     },
     sparkWidth = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Width"],
       order = 44.6,
@@ -332,7 +303,6 @@ local function createOptions(id, data)
     },
     sparkHeight = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Height"],
       order = 44.7,
@@ -344,7 +314,6 @@ local function createOptions(id, data)
     },
     sparkOffsetX = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["X Offset"],
       order = 44.8,
@@ -356,7 +325,6 @@ local function createOptions(id, data)
     },
     sparkOffsetY = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Y Offset"],
       order = 44.9,
@@ -377,7 +345,6 @@ local function createOptions(id, data)
     },
     sparkRotation = {
       type = "range",
-      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Rotation"],
       min = 0,
@@ -411,7 +378,7 @@ local function createOptions(id, data)
     },
   };
 
-  options = OptionsPrivate.Private.regionPrototype.AddAdjustedDurationOptions(options, data, 36.5);
+  options = WeakAuras.regionPrototype.AddAdjustedDurationOptions(options, data, 36.5);
 
   local overlayInfo = OptionsPrivate.Private.GetOverlayInfo(data);
   if (overlayInfo and next(overlayInfo)) then
@@ -483,7 +450,7 @@ end
 -- Create preview thumbnail
 local function createThumbnail()
   -- Preview frame
-  local borderframe = CreateFrame("Frame", nil, UIParent);
+  local borderframe = CreateFrame("FRAME", nil, UIParent);
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
 
@@ -494,13 +461,13 @@ local function createThumbnail()
   border:SetTexCoord(0.2, 0.8, 0.2, 0.8);
 
   -- Main region
-  local region = CreateFrame("Frame", nil, borderframe);
+  local region = CreateFrame("FRAME", nil, borderframe);
   borderframe.region = region;
   region:SetWidth(32);
   region:SetHeight(32);
 
   -- Status-bar frame
-  local bar = CreateFrame("Frame", nil, region);
+  local bar = CreateFrame("FRAME", nil, region);
   borderframe.bar = bar;
 
   -- Fake status-bar
@@ -633,15 +600,11 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
         iconPath = path or data.displayIcon
       end
 
-      if iconPath and iconPath ~= "" then
-        OptionsPrivate.Private.SetTextureOrAtlas(self.icon, iconPath)
-      else
-        OptionsPrivate.Private.SetTextureOrAtlas(self.icon, "Interface\\Icons\\INV_Misc_QuestionMark")
-      end
+      icon:SetTexture(iconPath and iconPath ~= "" and iconPath or "Interface\\Icons\\INV_Misc_QuestionMark")
     end
 
     if data then
-      local _, icon = WeakAuras.GetNameAndIcon(data)
+      local name, icon = WeakAuras.GetNameAndIcon(data)
       borderframe:SetIcon(icon)
     end
 
@@ -665,7 +628,7 @@ local function createIcon()
   };
 
   -- Create and configure thumbnail
-  local thumbnail = createThumbnail();
+  local thumbnail = createThumbnail(UIParent);
   modifyThumbnail(UIParent, thumbnail, data, nil, 32, 18);
   thumbnail:SetIcon("Interface\\Icons\\INV_Sword_62");
 
@@ -690,7 +653,6 @@ local templates = {
       width = 30,
       height = 200,
       barColor = { 0, 1, 0, 1},
-      rotateText = "LEFT",
       orientation = "VERTICAL_INVERSE",
       inverse = true,
       smoothProgress = true,
@@ -825,7 +787,4 @@ local function GetAnchors(data)
 end
 
 -- Register new region type options with WeakAuras
-OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
-table.insert(OptionsPrivate.registerRegions, function()
-  OptionsPrivate.Private.RegisterRegionOptions("aurabar", createOptions, createIcon, L["Progress Bar"], createThumbnail, modifyThumbnail, L["Shows a progress bar with name, timer, and icon"], templates, GetAnchors);
-end)
+WeakAuras.RegisterRegionOptions("aurabar", createOptions, createIcon, L["Progress Bar"], createThumbnail, modifyThumbnail, L["Shows a progress bar with name, timer, and icon"], templates, GetAnchors);

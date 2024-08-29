@@ -1,0 +1,10 @@
+## Interface: 30300
+## Author Tsoukie
+## Title: Tsoukie Party Tracker
+## Version: 1.1.15
+## Notes: Track selected cooldowns of party members.
+## RequiredDeps: !!!ClassicAPI
+## SavedVariables: TPTDB
+
+Libs\Load.xml
+Core\Load.xml

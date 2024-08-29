@@ -2,27 +2,38 @@ local type, ipairs, pairs, tinsert = type, ipairs, pairs, tinsert
 local GetSpellInfo = GetSpellInfo
 local AURA_TYPE_DEBUFF, AURA_TYPE_BUFF = AURA_TYPE_DEBUFF, AURA_TYPE_BUFF
 
-local LibClassAuras = LibStub:NewLibrary("LibClassAuras-1.0", 1)
+local LibClassAuras = LibStub:NewLibrary("LibClassAuras-1.0", 2)
 LibClassAuras.debuffs = {}
 LibClassAuras.debuffToId = {}
 LibClassAuras.buffs = {}
 LibClassAuras.buffToId = {}
 LibClassAuras.altNames = {}
 
+LibClassAuras.gameExpansion = ({
+    [WOW_PROJECT_MAINLINE] = "retail",
+    [WOW_PROJECT_CLASSIC] = "classic",
+    [WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5] = "tbc"
+})[WOW_PROJECT_ID]
+
 local function Spell(id, opts, class, spellTable, idTable)
     if not opts or not class then
         return
     end
 
-    local lastRankID
+    local spellName
     if type(id) == "table" then
-        local clones = id
-        lastRankID = clones[#clones]
+        local realIds = {}
+        for i = 1, #id do
+            if GetSpellInfo(id[i]) then
+                tinsert(realIds, id[i])
+                spellName = GetSpellInfo(id[i])
+            end
+        end
+        id = realIds
     else
-        lastRankID = id
+        spellName = GetSpellInfo(id)
     end
-
-    local spellName = GetSpellInfo(lastRankID)
+    
     if not spellName then
         return
     end

@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="AddonUsage Toggle" header="ADDONUSAGE">
+		AddonUsage.Toggle()
+	</Binding>
+</Bindings>

@@ -1,0 +1,6 @@
+<Ui>
+	<Script file="Default.lua"/>
+	<Script file="Locale.lua"/>
+	<Script file="Helper.lua"/>
+	<Script file="Panel.lua"/>
+</Ui>

@@ -1,4 +1,0 @@
-## Interface: 30403
-## Title: PartyDebuffs
-## Author: Xyz
-core.lua

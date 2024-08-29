@@ -1,98 +1,122 @@
--- a pulse finish effect
-local AddonName, Addon = ...
-local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+--[[
+	pulse.lua
+		a pulsing effect for when a cooldown completes
+--]]
 
-local PULSE_SCALE = 2.5
-local PULSE_DURATION = 0.6
+local Classy = LibStub('Classy-1.0')
+local L = OMNICC_LOCALS
+local PULSE_SCALE = 3
+local PULSE_DURATION = 0.8
 
-local PulseEffect = Addon.FX:Create("pulse", L.Pulse, L.PulseTip)
+--[[
+	The pulse object
+--]]
 
-function PulseEffect:Run(cooldown)
-	local parent = cooldown:GetParent()
-	if (not parent) or parent:IsForbidden() then
-		return
-	end
+local Pulse = Classy:New('Frame')
 
-	local icon = Addon:GetButtonIcon(parent)
-	if icon then
-		self:Start(self:Get(parent) or self:Create(parent), icon)
-	end
-end
+function Pulse:New(parent)
+	local f = self:Bind(CreateFrame('Frame', nil, parent))
+	f:SetAllPoints(parent)
+	f:SetToplevel(true)
+	f:Hide()
 
-function PulseEffect:Start(pulse, icon)
-	if pulse.animation:IsPlaying() then
-		pulse.animation:Stop()
-	end
+	f.animation = f:CreatePulseAnimation()
+	f:SetScript('OnHide', f.OnHide)
 
-	local r, g, b = icon:GetVertexColor()
-	pulse.icon:SetVertexColor(r, g, b, 0.7)
-	pulse.icon:SetTexture(icon:GetTexture())
-	pulse:Show()
-	pulse.animation:Play()
-end
+	local icon = f:CreateTexture(nil, 'OVERLAY')
+	icon:SetPoint('CENTER')
+	icon:SetBlendMode('ADD')
+	icon:SetAllPoints(f)
+	f.icon = icon
 
-function PulseEffect:Get(owner)
-	return self.effects and self.effects[owner]
+	return f
 end
 
 do
 	local function animation_OnFinished(self)
 		local parent = self:GetParent()
-
 		if parent:IsShown() then
 			parent:Hide()
 		end
 	end
 
-	local function pulseFrame_OnHide(self)
-		if self.animation:IsPlaying() then
-			self.animation:Stop()
-		end
+	function Pulse:CreatePulseAnimation()
+		local g = self:CreateAnimationGroup()
+		g:SetLooping('NONE')
+		g:SetScript('OnFinished', animation_OnFinished)
 
-		self:Hide()
-	end
-
-	local function pulseFrame_CreateIcon(self)
-		local icon = self:CreateTexture(nil, "OVERLAY")
-		icon:SetBlendMode("ADD")
-		icon:SetAllPoints(self)
-
-		return icon
-	end
-
-	local function pulseFrame_CreateAnimation(self)
-		local group = self:CreateAnimationGroup()
-		group:SetScript("OnFinished", animation_OnFinished)
-
-		local grow = group:CreateAnimation("Scale")
+		--animation = AnimationGroup:CreateAnimation("animationType" [, "name" [, "inheritsFrom"]])
+		local grow = g:CreateAnimation('Scale')
 		grow:SetScale(PULSE_SCALE, PULSE_SCALE)
+		grow:SetOrigin('CENTER', 0, 0)
 		grow:SetDuration(PULSE_DURATION/2)
 		grow:SetOrder(1)
 
-		local shrink = group:CreateAnimation("Scale")
+		local shrink = g:CreateAnimation('Scale')
 		shrink:SetScale(-PULSE_SCALE, -PULSE_SCALE)
+		shrink:SetOrigin('CENTER', 0, 0)
 		shrink:SetDuration(PULSE_DURATION/2)
 		shrink:SetOrder(2)
 
-		return group
+		return g
 	end
+end
 
-	function PulseEffect:Create(owner)
-		local pulse = Addon:CreateHiddenFrame("Frame", nil, owner)
+function Pulse:OnHide()
+	self.animation:Finish()
+	self:Hide()
+end
 
-		pulse:SetAllPoints(owner)
-		pulse:SetToplevel(true)
-		pulse:SetScript("OnHide", pulseFrame_OnHide)
-		pulse.icon = pulseFrame_CreateIcon(pulse)
-		pulse.animation = pulseFrame_CreateAnimation(pulse)
+function Pulse:Start(texture)
+	if not self.animation:IsPlaying() then
+		local icon = self.icon
+		local r, g, b = icon:GetVertexColor()
+		icon:SetVertexColor(r, g, b, 0.7)
+		icon:SetTexture(texture:GetTexture())
 
-		local effects = self.effects
-		if effects then
-			effects[owner] = pulse
-		else
-			self.effects = { [owner] = pulse }
+		self:Show()
+		self.animation:Play()
+	end
+end
+
+
+--[[ register effect with OmniCC ]]--
+
+do
+	local pulses = setmetatable({}, {__index = function(t, k)
+		local f = Pulse:New(k)
+		t[k] = f
+		return f
+	end})
+
+	local function getTexture(frame)
+		if not frame then
+			return
 		end
 
-		return pulse
+		local icon = frame.icon
+		if icon and icon.GetTexture then
+			return icon
+		end
+
+		local name = frame:GetName()
+		if name then
+			local icon = _G[name .. 'Icon'] or _G[name .. 'IconTexture']
+			if icon and icon.GetTexture then
+				return icon
+			end
+		end
 	end
+
+	OmniCC:RegisterEffect{
+		id = 'pulse',
+		name = L.Pulse,
+		Run = function(self, cooldown)
+			local p = cooldown:GetParent()
+			local texture = getTexture(p)
+			if texture then
+				pulses[p]:Start(texture)
+			end
+		end
+	}
 end

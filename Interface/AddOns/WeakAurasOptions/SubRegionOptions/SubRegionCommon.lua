@@ -1,4 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Magic constant
@@ -23,7 +23,7 @@ local function AdjustConditions(data, replacements)
   end
 end
 
-function OptionsPrivate.DeleteSubRegion(data, index, regionType)
+function WeakAuras.DeleteSubRegion(data, index, regionType)
   if not data.subRegions then
     return
   end
@@ -123,7 +123,7 @@ function OptionsPrivate.AddUpDownDeleteDuplicate(options, parentData, index, sub
   end
   options.__delete = function()
     for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
-      OptionsPrivate.DeleteSubRegion(child, index, subRegionType)
+      WeakAuras.DeleteSubRegion(child, index, subRegionType)
     end
     WeakAuras.ClearAndUpdateOptions(parentData.id)
   end

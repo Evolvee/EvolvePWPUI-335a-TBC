@@ -1,8 +1,0 @@
-## Interface: 30401
-## Title: LFG Member Classes
-## Notes: Shows what classes and roles are in LFG tool premade groups.
-## Author: bloodleh
-## Version: 1.1
-## DefaultState: enabled
-
-LFGMemberClasses.lua

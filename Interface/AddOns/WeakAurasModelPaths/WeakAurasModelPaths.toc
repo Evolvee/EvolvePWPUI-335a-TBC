@@ -1,8 +1,7 @@
-## Interface: 100200
+## Interface: 30300
 ## Title: WeakAuras Model Paths
-## Author: The WeakAuras Team
-## Version: 5.8.6
-## IconTexture: Interface\AddOns\WeakAuras\Media\Textures\icon.blp
+## Author: Mirrored and the WeakAuras Team
+## Version: 2.16.0-beta1
 ## Notes: Model paths for WeakAuras
 ## Notes-esES: Las rutas de archivos de modelos en 3D para WeakAuras
 ## Notes-deDE: 3D-Model Pfade für WeakAuras

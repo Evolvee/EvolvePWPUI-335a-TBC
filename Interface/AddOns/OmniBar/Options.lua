@@ -156,11 +156,13 @@ local function GetSpells()
 			name = LOCALIZED_CLASS_NAMES_MALE_WITH_GENERAL[CLASS_SORT_ORDER_WITH_GENERAL[i]],
 			type = "group",
 			args = {},
+			--[[
+			Tsoukie: This causes an error on 3.3.5a, due to the info values being different.
 			hidden = function(info)
 				local bar = info[#info-2]
 				local class = info[#info]
 				return next(info.options.args.bars.args[bar].args.spells.args[class].args) == nil
-			end,
+			end,]]
 			icon = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes",
 			iconCoords = CLASS_ICON_TCOORDS[CLASS_SORT_ORDER_WITH_GENERAL[i]]
 		}
@@ -179,10 +181,13 @@ local function GetSpells()
 					if string.len(spellName) > 25 then
 						spellName = string.sub(spellName, 0, 22) .. "..."
 					end
-					local s = Spell:CreateFromSpellID(spellID)
+					--[[local s = Spell:CreateFromSpellID(spellID)
 					s:ContinueOnSpellLoad(function()
 						descriptions[spellID] = s:GetSpellDescription()
-					end)
+					end)]]
+
+					-- Tsoukie: Avoid 700+ mixin tables from above.
+					descriptions[spellID] = GetSpellDescription(spellID)
 
 					spells[CLASS_SORT_ORDER_WITH_GENERAL[i]].args[tostring(spellID)] = {
 						type = "toggle",
@@ -531,6 +536,7 @@ function OmniBar:AddBarToOptions(key, refresh)
 						step = 0.01,
 						order = 110,
 						width = "double",
+						disabled = true,
 					},
 					swipeAlphaDesc = {
 						name = L["Set the transparency of the swipe animation"] .. "\n",
@@ -1103,13 +1109,13 @@ function OmniBar:SetupOptions()
 			vers = {
 				order = 1,
 				type = "description",
-				name = "|cffffd700"..L["Version"].."|r "..self.version.string.."\n",
+				name = "|cffffd700 "..L["Version"].."|r "..self.version.string..", |cffffd700Based on OmniBar|r v14.21\n",
 				cmdHidden = true
 			},
 			desc = {
 				order = 2,
 				type = "description",
-				name = "|cffffd700 "..L["Author"].."|r Jordon\n",
+				name = "|cffffd700 "..L["Author"].."|r Jordon".."|cffffd700 Backported by|r Tsoukie\n",
 				cmdHidden = true
 			},
 			bars = {

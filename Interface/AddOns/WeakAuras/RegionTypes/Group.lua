@@ -1,5 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -26,17 +25,17 @@ local default = {
 -- Called when first creating a new region/display
 local function create(parent)
   -- Main region
-  local region = CreateFrame("Frame", nil, parent);
+  local region = CreateFrame("FRAME", nil, parent);
   region.regionType = "group"
   region:SetMovable(true);
   region:SetWidth(2);
   region:SetHeight(2);
 
   -- Border region
-  local border = CreateFrame("Frame", nil, region, "BackdropTemplate")
+  local border = CreateFrame("frame", nil, region);
   region.border = border;
 
-  Private.regionPrototype.create(region);
+  WeakAuras.regionPrototype.create(region);
 
   local oldSetFrameLevel = region.SetFrameLevel
   region.SetFrameLevel = function(self, level)
@@ -91,7 +90,7 @@ local function modify(parent, region, data)
   else
     data.selfPoint = "CENTER";
   end
-  Private.regionPrototype.modify(parent, region, data);
+  WeakAuras.regionPrototype.modify(parent, region, data);
   -- Localize
   local border = region.border;
 
@@ -139,7 +138,7 @@ local function modify(parent, region, data)
         -- Scan children for visibility
         if not childVisible then
           for child in Private.TraverseLeafs(data) do
-            local childRegion = Private.regions[child.id] and Private.regions[child.id].region;
+            local childRegion = WeakAuras.regions[child.id] and WeakAuras.regions[child.id].region;
             if childRegion and childRegion.toShow then
               childVisible = true;
               break;
@@ -180,8 +179,8 @@ local function modify(parent, region, data)
     region.border:Hide()
   end
 
-  Private.regionPrototype.modifyFinish(parent, region, data);
+  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
 end
 
 -- Register new region type with WeakAuras
-Private.RegisterRegionType("group", create, modify, default);
+WeakAuras.RegisterRegionType("group", create, modify, default);

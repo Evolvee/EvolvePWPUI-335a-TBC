@@ -1,49 +1,43 @@
-if not WeakAuras.IsLibsOK() then
-  return
-end
-
---- @type string, Private
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, Private = ...
 local L = WeakAuras.L
 
 -- Takes as input a table of display data and attempts to update it to be compatible with the current version
---- Modernizes the aura data
----@param data auraData
 function Private.Modernize(data)
-  if not data.internalVersion or data.internalVersion < 2 then
+  if (not data.internalVersion or data.internalVersion < 2) then
     WeakAuras.prettyPrint(string.format("Data for '%s' is too old, can't modernize.", data.id))
-    data.internalVersion = 2
+    data.internalVersion = 2;
   end
 
   -- Version 3 was introduced April 2018 in Legion
-  if data.internalVersion < 3 then
-    if data.parent then
-      local parentData = WeakAuras.GetData(data.parent)
-      if parentData and parentData.regionType == "dynamicgroup" then
+  if (data.internalVersion < 3) then
+    if (data.parent) then
+      local parentData = WeakAuras.GetData(data.parent);
+      if(parentData and parentData.regionType == "dynamicgroup") then
         -- Version 3 allowed for offsets for dynamic groups, before that they were ignored
         -- Thus reset them in the V2 to V3 upgrade
-        data.xOffset = 0
-        data.yOffset = 0
+        data.xOffset = 0;
+        data.yOffset = 0;
       end
     end
   end
 
   -- Version 4 was introduced July 2018 in BfA
-  if data.internalVersion < 4 then
-    if data.conditions then
+  if (data.internalVersion < 4) then
+    if (data.conditions) then
       for conditionIndex, condition in ipairs(data.conditions) do
-        if condition.check then
-          local triggernum = condition.check.trigger
-          if triggernum then
-            local trigger
-            if triggernum == 0 then
-              trigger = data.trigger
-            elseif data.additional_triggers and data.additional_triggers[triggernum] then
-              trigger = data.additional_triggers[triggernum].trigger
+        if (condition.check) then
+          local triggernum = condition.check.trigger;
+          if (triggernum) then
+            local trigger;
+            if (triggernum == 0) then
+              trigger = data.trigger;
+            elseif(data.additional_triggers and data.additional_triggers[triggernum]) then
+              trigger = data.additional_triggers[triggernum].trigger;
             end
-            if trigger and trigger.event == "Cooldown Progress (Spell)" then
-              if condition.check.variable == "stacks" then
-                condition.check.variable = "charges"
+            if (trigger and trigger.event == "Cooldown Progress (Spell)") then
+              if (condition.check.variable == "stacks") then
+                condition.check.variable = "charges";
               end
             end
           end
@@ -73,7 +67,7 @@ function Private.Modernize(data)
   if data.internalVersion < 6 then
     if data.triggers then
       for triggernum, triggerData in ipairs(data.triggers) do
-        local trigger = triggerData.trigger
+        local trigger = triggerData.trigger;
         if trigger and trigger.type == "aura" then
           if trigger.showOn == "showOnMissing" then
             trigger.buffShowOn = "showOnMissing"
@@ -94,7 +88,9 @@ function Private.Modernize(data)
 
   -- Version 7 was introduced September 1 2018 in BfA
   -- Triggers were cleaned up into a 1-indexed array
+
   if data.internalVersion < 7 then
+
     -- migrate trigger data
     data.triggers = data.additional_triggers or {}
     tinsert(data.triggers, 1, {
@@ -117,9 +113,7 @@ function Private.Modernize(data)
     data.disjunctive = nil
     -- migrate condition trigger references
     local function recurseRepairChecks(checks)
-      if not checks then
-        return
-      end
+      if not checks then return end
       for _, check in pairs(checks) do
         if check.trigger and check.trigger >= 0 then
           check.trigger = check.trigger + 1
@@ -142,30 +136,28 @@ function Private.Modernize(data)
   if data.internalVersion < 9 then
     local function repairCheck(check)
       if check and check.variable == "buffed" then
-        local trigger = check.trigger and data.triggers[check.trigger] and data.triggers[check.trigger].trigger
-        if trigger then
-          if trigger.buffShowOn == "showOnActive" then
-            check.variable = "show"
-          elseif trigger.buffShowOn == "showOnMissing" then
-            check.variable = "show"
-            check.value = check.value == 0 and 1 or 0
+        local trigger = check.trigger and data.triggers[check.trigger] and data.triggers[check.trigger].trigger;
+        if (trigger) then
+          if(trigger.buffShowOn == "showOnActive") then
+            check.variable = "show";
+          elseif (trigger.buffShowOn == "showOnMissing") then
+            check.variable = "show";
+            check.value = check.value == 0 and 1 or 0;
           end
         end
       end
     end
 
     local function recurseRepairChecks(checks)
-      if not checks then
-        return
-      end
+      if not checks then return end
       for _, check in pairs(checks) do
-        repairCheck(check)
-        recurseRepairChecks(check.checks)
+        repairCheck(check);
+        recurseRepairChecks(check.checks);
       end
     end
     for _, condition in pairs(data.conditions) do
-      repairCheck(condition.check)
-      recurseRepairChecks(condition.check.checks)
+      repairCheck(condition.check);
+      recurseRepairChecks(condition.check.checks);
     end
   end
 
@@ -184,21 +176,13 @@ function Private.Modernize(data)
     end
   end
 
-  -- Version 12 was introduced February 2019 in BfA
-  if data.internalVersion < 12 then
-    if data.cooldownTextEnabled ~= nil then
-      data.cooldownTextDisabled = not data.cooldownTextEnabled
-      data.cooldownTextEnabled = nil
-    end
-  end
-
   -- Version 13 was introduced March 2019 in BfA
   if data.internalVersion < 13 then
     if data.regionType == "dynamicgroup" then
       local selfPoints = {
         default = "CENTER",
         RIGHT = function(data)
-          if data.align == "LEFT" then
+          if data.align  == "LEFT" then
             return "TOPLEFT"
           elseif data.align == "RIGHT" then
             return "BOTTOMLEFT"
@@ -207,7 +191,7 @@ function Private.Modernize(data)
           end
         end,
         LEFT = function(data)
-          if data.align == "LEFT" then
+          if data.align  == "LEFT" then
             return "TOPRIGHT"
           elseif data.align == "RIGHT" then
             return "BOTTOMRIGHT"
@@ -266,12 +250,11 @@ function Private.Modernize(data)
   if data.internalVersion < 14 then
     if data.triggers then
       for triggerId, triggerData in pairs(data.triggers) do
-        if
-          type(triggerData) == "table"
-          and triggerData.trigger
-          and triggerData.trigger.debuffClass
-          and type(triggerData.trigger.debuffClass) == "string"
-          and triggerData.trigger.debuffClass ~= ""
+        if type(triggerData) == "table"
+        and triggerData.trigger
+        and triggerData.trigger.debuffClass
+        and type(triggerData.trigger.debuffClass) == "string"
+        and triggerData.trigger.debuffClass ~= ""
         then
           local idx = triggerData.trigger.debuffClass
           data.triggers[triggerId].trigger.debuffClass = { [idx] = true }
@@ -293,27 +276,6 @@ function Private.Modernize(data)
 
   -- Version 16 was introduced May 2019 in BfA
   if data.internalVersion < 16 then
-    -- first conversion: attempt to migrate texture paths to file ids
-    if data.regionType == "texture" and type(data.texture) == "string" then
-      local textureId = GetFileIDFromPath(data.texture:gsub("\\\\", "\\"))
-      if textureId and textureId > 0 then
-        data.texture = tostring(textureId)
-      end
-    end
-    if data.regionType == "progresstexture" then
-      if type(data.foregroundTexture) == "string" then
-        local textureId = GetFileIDFromPath(data.foregroundTexture:gsub("\\\\", "\\"))
-        if textureId and textureId > 0 then
-          data.foregroundTexture = tostring(textureId)
-        end
-      end
-      if type(data.backgroundTexture) == "string" then
-        local textureId = GetFileIDFromPath(data.backgroundTexture:gsub("\\\\", "\\"))
-        if textureId and textureId > 0 then
-          data.backgroundTexture = tostring(textureId)
-        end
-      end
-    end
     -- second conversion: migrate name/realm conditions to tristate
     if data.load.use_name == false then
       data.load.use_name = nil
@@ -324,17 +286,6 @@ function Private.Modernize(data)
   end
 
   -- Version 18 was a migration for stance/form trigger, but deleted later because of migration issue
-
-  -- Version 19 were introduced in July 2019 in BfA
-  if data.internalVersion < 19 then
-    if data.triggers then
-      for triggerId, triggerData in ipairs(data.triggers) do
-        if triggerData.trigger.type == "status" and triggerData.trigger.event == "Cast" and triggerData.trigger.unit == "multi" then
-          triggerData.trigger.unit = "nameplate"
-        end
-      end
-    end
-  end
 
   -- Version 20 was introduced July 2019 in BfA
   if data.internalVersion < 20 then
@@ -361,7 +312,7 @@ function Private.Modernize(data)
         text_anchorPoint = convertPoint(data.text1Containment, data.text1Point),
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1 },
+        text_shadowColor = { 0, 0, 0, 1},
         text_shadowXOffset = 0,
         text_shadowYOffset = 0,
       }
@@ -380,7 +331,7 @@ function Private.Modernize(data)
         text_anchorPoint = convertPoint(data.text2Containment, data.text2Point),
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1 },
+        text_shadowColor = { 0, 0, 0, 1},
         text_shadowXOffset = 0,
         text_shadowYOffset = 0,
       }
@@ -407,16 +358,16 @@ function Private.Modernize(data)
         text1Color = "sub.1.text_color",
         text1FontSize = "sub.1.text_fontSize",
         text2Color = "sub.2.text_color",
-        text2FontSize = "sub.2.text_fontSize",
+        text2FontSize = "sub.2.text_fontSize"
       }
 
       data.subRegions = data.subRegions or {}
       tinsert(data.subRegions, text1)
-      if usetext2 then
+      if (usetext2) then
         tinsert(data.subRegions, text2)
       end
 
-      if data.conditions then
+      if (data.conditions) then
         for conditionIndex, condition in ipairs(data.conditions) do
           for changeIndex, change in ipairs(condition.changes) do
             if propertyRenames[change.property] then
@@ -435,7 +386,7 @@ function Private.Modernize(data)
         HORIZONTAL_INVERSE = { "INNER_LEFT", "INNER_RIGHT" },
         HORIZONTAL = { "INNER_RIGHT", "INNER_LEFT" },
         VERTICAL_INVERSE = { "INNER_BOTTOM", "INNER_TOP" },
-        VERTICAL = { "INNER_TOP", "INNER_BOTTOM" },
+        VERTICAL = {"INNER_TOP", "INNER_BOTTOM"}
       }
 
       local positions = orientationToPostion[data.orientation] or { "INNER_LEFT", "INNER_RIGHT" }
@@ -452,10 +403,10 @@ function Private.Modernize(data)
         text_anchorPoint = positions[1],
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1 },
+        text_shadowColor = { 0, 0, 0, 1},
         text_shadowXOffset = 1,
         text_shadowYOffset = -1,
-        rotateText = data.rotateText,
+        rotateText = data.rotateText
       }
 
       local text2 = {
@@ -470,10 +421,10 @@ function Private.Modernize(data)
         text_anchorPoint = positions[2],
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1 },
+        text_shadowColor = { 0, 0, 0, 1},
         text_shadowXOffset = 1,
         text_shadowYOffset = -1,
-        rotateText = data.rotateText,
+        rotateText = data.rotateText
       }
 
       local text3 = {
@@ -488,10 +439,10 @@ function Private.Modernize(data)
         text_anchorPoint = "ICON_CENTER",
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1 },
+        text_shadowColor = { 0, 0, 0, 1},
         text_shadowXOffset = 1,
         text_shadowYOffset = -1,
-        rotateText = data.rotateText,
+        rotateText = data.rotateText
       }
 
       data.timer = nil
@@ -527,7 +478,7 @@ function Private.Modernize(data)
       tinsert(data.subRegions, text2)
       tinsert(data.subRegions, text3)
 
-      if data.conditions then
+      if (data.conditions) then
         for conditionIndex, condition in ipairs(data.conditions) do
           for changeIndex, change in ipairs(condition.changes) do
             if propertyRenames[change.property] then
@@ -536,6 +487,7 @@ function Private.Modernize(data)
           end
         end
       end
+
     end
   end
 
@@ -577,10 +529,10 @@ function Private.Modernize(data)
       end
 
       local propertyRenames = {
-        borderColor = "sub." .. #data.subRegions .. ".border_color",
+        borderColor  = "sub.".. #data.subRegions..".border_color",
       }
 
-      if data.conditions then
+      if (data.conditions) then
         for conditionIndex, condition in ipairs(data.conditions) do
           for changeIndex, change in ipairs(condition.changes) do
             if propertyRenames[change.property] then
@@ -604,7 +556,7 @@ function Private.Modernize(data)
               if value then
                 trigger.form = { multi = { [value] = true } }
               else
-                trigger.form = { multi = {} }
+                trigger.form = { multi = { } }
               end
             elseif trigger.use_form then
               trigger.form = { single = value }
@@ -640,7 +592,7 @@ function Private.Modernize(data)
       data.subRegions = data.subRegions or {}
       -- Need to check if glow is needed
 
-      local prefix = "sub." .. #data.subRegions + 1 .. "."
+      local prefix = "sub.".. #data.subRegions + 1 .. "."
       -- For Conditions
       local propertyRenames = {
         glow = prefix .. "glow",
@@ -658,7 +610,7 @@ function Private.Modernize(data)
       }
 
       local needsGlow = data.glow
-      if not needsGlow and data.conditions then
+      if (not needsGlow and data.conditions) then
         for conditionIndex, condition in ipairs(data.conditions) do
           for changeIndex, change in ipairs(condition.changes) do
             if propertyRenames[change.property] then
@@ -702,7 +654,7 @@ function Private.Modernize(data)
       data.glowXOffset = nil
       data.glowYOffset = nil
 
-      if data.conditions then
+      if (data.conditions) then
         for conditionIndex, condition in ipairs(data.conditions) do
           for changeIndex, change in ipairs(condition.changes) do
             if propertyRenames[change.property] then
@@ -740,10 +692,16 @@ function Private.Modernize(data)
 
   if data.internalVersion < 29 then
     if data.actions then
-      if data.actions.start and data.actions.start.do_glow and data.actions.start.glow_type == nil then
+      if data.actions.start
+      and data.actions.start.do_glow
+      and data.actions.start.glow_type == nil
+      then
         data.actions.start.glow_type = "buttonOverlay"
       end
-      if data.actions.finish and data.actions.finish.do_glow and data.actions.finish.glow_type == nil then
+      if data.actions.finish
+      and data.actions.finish.do_glow
+      and data.actions.finish.glow_type == nil
+      then
         data.actions.finish.glow_type = "buttonOverlay"
       end
     end
@@ -771,8 +729,8 @@ function Private.Modernize(data)
           sym = sym or symbol
           if sym == "p" or sym == "t" then
             data["displayText_format_" .. symbol .. "_format"] = "timed"
-            data["displayText_format_" .. symbol .. "_time_precision"], data["displayText_format_" .. symbol .. "_time_dynamic"] =
-              convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
+            data["displayText_format_" .. symbol .. "_time_precision"],  data["displayText_format_" .. symbol .. "_time_dynamic"]
+               = convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
           end
         end
         seenSymbols[symbol] = symbol
@@ -789,8 +747,8 @@ function Private.Modernize(data)
               sym = sym or symbol
               if sym == "p" or sym == "t" then
                 subRegionData["text_text_format_" .. symbol .. "_format"] = "timed"
-                subRegionData["text_text_format_" .. symbol .. "_time_precision"], subRegionData["text_text_format_" .. symbol .. "_time_dynamic"] =
-                  convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
+                subRegionData["text_text_format_" .. symbol .. "_time_precision"],  subRegionData["text_text_format_" .. symbol .. "_time_dynamic"]
+                   = convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
               end
             end
             seenSymbols[symbol] = symbol
@@ -800,7 +758,7 @@ function Private.Modernize(data)
     end
 
     if data.actions then
-      for _, when in ipairs({ "start", "finish" }) do
+      for _, when in ipairs{ "start", "finish" } do
         if data.actions[when] then
           local seenSymbols = {}
           Private.ParseTextStr(data.actions[when].message, function(symbol)
@@ -809,8 +767,8 @@ function Private.Modernize(data)
               sym = sym or symbol
               if sym == "p" or sym == "t" then
                 data.actions[when]["message_format_" .. symbol .. "_format"] = "timed"
-                data.actions[when]["message_format_" .. symbol .. "_time_precision"], data.actions[when]["message_format_" .. symbol .. "_time_dynamic"] =
-                  convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
+                data.actions[when]["message_format_" .. symbol .. "_time_precision"],  data.actions[when]["message_format_" .. symbol .. "_time_dynamic"]
+                   = convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
               end
             end
             seenSymbols[symbol] = symbol
@@ -830,8 +788,8 @@ function Private.Modernize(data)
                 sym = sym or symbol
                 if sym == "p" or sym == "t" then
                   change.value["message_format_" .. symbol .. "_format"] = "timed"
-                  change.value["message_format_" .. symbol .. "_time_precision"], change.value["message_format_" .. symbol .. "_time_dynamic"] =
-                    convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
+                  change.value["message_format_" .. symbol .. "_time_precision"],  change.value["message_format_" .. symbol .. "_time_dynamic"]
+                     = convertLegacyPrecision(sym == "p" and progressPrecision or totalPrecision)
                 end
               end
               seenSymbols[symbol] = symbol
@@ -841,6 +799,9 @@ function Private.Modernize(data)
       end
     end
 
+    -- To convert:
+    -- * actions
+    -- * conditions
     data.progressPrecision = nil
     data.totalPrecision = nil
   end
@@ -898,10 +859,6 @@ function Private.Modernize(data)
             replacements[triggerId] = {}
             replacements[triggerId]["use_name"] = "use_namerealm"
             replacements[triggerId]["name"] = "namerealm"
-          elseif event == "Alternate Power" then
-            replacements[triggerId] = {}
-            replacements[triggerId]["use_unitname"] = "use_namerealm"
-            replacements[triggerId]["unitname"] = "namerealm"
           elseif event == "Cast" then
             replacements[triggerId] = {}
             replacements[triggerId]["use_sourceName"] = "use_sourceNameRealm"
@@ -917,17 +874,15 @@ function Private.Modernize(data)
             end
 
             local function recurseRepairChecks(replacements, checks)
-              if not checks then
-                return
-              end
+              if not checks then return end
               for _, check in pairs(checks) do
-                repairCheck(replacements, check)
-                recurseRepairChecks(replacements, check.checks)
+                repairCheck(replacements, check);
+                recurseRepairChecks(replacements, check.checks);
               end
             end
             for _, condition in pairs(data.conditions) do
-              repairCheck(replacements, condition.check)
-              recurseRepairChecks(replacements, condition.check.checks)
+              repairCheck(replacements, condition.check);
+              recurseRepairChecks(replacements, condition.check.checks);
             end
           end
         end
@@ -956,11 +911,13 @@ function Private.Modernize(data)
         triggerData.trigger.blackauraspellids = nil
       end
     end
+
   end
 
   -- Introduced in July 2020 in Shadowlands
   if data.internalVersion < 34 then
-    if data.regionType == "dynamicgroup" and (data.grow == "CIRCLE" or data.grow == "COUNTERCIRCLE") then
+    if data.regionType == 'dynamicgroup'
+    and (data.grow == "CIRCLE" or data.grow == "COUNTERCIRCLE") then
       if data.arcLength == 360 then
         data.fullCircle = true
       else
@@ -969,63 +926,12 @@ function Private.Modernize(data)
     end
   end
 
-  if data.internalVersion < 35 then
-    if data.regionType == "texture" then
-      data.textureWrapMode = "CLAMP"
-    end
-  end
-
   if data.internalVersion < 36 then
     data.ignoreOptionsEventErrors = true
   end
 
-  if data.internalVersion < 37 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      if triggerData.trigger.type == "aura2" then
-        local group_role = triggerData.trigger.group_role
-        if group_role then
-          triggerData.trigger.group_role = {}
-          triggerData.trigger.group_role[group_role] = true
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 38 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      if triggerData.trigger.type == "status" then
-        if triggerData.trigger.event == "Item Type Equipped" then
-          if triggerData.trigger.itemTypeName then
-            if triggerData.trigger.itemTypeName.single then
-              triggerData.trigger.itemTypeName.single = triggerData.trigger.itemTypeName.single + 2 * 256
-            end
-            if triggerData.trigger.itemTypeName.multi then
-              local converted = {}
-              for v in pairs(triggerData.trigger.itemTypeName.multi) do
-                converted[v + 512] = true
-              end
-              triggerData.trigger.itemTypeName.multi = converted
-            end
-          end
-        end
-      end
-    end
-    if data.load.itemtypeequipped then
-      if data.load.itemtypeequipped.single then
-        data.load.itemtypeequipped.single = data.load.itemtypeequipped.single + 2 * 256
-      end
-      if data.load.itemtypeequipped.multi then
-        local converted = {}
-        for v in pairs(data.load.itemtypeequipped.multi) do
-          converted[v + 512] = true
-        end
-        data.load.itemtypeequipped.multi = converted
-      end
-    end
-  end
-
   if data.internalVersion < 39 then
-    if data.regionType == "icon" or data.regionType == "aurabar" then
+    if data.regionType == 'icon' or data.regionType == 'aurabar' then
       if data.auto then
         data.iconSource = -1
       else
@@ -1036,7 +942,7 @@ function Private.Modernize(data)
 
   if data.internalVersion < 40 then
     data.information = data.information or {}
-    if data.regionType == "group" then
+    if data.regionType == 'group' then
       data.information.groupOffset = true
     end
     data.information.ignoreOptionsEventErrors = data.ignoreOptionsEventErrors
@@ -1053,15 +959,12 @@ function Private.Modernize(data)
       ["Unit Characteristics"] = "unit",
       ["Cooldown Progress (Spell)"] = "spell",
       ["Power"] = "unit",
-      ["PvP Talent Selected"] = "unit",
       ["Combat Log"] = "combatlog",
-      ["Item Set"] = "item",
       ["Health"] = "unit",
       ["Cooldown Progress (Item)"] = "item",
       ["Conditions"] = "unit",
       ["Spell Known"] = "spell",
       ["Cooldown Ready (Item)"] = "item",
-      ["Faction Reputation"] = "unit",
       ["Pet Behavior"] = "unit",
       ["Range Check"] = "unit",
       ["Character Stats"] = "unit",
@@ -1072,18 +975,13 @@ function Private.Modernize(data)
       ["Cast"] = "unit",
       ["Item Count"] = "item",
       ["BigWigs Timer"] = "addons",
-      ["Spell Activation Overlay"] = "spell",
       ["DBM Timer"] = "addons",
-      ["Item Type Equipped"] = "item",
-      ["Alternate Power"] = "unit",
       ["Item Equipped"] = "item",
-      ["Item Bonus Id Equipped"] = "item",
       ["DBM Announce"] = "addons",
       ["Swing Timer"] = "unit",
       ["Totem"] = "spell",
       ["Ready Check"] = "event",
       ["BigWigs Message"] = "addons",
-      ["Class/Spec"] = "unit",
       ["Stance/Form/Aura"] = "unit",
       ["Weapon Enchant"] = "item",
       ["Global Cooldown"] = "spell",
@@ -1093,6 +991,7 @@ function Private.Modernize(data)
       ["Crowd Controlled"] = "unit",
       ["Cooldown Progress (Equipment Slot)"] = "item",
       ["Combat Events"] = "event",
+      ["Combo Points"] = "unit",
     }
 
     for triggerId, triggerData in ipairs(data.triggers) do
@@ -1104,60 +1003,6 @@ function Private.Modernize(data)
           WeakAuras.prettyPrint("Unknown trigger type found in, please report: ", data.id, triggerData.trigger.event)
         end
       end
-    end
-  end
-
-  if data.internalVersion < 43 then
-    -- The merging of zone ids and group ids went a bit wrong,
-    -- fortunately that was caught before a actual release
-    -- still try to recover the data
-    if data.internalVersion == 42 then
-      if data.load.zoneIds then
-        local newstring = ""
-        local first = true
-        for id in data.load.zoneIds:gmatch("%d+") do
-          if not first then
-            newstring = newstring .. ", "
-          end
-
-          -- If the id is potentially a group, assume it is a group
-          if C_Map.GetMapGroupMembersInfo(tonumber(id)) then
-            newstring = newstring .. "g" .. id
-          else
-            newstring = newstring .. id
-          end
-          first = false
-        end
-        data.load.zoneIds = newstring
-      end
-    else
-      if data.load.use_zoneId == data.load.use_zonegroupId then
-        data.load.use_zoneIds = data.load.use_zoneId
-
-        local zoneIds = strtrim(data.load.zoneId or "")
-        local zoneGroupIds = strtrim(data.load.zonegroupId or "")
-
-        zoneGroupIds = zoneGroupIds:gsub("(%d+)", "g%1")
-
-        if zoneIds ~= "" or zoneGroupIds ~= "" then
-          data.load.zoneIds = zoneIds .. ", " .. zoneGroupIds
-        else
-          -- One of them is empty
-          data.load.zoneIds = zoneIds .. zoneGroupIds
-        end
-      elseif data.load.use_zoneId then
-        data.load.use_zoneIds = true
-        data.load.zoneIds = data.load.zoneId
-      elseif data.load.use_zonegroupId then
-        data.load.use_zoneIds = true
-        local zoneGroupIds = strtrim(data.load.zonegroupId or "")
-        zoneGroupIds = zoneGroupIds:gsub("(%d+)", "g%1")
-        data.load.zoneIds = zoneGroupIds
-      end
-      data.load.use_zoneId = nil
-      data.load.use_zonegroupId = nil
-      data.load.zoneId = nil
-      data.load.zonegroupId = nil
     end
   end
 
@@ -1210,7 +1055,7 @@ function Private.Modernize(data)
     end
 
     if data.actions then
-      for _, when in ipairs({ "start", "finish" }) do
+      for _, when in ipairs{ "start", "finish" } do
         if data.actions[when] then
           fixUp(data.actions[when], "message_format_")
         end
@@ -1228,86 +1073,7 @@ function Private.Modernize(data)
     end
   end
 
-  if data.internalVersion < 45 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      local trigger = triggerData.trigger
-      if trigger.type == "unit" and trigger.event == "Conditions" then
-        if trigger.use_instance_size then
-          -- Single Selection
-          if trigger.instance_size.single then
-            if trigger.instance_size.single == "arena" then
-              trigger.use_instance_size = false
-              trigger.instance_size.multi = {
-                arena = true,
-                ratedarena = true,
-              }
-            elseif trigger.instance_size.single == "pvp" then
-              trigger.use_instance_size = false
-              trigger.instance_size.multi = {
-                pvp = true,
-                ratedpvp = true,
-              }
-            end
-          end
-        elseif trigger.use_instance_size == false then
-          -- Multi selection
-          if trigger.instance_size.multi then
-            if trigger.instance_size.multi.arena then
-              trigger.instance_size.multi.ratedarena = true
-            end
-            if trigger.instance_size.multi.pvp then
-              trigger.instance_size.multi.ratedpvp = true
-            end
-          end
-        end
-      end
-    end
-
-    if data.load.use_size == true then
-      if data.load.size.single == "arena" then
-        data.load.use_size = false
-        data.load.size.multi = {
-          arena = true,
-          ratedarena = true,
-        }
-      elseif data.load.size.single == "pvp" then
-        data.load.use_size = false
-        data.load.size.multi = {
-          pvp = true,
-          ratedpvp = true,
-        }
-      end
-    elseif data.load.use_size == false then
-      if data.load.size.multi then
-        if data.load.size.multi.arena then
-          data.load.size.multi.ratedarena = true
-        end
-        if data.load.size.multi.pvp then
-          data.load.size.multi.ratedpvp = true
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 46 then
-    if data.conditions then
-      for conditionIndex, condition in ipairs(data.conditions) do
-        if condition.check then
-          local triggernum = condition.check.trigger
-          if triggernum then
-            local trigger = data.triggers[triggernum]
-            if trigger and trigger.trigger and trigger.trigger.event == "Power" then
-              if condition.check.variable == "chargedComboPoint" then
-                condition.check.variable = "chargedComboPoint1"
-              end
-            end
-          end
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 49 then
+  if (data.internalVersion < 49) then
     if not data.regionType:match("group") then
       data.subRegions = data.subRegions or {}
       -- rename aurabar_bar into subforeground, and subbarmodel into submodel
@@ -1335,9 +1101,9 @@ function Private.Modernize(data)
                 local prefix, property = change.property:match("(sub%.%d+%.)(.*)")
                 if prefix and property then
                   if property == "bar_model_visible" then
-                    change.property = prefix .. "model_visible"
+                    change.property = prefix.."model_visible"
                   elseif property == "bar_model_alpha" then
-                    change.property = prefix .. "model_alpha"
+                    change.property = prefix.."model_alpha"
                   end
                 end
               end
@@ -1348,7 +1114,7 @@ function Private.Modernize(data)
     end
   end
 
-  if data.internalVersion == 49 then
+  if (data.internalVersion == 49) then
     -- Version 49 was a dud and contained a broken validation. Try to salvage the data, as
     -- best as we can.
     local broken = false
@@ -1364,7 +1130,7 @@ function Private.Modernize(data)
                 local subRegionIndex, property = change.property:match("^sub%.(%d+)%.(.*)")
                 if subRegionIndex and property then
                   broken = true
-                  for _, offset in ipairs({ -1, 1 }) do
+                  for _, offset in ipairs({-1, 1}) do
                     local newProperty = "sub." .. subRegionIndex + offset .. "." .. property
                     if properties[newProperty] then
                       change.property = newProperty
@@ -1382,20 +1148,9 @@ function Private.Modernize(data)
     end
   end
 
-  if data.internalVersion < 51 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      if triggerData.trigger.event == "Threat Situation" then
-        triggerData.trigger.unit = triggerData.trigger.threatUnit
-        triggerData.trigger.use_unit = triggerData.trigger.use_threatUnit
-        triggerData.trigger.threatUnit = nil
-        triggerData.trigger.use_threatUnit = nil
-      end
-    end
-  end
-
-  if data.internalVersion < 52 then
+  if (data.internalVersion < 52) then
     local function matchTarget(input)
-      return input == "target" or input == "'target'" or input == '"target"' or input == "%t" or input == "'%t'" or input == '"%t"'
+      return input == "target" or input == "'target'" or input == "\"target\"" or input == "%t" or input == "'%t'" or input == "\"%t\""
     end
 
     if data.conditions then
@@ -1411,585 +1166,22 @@ function Private.Modernize(data)
       end
     end
 
-    if data.actions.start.do_message and data.actions.start.message_type == "WHISPER" and matchTarget(data.actions.start.message_dest) then
+    if data.actions.start.do_message
+    and data.actions.start.message_type == "WHISPER"
+    and matchTarget(data.actions.start.message_dest)
+    then
       data.actions.start.message_dest = "target"
       data.actions.start.message_dest_isunit = true
     end
 
-    if data.actions.finish.do_message and data.actions.finish.message_type == "WHISPER" and matchTarget(data.actions.finish.message_dest) then
+    if data.actions.finish.do_message
+    and data.actions.finish.message_type == "WHISPER"
+    and matchTarget(data.actions.finish.message_dest)
+    then
       data.actions.finish.message_dest = "target"
       data.actions.finish.message_dest_isunit = true
     end
   end
 
-  if data.internalVersion < 53 then
-    local function ReplaceIn(text, table, prefix)
-      local seenSymbols = {}
-      Private.ParseTextStr(text, function(symbol)
-        if not seenSymbols[symbol] then
-          if table[prefix .. symbol .. "_format"] == "timed" and table[prefix .. symbol .. "_time_format"] == 0 then
-            table[prefix .. symbol .. "_time_legacy_floor"] = true
-          end
-        end
-        seenSymbols[symbol] = symbol
-      end)
-    end
-
-    if data.regionType == "text" then
-      ReplaceIn(data.displayText, data, "displayText_format_")
-    end
-
-    if data.subRegions then
-      for index, subRegionData in ipairs(data.subRegions) do
-        if subRegionData.type == "subtext" then
-          ReplaceIn(subRegionData.text_text, subRegionData, "text_text_format_")
-        end
-      end
-    end
-
-    if data.actions then
-      if data.actions.start then
-        ReplaceIn(data.actions.start.message, data.actions.start, "message_format_")
-      end
-      if data.actions.finish then
-        ReplaceIn(data.actions.finish.message, data.actions.finish, "message_format_")
-      end
-    end
-
-    if data.conditions then
-      for conditionIndex, condition in ipairs(data.conditions) do
-        for changeIndex, change in ipairs(condition.changes) do
-          if change.property == "chat" and change.value then
-            ReplaceIn(change.value.message, change.value, "message_format_")
-          end
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 54 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      if triggerData.trigger.type == "aura" then
-        triggerData.trigger.type = "unit"
-        triggerData.trigger.event = "Conditions"
-        triggerData.trigger.use_alwaystrue = false
-      end
-    end
-  end
-
-  if data.internalVersion < 55 then
-    data.forceEvents = true
-  end
-
-  -- Internal version 55 contained a incorrect Modernize
-  if data.internalVersion < 56 then
-    data.information.forceEvents = data.forceEvents
-    data.forceEvents = nil
-  end
-
-  if data.internalVersion < 57 then
-    if WeakAuras.IsRetail() then
-      local function GetField(load, field)
-        local data = {}
-        if load["use_" .. field] == true then
-          if load[field].single then
-            table.insert(data, load[field].single)
-          end
-        elseif load["use_" .. field] == false then
-          for d in pairs(load[field].multi) do
-            table.insert(data, d)
-          end
-        end
-        return data
-      end
-      local function GetClassId(classFile)
-        for classID = 1, GetNumClasses() do
-          local _, thisClassFile = GetClassInfo(classID)
-          if classFile == thisClassFile then
-            return classID
-          end
-        end
-      end
-      local function SetSpec(load, specID)
-        if load.use_class_and_spec == true then
-          load.use_class_and_spec = false -- multi
-        elseif load.use_class_and_spec == nil then
-          load.use_class_and_spec = true -- single
-        end
-        load.class_and_spec = load.class_and_spec or {}
-        load.class_and_spec.single = specID
-        load.class_and_spec.multi = load.class_and_spec.multi or {}
-        load.class_and_spec.multi[specID] = true
-      end
-      local load = data.load
-      if load.use_class_and_spec == nil then
-        local classes = GetField(load, "class")
-        local specs = GetField(load, "spec")
-        for i, class in ipairs(classes) do
-          local classID = GetClassId(class)
-          if #specs == 0 then -- add all specs
-            for specIndex = 1, 4 do
-              local specID = GetSpecializationInfoForClassID(classID, specIndex)
-              if specID then
-                SetSpec(load, specID)
-              end
-            end
-          else
-            for j, specIndex in ipairs(specs) do
-              local specID = GetSpecializationInfoForClassID(classID, specIndex)
-              if specID then
-                SetSpec(load, specID)
-              end
-            end
-          end
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 58 then
-    -- convert key use for talent load condition from talent's index to spellId
-    if WeakAuras.IsRetail() then
-      local function migrateTalent(load, specId, field)
-        if load[field] and load[field].multi then
-          local newData = {}
-          for key, value in pairs(load[field].multi) do
-            if value ~= nil then
-              local talentData = Private.GetTalentData(specId)
-              if type(talentData) == "table" and talentData[key] then
-                newData[talentData[key][2]] = value
-              end
-            end
-          end
-          load[field].multi = newData
-        end
-      end
-      local load = data.load
-      local specId = Private.checkForSingleLoadCondition(load, "class_and_spec")
-      if specId then
-        migrateTalent(load, specId, "talent")
-        migrateTalent(load, specId, "talent2")
-        migrateTalent(load, specId, "talent3")
-      end
-    end
-  end
-
-  if data.internalVersion < 59 then
-    -- convert key use for talent known trigger from talent's index to spellId
-    if WeakAuras.IsRetail() then
-      local function migrateTalent(load, specId, field)
-        if load[field] and load[field].multi then
-          local newData = {}
-          for key, value in pairs(load[field].multi) do
-            if value ~= nil then
-              local talentData = Private.GetTalentData(specId)
-              if type(talentData) == "table" and talentData[key] then
-                newData[talentData[key][2]] = value
-              end
-            end
-          end
-          load[field].multi = newData
-        end
-      end
-      for triggerId, triggerData in ipairs(data.triggers) do
-        if triggerData.trigger.type == "unit" and triggerData.trigger.event == "Talent Known" then
-          local classId
-          for i = 1, GetNumClasses() do
-            if select(2, GetClassInfo(i)) == triggerData.trigger.class then
-              classId = i
-            end
-          end
-          if classId and triggerData.trigger.spec then
-            local specId = GetSpecializationInfoForClassID(classId, triggerData.trigger.spec)
-            if specId then
-              migrateTalent(triggerData.trigger, specId, "talent")
-            end
-          end
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 60 then
-    -- convert texture rotation
-    if data.regionType == "texture" then
-      if data.rotate then
-        -- Full Rotate is enabled
-        data.legacyZoomOut = true
-      else
-        -- Discrete Rotation
-        data.rotation = data.discrete_rotation
-      end
-      data.discrete_rotation = nil
-    end
-  end
-
-  if data.internalVersion < 61 then
-    -- convert texture rotation
-    if data.regionType == "texture" then
-      if data.legacyZoomOut then
-        data.rotate = true
-      else
-        data.rotate = false
-        data.discrete_rotation = data.rotation
-      end
-      data.legacyZoomOut = nil
-    end
-  end
-
-  -- version 62 became 64 to fix a broken modernize
-
-  if data.internalVersion < 63 then
-    if data.regionType == "texture" then
-      local GetAtlasInfo = C_Texture and C_Texture.GetAtlasInfo or GetAtlasInfo
-      local function IsAtlas(input)
-        return type(input) == "string" and GetAtlasInfo(input) ~= nil
-      end
-
-      if not data.rotate or IsAtlas(data.texture) then
-        data.rotation = data.discrete_rotation
-      end
-    end
-  end
-
-  if data.internalVersion < 64 then
-    if data.regionType == "dynamicgroup" then
-      if data.sort == "custom" and type(data.sortOn) ~= "string" or data.sortOn == "" then
-        data.sortOn = "changed"
-      end
-      if data.grow == "CUSTOM" and type(data.growOn) ~= "string" then
-        data.growOn = "changed"
-      end
-    end
-  end
-
-  if data.internalVersion < 65 then
-    for triggerId, triggerData in ipairs(data.triggers) do
-      if triggerData.trigger.type == "item"
-      and triggerData.trigger.event == "Item Count"
-      and type(triggerData.trigger.itemName) == "number"
-      then
-        triggerData.trigger.use_exact_itemName = true
-      end
-    end
-  end
-
-  local function spellIdToTalent(specId, spellId)
-    local talents = Private.GetTalentData(specId)
-    for _, talent in ipairs(talents) do
-      if talent[2] == spellId then
-        return talent[1]
-      end
-    end
-  end
-
-  if data.internalVersion < 66 then
-    if WeakAuras.IsRetail() then
-      for triggerId, triggerData in ipairs(data.triggers) do
-        if triggerData.trigger.type == "unit"
-          and triggerData.trigger.event == "Talent Known"
-          and triggerData.trigger.talent
-          and triggerData.trigger.talent.multi
-        then
-          local classId
-          for i = 1, GetNumClasses() do
-            if select(2, GetClassInfo(i)) == triggerData.trigger.class then
-              classId = i
-            end
-          end
-          if classId and triggerData.trigger.spec then
-            local specId = GetSpecializationInfoForClassID(classId, triggerData.trigger.spec)
-            if specId then
-              local newMulti = { }
-              for spellId, value in pairs(triggerData.trigger.talent.multi) do
-                local talentId = spellIdToTalent(specId, spellId)
-                if talentId then
-                  newMulti[talentId] = value
-                end
-              end
-              triggerData.trigger.talent.multi = newMulti
-            end
-          end
-        end
-      end
-      local specId = Private.checkForSingleLoadCondition(data.load, "class_and_spec")
-
-
-      if specId then
-        for _, property in ipairs({"talent", "talent2", "talent3"}) do
-          local use = "use_" .. property
-          if data.load[use] ~= nil and data.load[property] and data.load[property].multi then
-            local newMulti = { }
-            for spellId, value in pairs(data.load[property].multi) do
-              local talentId = spellIdToTalent(specId, spellId)
-              if talentId then
-                newMulti[talentId] = value
-              end
-            end
-            data.load[property].multi = newMulti
-          end
-
-        end
-      end
-    end
-  end
-
-  local function migrateToTable(tab, field)
-    local value = tab[field]
-    if value ~= nil and type(value) ~= "table" then
-      tab[field] = { value }
-    end
-  end
-
-  if data.internalVersion < 67 then
-    do
-      local trigger_migration = {
-        ["Cast"] = {
-          "stage",
-          "stage_operator",
-        },
-        ["Experience"] = {
-          "level",
-          "level_operator",
-          "currentXP",
-          "currentXP_operator",
-          "totalXP",
-          "totalXP_operator",
-          "percentXP",
-          "percentXP_operator",
-          "restedXP",
-          "restedXP_operator",
-          "percentrested",
-          "percentrested_operator",
-        },
-        ["Health"] = {
-          "health",
-          "health_operator",
-          "percenthealth",
-          "percenthealth_operator",
-          "deficit",
-          "deficit_operator",
-          "maxhealth",
-          "maxhealth_operator",
-          "absorb",
-          "absorb_operator",
-          "healabsorb",
-          "healabsorb_operator",
-          "healprediction",
-          "healprediction_operator",
-        },
-        ["Power"] = {
-          "power",
-          "power_operator",
-          "percentpower",
-          "percentpower_operator",
-          "deficit",
-          "deficit_operator",
-          "maxpower",
-          "maxpower_operator",
-        },
-        ["Character Stats"] = {
-          "mainstat",
-          "mainstat_operator",
-          "strength",
-          "strength_operator",
-          "agility",
-          "agility_operator",
-          "intellect",
-          "intellect_operator",
-          "spirit",
-          "spirit_operator",
-          "stamina",
-          "stamina_operator",
-          "criticalrating",
-          "criticalrating_operator",
-          "criticalpercent",
-          "criticalpercent_operator",
-          "hitrating",
-          "hitrating_operator",
-          "hitpercent",
-          "hitpercent_operator",
-          "hasterating",
-          "hasterating_operator",
-          "hastepercent",
-          "hastepercent_operator",
-          "meleehastepercent",
-          "meleehastepercent_operator",
-          "expertiserating",
-          "expertiserating_operator",
-          "expertisebonus",
-          "expertisebonus_operator",
-          "armorpenrating",
-          "armorpenrating_operator",
-          "armorpenpercent",
-          "armorpenpercent_operator",
-          "resiliencerating",
-          "resiliencerating_operator",
-          "resiliencepercent",
-          "resiliencepercent_operator",
-          "spellpenpercent",
-          "spellpenpercent_operator",
-          "masteryrating",
-          "masteryrating_operator",
-          "masterypercent",
-          "masterypercent_operator",
-          "versatilityrating",
-          "versatilityrating_operator",
-          "versatilitypercent",
-          "versatilitypercent_operator",
-          "attackpower",
-          "attackpower_operator",
-          "resistanceholy",
-          "resistanceholy_operator",
-          "resistancefire",
-          "resistancefire_operator",
-          "resistancenature",
-          "resistancenature_operator",
-          "resistancefrost",
-          "resistancefrost_operator",
-          "resistanceshadow",
-          "resistanceshadow_operator",
-          "resistancearcane",
-          "resistancearcane_operator",
-          "leechrating",
-          "leechrating_operator",
-          "leechpercent",
-          "leechpercent_operator",
-          "movespeedrating",
-          "movespeedrating_operator",
-          "movespeedpercent",
-          "movespeedpercent_operator",
-          "runspeedpercent",
-          "runspeedpercent_operator",
-          "avoidancerating",
-          "avoidancerating_operator",
-          "avoidancepercent",
-          "avoidancepercent_operator",
-          "defense",
-          "defense_operator",
-          "dodgerating",
-          "dodgerating_operator",
-          "dodgepercent",
-          "dodgepercent_operator",
-          "parryrating",
-          "parryrating_operator",
-          "parrypercent",
-          "parrypercent_operator",
-          "blockpercent",
-          "blockpercent_operator",
-          "blocktargetpercent",
-          "blocktargetpercent_operator",
-          "blockvalue",
-          "blockvalue_operator",
-          "staggerpercent",
-          "staggerpercent_operator",
-          "staggertargetpercent",
-          "staggertargetpercent_operator",
-          "armorrating",
-          "armorrating_operator",
-          "armorpercent",
-          "armorpercent_operator",
-          "armortargetpercent",
-          "armortargetpercent_operator",
-        },
-        ["Threat Situation"] = {
-          "threatpct",
-          "threatpct_operator",
-          "rawthreatpct",
-          "rawthreatpct_operator",
-          "threatvalue",
-          "threatvalue_operator",
-        },
-        ["Unit Characteristics"] = {
-          "level",
-          "level_operator",
-        },
-        ["Combat Log"] = {
-          "spellId",
-          "spellName",
-        },
-        ["Spell Cast Succeeded"] = {
-          "spellId"
-        }
-      }
-      for _, triggerData in ipairs(data.triggers) do
-        local t = triggerData.trigger
-        local fieldsToMigrate = trigger_migration[t.event]
-        if fieldsToMigrate then
-          for _, field in ipairs(fieldsToMigrate) do
-            migrateToTable(t, field)
-          end
-        end
-        -- cast trigger move data from 'spell' & 'spellId' to 'spellIds' & 'spellNames'
-        if t.event == "Cast" and t.type == "unit" then
-          if t.spellId then
-            if t.useExactSpellId then
-              t.use_spellIds = t.use_spellId
-              t.spellIds = t.spellIds or {}
-              tinsert(t.spellIds, t.spellId)
-            else
-              t.use_spellNames = t.use_spellId
-              t.spellNames = t.spellNames or {}
-              tinsert(t.spellNames, t.spellId)
-            end
-          end
-          if t.use_spell and t.spell then
-            t.use_spellNames = true
-            t.spellNames = t.spellNames or {}
-            tinsert(t.spellNames, t.spell)
-          end
-          t.use_spellId = nil
-          t.spellId = nil
-          t.use_spell = nil
-          t.spell = nil
-        end
-      end
-    end
-    do
-      local loadFields = {
-        "level", "effectiveLevel"
-      }
-
-      for _, field in ipairs(loadFields) do
-        migrateToTable(data.load, field)
-        migrateToTable(data.load, field .. "_operator")
-      end
-    end
-  end
-
-  if data.internalVersion < 68 then
-    if data.parent then
-      local parentData = WeakAuras.GetData(data.parent)
-      if parentData and parentData.regionType == "dynamicgroup" then
-        if data.anchorFrameParent == nil then
-          data.anchorFrameParent = false
-        end
-      end
-    end
-  end
-
-  if data.internalVersion < 69 then
-    migrateToTable(data.load, "itemequiped")
-  end
-
-  if data.internalVersion < 70 then
-    local trigger_migration = {
-      Power = {
-        "power",
-        "power_operator"
-      }
-    }
-    for _, triggerData in ipairs(data.triggers) do
-      local t = triggerData.trigger
-      local fieldsToMigrate = trigger_migration[t.event]
-      if fieldsToMigrate then
-        for _, field in ipairs(fieldsToMigrate) do
-          migrateToTable(t, field)
-        end
-      end
-    end
-  end
-
-  data.internalVersion = max(data.internalVersion or 0, WeakAuras.InternalVersion())
+  data.internalVersion = max(data.internalVersion or 0, WeakAuras.InternalVersion());
 end
-

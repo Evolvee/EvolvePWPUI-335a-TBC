@@ -1,0 +1,5 @@
+## Interface: 50001
+## Title: Align (1.10)
+## Author: Akeru (swyatt@gmail.com)
+## Notes: Grid to Align UI elements.
+Align.lua

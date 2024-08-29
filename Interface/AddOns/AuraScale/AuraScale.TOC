@@ -1,0 +1,6 @@
+## Interface: 30100
+## Title: AuraScale
+## Notes: Re-scales target/focus auras to size '21' 
+## Version: 1.0
+## Author: Zevyn
+AuraScale.lua

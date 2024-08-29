@@ -114,7 +114,7 @@ addon.Cooldowns = {
 
     -- General
 
-    [42292] = { duration = 120, class = "GENERAL", icon = 133453 }, -- PvP Trinket
+    [42292] = { duration = 120, class = "GENERAL", icon = "Interface\\ICONS\\Inv_jewelry_trinketpvp_02" }, -- PvP Trinket
     [7744] = { duration = 120, class = "GENERAL" }, -- Will of the Forsaken
     [25046] = { duration = 120, class = "GENERAL" }, -- Arcane Torrent (Energy)
         [28730] = { parent = 25046 }, -- Arcane Torrent (Mana)
@@ -3625,11 +3625,11 @@ addon.Cooldowns = {
 
     --]]
 
-    [50516] = { duration = 20, class = "DRUID", adjust = -3 }, -- Typhoon (Rank 1)
-        [53223] = { parent = 50516 }, -- Typhoon (Rank 2)
-        [53225] = { parent = 50516 }, -- Typhoon (Rank 3)
-        [53226] = { parent = 50516 }, -- Typhoon (Rank 4)
-        [61384] = { parent = 50516 }, -- Typhoon (Rank 5)
+    [61391] = { duration = 20, class = "DRUID", adjust = -3, icon = "Interface\\ICONS\\ability_druid_typhoon" }, -- Typhoon (Rank 1)
+        [61390] = { parent = 61391 }, -- Typhoon (Rank 2)
+        [61388] = { parent = 61391 }, -- Typhoon (Rank 3)
+        [61387] = { parent = 61391 }, -- Typhoon (Rank 4)
+        [53227] = { parent = 61391 }, -- Typhoon (Rank 5)
 
     [61336] = { duration = 180, class = "DRUID" }, -- Survival Instincts
 

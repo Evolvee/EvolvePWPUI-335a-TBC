@@ -1,7 +1,7 @@
 --- = Background =
 -- Blizzard's IsSpellInRange API has always been very limited - you either must have the name of the spell, or its spell book ID. Checking directly by spellID is simply not possible.
 -- Now, in Mists of Pandaria, Blizzard changed the way that many talents and specialization spells work - instead of giving you a new spell when leaned, they replace existing spells. These replacement spells do not work with Blizzard's IsSpellInRange function whatsoever; this limitation is what prompted the creation of this lib.
--- = Usage = 
+-- = Usage =
 -- **LibSpellRange-1.0** exposes an enhanced version of IsSpellInRange that:
 -- * Allows ranged checking based on both spell name and spellID.
 -- * Works correctly with replacement spells that will not work using Blizzard's IsSpellInRange method alone.
@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 15
+local minor = 20
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -22,15 +22,15 @@ local strlower = _G.strlower
 local wipe = _G.wipe
 local type = _G.type
 
-local GetSpellTabInfo = _G.GetSpellTabInfo
-local GetNumSpellTabs = _G.GetNumSpellTabs
-local GetSpellBookItemInfo = _G.GetSpellBookItemInfo
-local GetSpellBookItemName = _G.GetSpellBookItemName
-local GetSpellLink = _G.GetSpellLink
 local GetSpellInfo = _G.GetSpellInfo
+local GetSpellLink = _G.GetSpellLink
+local GetSpellName = _G.GetSpellName
+local GetSpellTabInfo = _G.GetSpellTabInfo
 
 local IsSpellInRange = _G.IsSpellInRange
 local SpellHasRange = _G.SpellHasRange
+
+local MAX_SKILLLINE_TABS = _G.MAX_SKILLLINE_TABS
 
 -- isNumber is basically a tonumber cache for maximum efficiency
 Lib.isNumber = Lib.isNumber or setmetatable({}, {
@@ -74,57 +74,42 @@ local spellsByName_pet = Lib.spellsByName_pet
 Lib.spellsByID_pet = Lib.spellsByID_pet or {}
 local spellsByID_pet = Lib.spellsByID_pet
 
+local blacklistedIDs = {}
+
 -- Updates spellsByName and spellsByID
 local function UpdateBook(bookType)
+	local _, offs, numspells
 	local max = 0
-	for i = 1, GetNumSpellTabs() do
-		local _, _, offs, numspells, _, specId = GetSpellTabInfo(i)
-		if specId == 0 then
+
+	for i = MAX_SKILLLINE_TABS, 1, -1 do
+		_, _, offs, numspells = GetSpellTabInfo(i)
+
+		if numspells > 0 then
 			max = offs + numspells
+			break
 		end
 	end
 
 	local spellsByName = Lib["spellsByName_" .. bookType]
 	local spellsByID = Lib["spellsByID_" .. bookType]
-	
+
 	wipe(spellsByName)
 	wipe(spellsByID)
-	
-	for spellBookID = 1, max do
-		local type, baseSpellID = GetSpellBookItemInfo(spellBookID, bookType)
-		
-		if type == "SPELL" or type == "PETACTION" then
-			local currentSpellName = GetSpellBookItemName(spellBookID, bookType)
-			local link = GetSpellLink(currentSpellName)
-			local currentSpellID = tonumber(link and link:gsub("|", "||"):match("spell:(%d+)"))
+	wipe(blacklistedIDs)
 
-			-- For each entry we add to a table,
-			-- only add it if there isn't anything there already.
-			-- This prevents weird passives from overwriting real, legit spells.
-			-- For example, in WoW 7.3.5 the ret paladin mastery 
-			-- was coming back with a base spell named "Judgement",
-			-- which was overwriting the real "Judgement".
-			-- Passives usually come last in the spellbook,
-			-- so this should work just fine as a workaround.
-			-- This issue with "Judgement" is gone in BFA because the mastery changed.
-			
-			if currentSpellName and not spellsByName[strlower(currentSpellName)] then
-				spellsByName[strlower(currentSpellName)] = spellBookID
+	for spellBookID = 1, max do
+		local spellName, rank = GetSpellName(spellBookID, bookType)
+
+		if spellName and (rank == "" or rank:match("%d+")) then
+			local link = GetSpellLink(spellName, rank)
+			local spellID = tonumber(link and link:gsub("|", "||"):match("spell:(%d+)"))
+
+			if spellName then
+				spellsByName[strlower(spellName)] = spellBookID
 			end
-			if currentSpellID and not spellsByID[currentSpellID] then
-				spellsByID[currentSpellID] = spellBookID
-			end
-			
-			if type == "SPELL" then
-				-- PETACTION (pet abilities) don't return a spellID for baseSpellID,
-				-- so base spells only work for proper player spells.
-				local baseSpellName = GetSpellInfo(baseSpellID)
-				if baseSpellName and not spellsByName[strlower(baseSpellName)] then
-					spellsByName[strlower(baseSpellName)] = spellBookID
-				end
-				if baseSpellID and not spellsByID[baseSpellID] then
-					spellsByID[baseSpellID] = spellBookID
-				end
+
+			if spellID then
+				spellsByID[spellID] = spellBookID
 			end
 		end
 	end
@@ -135,11 +120,15 @@ if not Lib.updaterFrame then
 	Lib.updaterFrame = CreateFrame("Frame")
 end
 Lib.updaterFrame:UnregisterAllEvents()
-Lib.updaterFrame:RegisterEvent("SPELLS_CHANGED")
+Lib.updaterFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+Lib.updaterFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-local function UpdateSpells()
+local function UpdateSpells(_, event)
 	UpdateBook("spell")
 	UpdateBook("pet")
+	if event == "PLAYER_ENTERING_WORLD" then
+		Lib.updaterFrame:UnregisterEvent(event)
+	end
 end
 
 Lib.updaterFrame:SetScript("OnEvent", UpdateSpells)
@@ -165,29 +154,44 @@ function Lib.IsSpellInRange(spellInput, unit)
 		if spell then
 			return IsSpellInRange(spell, "spell", unit)
 		else
-			local spell = spellsByID_pet[spellInput]
+			spell = spellsByID_pet[spellInput]
 			if spell then
 				return IsSpellInRange(spell, "pet", unit)
+			elseif not blacklistedIDs[spellInput] then
+				spell = GetSpellInfo(spellInput)
+				if spell then
+					spell = strlowerCache[spell]
+					if spellsByName_spell[spell] then
+						local spellBookID = spellsByName_spell[spell]
+						Lib["spellsByID_spell"][spellInput] = spellBookID
+						return IsSpellInRange(spellBookID, "spell", unit)
+					elseif spellsByName_pet[spell] then
+						local spellBookID = spellsByName_pet[spell]
+						Lib["spellsByID_pet"][spellInput] = spellBookID
+						return IsSpellInRange(spellBookID, "pet", unit)
+					end
+				end
+
+				blacklistedIDs[spellInput] = true
+				return
 			end
 		end
 	else
-		local spellInput = strlowerCache[spellInput]
-		
+		spellInput = strlowerCache[spellInput]
+
 		local spell = spellsByName_spell[spellInput]
 		if spell then
 			return IsSpellInRange(spell, "spell", unit)
 		else
-			local spell = spellsByName_pet[spellInput]
+			spell = spellsByName_pet[spellInput]
 			if spell then
 				return IsSpellInRange(spell, "pet", unit)
 			end
 		end
-		
+
 		return IsSpellInRange(spellInput, unit)
 	end
-	
 end
-
 
 --- Improved SpellHasRange.
 -- @name SpellRange.SpellHasRange
@@ -208,25 +212,24 @@ function Lib.SpellHasRange(spellInput)
 		if spell then
 			return SpellHasRange(spell, "spell")
 		else
-			local spell = spellsByID_pet[spellInput]
+			spell = spellsByID_pet[spellInput]
 			if spell then
 				return SpellHasRange(spell, "pet")
 			end
 		end
 	else
-		local spellInput = strlowerCache[spellInput]
-		
+		spellInput = strlowerCache[spellInput]
+
 		local spell = spellsByName_spell[spellInput]
 		if spell then
 			return SpellHasRange(spell, "spell")
 		else
-			local spell = spellsByName_pet[spellInput]
+			spell = spellsByName_pet[spellInput]
 			if spell then
 				return SpellHasRange(spell, "pet")
 			end
 		end
-		
+
 		return SpellHasRange(spellInput)
 	end
-	
 end

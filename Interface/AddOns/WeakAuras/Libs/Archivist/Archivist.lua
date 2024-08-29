@@ -15,10 +15,10 @@ local LibDeflate = LibStub("LibDeflate")
 
 do -- boilerplate & static values
 	Archivist.buildDate = "@build-time@"
-	Archivist.version = "v1.0.8"
-	--[==[@debug@
+	Archivist.version = "5e673bb"
+	--[===[@debug@
 		Archivist.debug = true
-	--@end-debug@]==]
+	--@end-debug@]===]
 
 	Archivist.prototypes = {}
 	Archivist.storeMap = {}
@@ -143,8 +143,7 @@ function Archivist:RegisterStoreType(prototype)
 		Update = prototype.Update,
 		Open = prototype.Open,
 		Commit = prototype.Commit,
-		Close = prototype.Close,
-		Delete = prototype.Delete
+		Close = prototype.Close
 	}
 	self.activeStores[prototype.id] = self.activeStores[prototype.id] or {}
 	if self:IsInitialized() then
@@ -280,10 +279,10 @@ function Archivist:Delete(storeType, id, force)
 	end
 
 	if id and storeType and self.sv[storeType] then
-		if self.prototypes[storeType] and self.prototypes[storeType].Delete and self.sv[storeType][id] then
+		if self.prototypes[id] and self.prototypes[id].Delete then
 			local image = self.activeStores[storeType][id]
 						 and self:Close(self.activeStores[storeType][id])
-						 or self:DeArchive(self.sv[storeType][id].data)
+						 or self:Dearchive(self.sv[storeType][id])
 			self.prototypes[storeType]:Delete(image)
 		end
 		self.sv[storeType][id] = nil
@@ -336,7 +335,7 @@ end
 -- Don't say I didn't warn you
 function Archivist:DeleteAll(storeType)
 	if storeType then
-		self.sv[storeType] = {}
+		self.sv[storeType] = nil
 		for id, store in pairs(self.activeStores[storeType]) do
 			self.activeStores[storeType][id] = nil
 			self.storeMap[store] = nil
@@ -346,8 +345,8 @@ function Archivist:DeleteAll(storeType)
 			self.sv[id] = {}
 			self.activeStores[id] = {}
 		end
-		self.storeMap = {}
 	end
+	self.storeMap = {}
 end
 
 -- deactivates store, with one last opportunity to commit data if the prototype chooses to do so

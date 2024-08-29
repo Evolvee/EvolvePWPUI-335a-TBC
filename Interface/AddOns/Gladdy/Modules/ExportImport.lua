@@ -24,6 +24,7 @@ local function table_copy(t, str)
 end
 
 local ExportImport = Gladdy:NewModule("Export Import", nil, {
+    expansion = Gladdy.expansion,
 })
 
 local export = AceGUI:Create("Frame")
@@ -72,6 +73,7 @@ importButton:SetCallback("OnClick", function(widget)
     Gladdy:Reset()
     Gladdy:HideFrame()
     Gladdy:ToggleFrame(3)
+    LibStub("AceConfigRegistry-3.0"):NotifyChange("Gladdy")
 end)
 import:AddChild(importButton)
 import.button = importButton
@@ -89,9 +91,40 @@ import:AddChild(importClearButton)
 import.clearButton = importClearButton
 
 local deletedOptions = { -- backwards compatibility
-    growUp = true,
+    --deleted DR-categories
+    repentance = true,
+    sleep = true,
+    impconc = true,
+    dragonsbreath = true,
     freezetrap = true,
-    repentance = true
+    --deleted db options
+    castBarPos = true,
+    buffsCooldownPos = true,
+    buffsBuffsCooldownPos = true,
+    classIconPos = true,
+    ciAnchor = true,
+    ciPos = true,
+    cooldownYPos = true,
+    cooldownXPos = true,
+    drCooldownPos = true,
+    racialAnchor = true,
+    racialPos = true,
+    trinketPos = true,
+    padding = true,
+    growUp = true,
+    powerBarFontSize = true,
+    ["38373"] = true, -- The Beast Within (Auras)
+    ["34692"] = true, -- The Beast Within (Cooldowns)
+}
+
+local expansionSpecific = {
+    "drCategories",
+    "auraListDefault",
+    "auraListInterrupts",
+    "trackedDebuffs",
+    "trackedBuffs",
+    "cooldownCooldowns",
+    "cooldownCooldownsOrder",
 }
 
 local function checkIsDeletedOption(k, str, msg, errorFound, errorMsg)
@@ -99,7 +132,7 @@ local function checkIsDeletedOption(k, str, msg, errorFound, errorMsg)
     for key, _ in pairs(deletedOptions) do
         if str_match(k, key) then
             isDeleted = true
-            Gladdy:Warn("found deleted option =", str .. "." .. k)
+            Gladdy:Debug("WARN", "found deleted option =", str .. "." .. k)
         end
     end
     if errorFound then
@@ -114,8 +147,8 @@ function ExportImport:CheckDeserializedOptions(tbl, refTbl, str)
     if str == nil and not tbl.version_major_num then
         return false, "Version conflict: version_major_num not seen"
     end
-    if str == nil and tbl.version_major_num ~= Gladdy.version_major_num then
-        return false, "Version conflict: " .. tbl.version_major_num .. " ~= " .. Gladdy.version_major_num
+    if str == nil and tbl.version_major_num > Gladdy.version_major_num then
+        return false, "Version conflict: Major v" .. tbl.version_major_num .. " ~= v" .. Gladdy.version_major_num
     end
     if str == nil then
         str = "Gladdy.db"
@@ -142,7 +175,7 @@ function ExportImport:CheckDeserializedOptions(tbl, refTbl, str)
     end
 
     if errorFound then
-        return false, errorMsg
+        --return false, errorMsg
     end
     return true
 end
@@ -204,17 +237,32 @@ end
 function ExportImport:ApplyImport(t, table, str)
     if str == nil then
         str = "Gladdy.db"
+        if (not t.newLayout) then
+            table.newLayout = false
+        end
+        if not t.expansion then
+            t.expansion = "BCC"
+        end
     end
     for k,v in pairs(t) do
-        if type(v) == "table" then
-            if (table[k] ~= nil) then
-                ExportImport:ApplyImport(v, table[k], str .. "." .. k)
-            else
-                Gladdy:Warn("ApplyImport failed for", str .. "." .. k)
+        local skip = k == "expansion"
+        if t.expansion and t.expansion ~= table.expansion then
+            if Gladdy:contains(k, expansionSpecific) then
+                Gladdy:Debug("WARN", "ExportImport:ApplyImport", "skipped", k, "- import string expansion is", t.expansion, "- current expansion is", table.expansion)
+                skip = true
             end
+        end
+        if not skip then
+            if type(v) == "table" then
+                if (table[k] ~= nil) then
+                    ExportImport:ApplyImport(v, table[k], str .. "." .. k)
+                else
+                    Gladdy:Debug("ERROR", "ExportImport:ApplyImport", "failed for", str .. "." .. k)
+                end
 
-        else
-            table[k] = v
+            else
+                table[k] = v
+            end
         end
     end
 end

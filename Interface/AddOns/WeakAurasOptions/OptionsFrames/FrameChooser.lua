@@ -1,4 +1,4 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsCorrectVersion() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -7,6 +7,8 @@ local pairs = pairs
 -- WoW APIs
 local CreateFrame, IsMouseButtonDown, SetCursor, GetMouseFocus, MouseIsOver, ResetCursor
   = CreateFrame, IsMouseButtonDown, SetCursor, GetMouseFocus, MouseIsOver, ResetCursor
+
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -17,10 +19,10 @@ local frameChooserBox
 local oldFocus
 local oldFocusName
 function OptionsPrivate.StartFrameChooser(data, path)
-  local frame = OptionsPrivate.Private.OptionsFrame();
+  local frame = WeakAuras.OptionsFrame();
   if not(frameChooserFrame) then
-    frameChooserFrame = CreateFrame("Frame");
-    frameChooserBox = CreateFrame("Frame", nil, frameChooserFrame, "BackdropTemplate");
+    frameChooserFrame = CreateFrame("frame");
+    frameChooserBox = CreateFrame("frame", nil, frameChooserFrame);
     frameChooserBox:SetFrameStrata("TOOLTIP");
     frameChooserBox:SetBackdrop({
       edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -50,8 +52,8 @@ function OptionsPrivate.StartFrameChooser(data, path)
         if(focusName == "WorldFrame" or not focusName) then
           focusName = nil;
           local focusIsGroup = false;
-          for id, regionData in pairs(OptionsPrivate.Private.regions) do
-            if(regionData.region and regionData.region:IsVisible() and MouseIsOver(regionData.region)) then
+          for id, regionData in pairs(WeakAuras.regions) do
+            if(regionData.region:IsVisible() and MouseIsOver(regionData.region)) then
               local isGroup = regionData.regionType == "group" or regionData.regionType == "dynamicgroup";
               if (not focusName or (not isGroup and focusIsGroup)) then
                 focus = regionData.region;
