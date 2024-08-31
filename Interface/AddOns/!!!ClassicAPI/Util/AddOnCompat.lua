@@ -86,3 +86,4 @@ end
 Process("WeakAuras", nil, nil, "IsInGroup", "IsInRaid", "GetNumGroupMembers")
 Process("Details", "WeakAuras", nil, "IsInGroup", "IsInRaid", "GetNumGroupMembers")
 Process("AI_VoiceOver", nil, true, "WOW_PROJECT_ID")
+Process("Outfitter", nil, true, "UnitGetIncomingHeals")

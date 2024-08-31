@@ -63,7 +63,7 @@ local function Create(Duration, Callback, Iteration, Ticker)
 	Timer.Iteration = Iteration
 	Timer.Callback = Callback
 
-	Timer:SetDuration(Duration)
+	Timer:SetDuration(Duration > 0 and Duration or .1)
 	Timer:Play()
 
 	return Timer.Ref

@@ -1,8 +1,0 @@
-## Interface: 30300
-## Title: Lib: CooldownRoundedLib-1.0
-## Author: BannZay
-## DefaultState: Enabled
-## OptionalDeps: OmniCC
-
-CooldownRounded.xml
-OmniCCSupport.lua

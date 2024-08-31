@@ -68,7 +68,6 @@ local function DarkenFrames(addon)
         MainMenuXPBarTexture1,
         MainMenuXPBarTexture2,
         MainMenuXPBarTexture3,
-        --XYZ?
 		--ReputationWatchBar.StatusBar.XPBarTexture0,
         --ReputationWatchBar.StatusBar.XPBarTexture1,
         --ReputationWatchBar.StatusBar.XPBarTexture2,
@@ -322,10 +321,17 @@ local function OnInit()
 	
 	
 	
-	--XYZ
+	
+	--ChatGPT made this..:shrug:...classic code didnt work
     -- Color Clock
-    --select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
-
+	if not IsAddOnLoaded("Blizzard_TimeManager") then
+    LoadAddOn("Blizzard_TimeManager")
+	end
+    select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
+	
+	
+	
+	
     -- Position
 
     FocusFrame:StopMovingOrSizing()
@@ -379,6 +385,17 @@ local function OnInit()
     PartyMemberFrame1ManaBar:SetHeight(10)
     PartyMemberFrame1HealthBar:SetPoint("TOPLEFT", 45, -14)
     PartyMemberFrame1ManaBar:SetPoint("TOPLEFT", 45, -32)
+	
+	--hackfix(3.3.5a only... :vomit:)
+	PartyMemberFrame1HealthBar.TextString:SetAlpha(0)
+	PartyMemberFrame1ManaBar.TextString:SetAlpha(0)
+	PartyMemberFrame2HealthBar.TextString:SetAlpha(0)
+	PartyMemberFrame2ManaBar.TextString:SetAlpha(0)
+	PartyMemberFrame3HealthBar.TextString:SetAlpha(0)
+	PartyMemberFrame3ManaBar.TextString:SetAlpha(0)
+	PartyMemberFrame4HealthBar.TextString:SetAlpha(0)
+	PartyMemberFrame4ManaBar.TextString:SetAlpha(0)
+	--end of hackfix (:puke:)
 
     PartyMemberFrame2:SetScale(1.25)
     PartyMemberFrame2Texture:SetTexture("Interface\\AddOns\\TextureScript\\UI-PartyFrame")
@@ -409,7 +426,8 @@ local function OnInit()
 
     -- Reposition
     PartyMemberFrame1:ClearAllPoints()
-    PartyMemberFrame1:SetPoint("TOPLEFT", CompactRaidFrameManager, "TOPRIGHT", -13.4, 10.3)
+	--on 3.3.5a had to change this to PlayerFrame from CompactRaidFrameManager(Classic) here
+    PartyMemberFrame1:SetPoint("TOPLEFT", PlayerFrame, "TOPRIGHT", -168.5, -97.3)
 
     PartyMemberFrame2:ClearAllPoints()
     PartyMemberFrame2:SetPoint("TOPLEFT", PartyMemberFrame1PetFrame, "BOTTOMLEFT", -23.33, -32.4)
@@ -419,17 +437,20 @@ local function OnInit()
 
     PartyMemberFrame4:ClearAllPoints()
     PartyMemberFrame4:SetPoint("TOPLEFT", PartyMemberFrame3PetFrame, "BOTTOMLEFT", -23.33, -32.7)
-
+	
+	
+	--XYZ (comment out when partydebuffs addon becomes a thing again)
     --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (using PartyDebuffs addon for now)
-
-    -- PartyMemberFrame1Debuff1:ClearAllPoints();
-    -- PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
-    -- PartyMemberFrame2Debuff1:ClearAllPoints();
-    -- PartyMemberFrame2Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437474379317337);
-    -- PartyMemberFrame3Debuff1:ClearAllPoints();
-    -- PartyMemberFrame3Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -10.31263004755721);
-    -- PartyMemberFrame4Debuff1:ClearAllPoints();
-    -- PartyMemberFrame4Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437541575172077);
+    PartyMemberFrame1Debuff1:ClearAllPoints();
+    PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
+    PartyMemberFrame2Debuff1:ClearAllPoints();
+    PartyMemberFrame2Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437474379317337);
+    PartyMemberFrame3Debuff1:ClearAllPoints();
+    PartyMemberFrame3Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -10.31263004755721);
+    PartyMemberFrame4Debuff1:ClearAllPoints();
+    PartyMemberFrame4Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437541575172077);
+	
+	
 
     PartyMemberFrame1LeaderIcon:SetAlpha(0)
     PartyMemberFrame1MasterIcon:SetAlpha(0)
@@ -496,6 +517,8 @@ local function OnInit()
     CastingBarFrameFlash:SetPoint("TOP", 0, 26)
     CastingBarFrameBorderShield:SetPoint("TOP", 0, 26)
 
+
+	--xyz??
     -- removing the "interrupted" red delay bar from nameplate castbars
     --^^ handled in JaxPartyCastBars addon!
 
@@ -615,7 +638,9 @@ local function OnInit()
 
     texture = HelpMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-	--XYZ
+	
+	
+	--hackfixed by Data/Sounds folder (oldschool)
     -- Remove Fizzle sounds (this was previously done by replacing the actual sound in Data/Sounds)
     --for _, fdid in pairs(sounds) do
     --    MuteSoundFile(fdid)
@@ -824,19 +849,44 @@ PaperDollFrame:HookScript("OnHide", function()
     MicroButtonPortrait:Hide()
 end)
 
---current HP/MANA value
 
-local function TextStatusBar_UpdateTextString(statusFrame)
-    local value = statusFrame.finalValue or statusFrame:GetValue();
-    if statusFrame.TextString and statusFrame.currValue and statusFrame.currValue > 0 then
-        statusFrame.TextString:SetText(value)
-    else
-        statusFrame.TextString:Hide()
-    end
-end
---XYZ(hooksecurefunc(): TextStatusBar_UpdateTextStringWithValues is not a function)
+--classic only:
+--current HP/MANA value
+--local function TextStatusBar_UpdateTextString(statusFrame)
+--    local value = statusFrame.finalValue or statusFrame:GetValue();
+--    if statusFrame.TextString and statusFrame.currValue and statusFrame.currValue > 0 then
+--        statusFrame.TextString:SetText(value)
+--    else
+--        statusFrame.TextString:Hide()
+--    end
+--end
 --hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", TextStatusBar_UpdateTextString)
 
+
+--ChatGPT for 3.3.5a of ^^:
+local function CustomTextStatusBar_UpdateTextString(statusFrame)
+    -- Use the current value from the status bar or the final value if it's set
+    local value = statusFrame.finalValue or statusFrame:GetValue()
+
+    -- Check if the TextString exists and the value is greater than 0
+    if statusFrame.TextString and value and value > 0 then
+        -- Set the text to the current value
+        statusFrame.TextString:SetText(value)
+        statusFrame.TextString:Show()
+    else
+        -- Hide the text string if there's no value to display
+        if statusFrame.TextString then
+            statusFrame.TextString:Hide()
+        end
+    end
+end
+
+-- Hook into the original TextStatusBar_UpdateTextString function
+hooksecurefunc("TextStatusBar_UpdateTextString", CustomTextStatusBar_UpdateTextString)
+
+
+--classic only:
+--[[
 local function Classification(self, forceNormalTexture)
     local classification = UnitClassification(self.unit);
 
@@ -859,13 +909,34 @@ local function Classification(self, forceNormalTexture)
             -- Patch 5.0.4: used for minion mobs that typically have less health than normal mobs of their level, but engage the player in larger numbers
             -- if they do exist, have to check if the default 12 is an OK size for it not to overlap
             -- self.Background:SetHeight(12)
-        end
-	--XYZ	
-    --else
-        --self.Background:SetHeight(24)
+        end	
+    else
+        self.Background:SetHeight(24)
     end
 end
 hooksecurefunc("TargetFrame_CheckClassification", Classification)
+--]]
+
+
+--ChatGPT 3.3.5a version of the above^^ - background element doesnt exist in wrath 3.3.5...
+local function Classification(self, forceNormalTexture)
+    local classification = UnitClassification(self.unit);
+
+    if classification == "elite" or classification == "worldboss" then
+        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Elite")
+    elseif classification == "rareelite" then
+        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Rare-Elite")
+    elseif classification == "rare" then
+        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Rare")
+    else
+        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame")
+    end
+end
+
+hooksecurefunc("TargetFrame_CheckClassification", Classification)
+
+
+
 
 --smooth status bars(animated)
 
@@ -928,7 +999,9 @@ local function SmoothBar(bar)
         bar.SetValue = SmoothSetValue
     end
 end
---XYZ
+
+
+--classic only
 --smoothframe:SetScript("OnUpdate", function()
 --    if not inArena then
 --        for _, plate in pairs(C_NamePlate.GetNamePlates(true)) do
@@ -939,6 +1012,24 @@ end
 --    end
 --    AnimationTick()
 --end)
+
+--ChatGPT fix for ^^, also removing the "not in arena part", dunno why we had it, maybe it was protected on clASSic:
+
+smoothframe:SetScript("OnUpdate", function()
+    -- Iterate over all UI frames to find nameplates
+    for _, plate in pairs({WorldFrame:GetChildren()}) do
+        if plate:GetName() and plate:IsVisible() then
+            local healthBar = plate:GetChildren()
+            -- Assuming the health bar is the first child of the nameplate frame
+            if healthBar and healthBar:IsObjectType("StatusBar") then
+                SmoothBar(healthBar)
+            end
+        end
+    end
+    AnimationTick()
+end)
+
+
 
 local function SetSmooth()
     for k, v in pairs(barstosmooth) do
@@ -1132,17 +1223,22 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     self:Show()
 end)
 
+
 --XYZ
+--classic only:
 -- Change BuffFrame position
 --hooksecurefunc("UIParent_UpdateTopFramePositions", function()
 --    BuffFrame:ClearAllPoints()
 --    BuffFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -13)
 --end)
 
+
+
 -- stop Gladdy from showing nameplates (necessary for the next script) !! IMPORTANT - You MUST use the "Lock Frame" function in General tab of Gladdy alongside with this!!
 
 -- IT IS ALSO ABSOLUTELY NECESSARY FOR YOU TO DISABLE THE "Totem Plates" PLUGIN IN GLADDY UI
 
+-- not necessary on 3.3.5a?? gladdy has this built in?? -- xyz??
 if IsAddOnLoaded("Gladdy") then
     local Gladdy = LibStub and LibStub("Gladdy")
     if Gladdy then
@@ -1159,7 +1255,7 @@ if IsAddOnLoaded("Gladdy") then
 end
 
 -- Highlight Tremor Totem (disable nameplates of everything else) + disable Snake Trap Cancer + prevent displaying already dead Tremor Totem (retarded Classic-like behavior)
-
+--XYZ: remove the tremor logic i guess or?
 local ShrinkPlates = {
     ["Viper"] = true,
     ["Venomous Snake"] = true,
@@ -1250,6 +1346,7 @@ end
 
 -- PlaySound whenever an enemy casts Tremor Totem in arena (previously handled in a standalone addon "EvolveAlert" - https://github.com/Evolvee/EvolvePWPUI-ClassicTBC/tree/main/Interface/AddOns/EvolveAlert)
 
+--xyz: remove the healing part etc? its not needed anymore - im not playing priest for now
 local COMBATLOG_FILTER_HOSTILE_PLAYERS = COMBATLOG_FILTER_HOSTILE_PLAYERS;
 local CombatLog_Object_IsA = CombatLog_Object_IsA
 local eventRegistered = {
@@ -1339,7 +1436,7 @@ local function PlateScript()
         end
     end
 end
-
+-- XYZ: rework for 3.3.5a pls?
 local classmarkers = {
     ["ROGUE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Rogue",
     ["PRIEST"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Priest",
@@ -1444,11 +1541,11 @@ local function RemovePlate(unit)
     end
 end
 
-
---XYZ (attempt to call field 'GetOptions' (a nil value))
 -- Skip certain gossip_menu windows for vendors and especially arena/bg NPCs --> can be bypassed by pressing ctrl/alt/shift
 -- To see the icon number of gossip options, use: /dump C_GossipInfo.GetOptions()
 
+-- not needed on 3.3.5a??
+--[[
 local gossipSkipIcon = {
     [132050] = 1, -- banker
     [132051] = 1, -- battlemaster
@@ -1463,31 +1560,34 @@ local IsShiftKeyDown, IsAltKeyDown, IsControlKeyDown = IsShiftKeyDown, IsAltKeyD
 local GetNumGossipActiveQuests, GetNumGossipAvailableQuests = C_GossipInfo.GetNumActiveQuests, C_GossipInfo.GetNumAvailableQuests
 local SelectGossipOption, Dismount = C_GossipInfo.SelectOption, Dismount
 
---local function skipEventFrame()
---    local options = C_GossipInfo.GetOptions()
---    local numOptions = #options
+local function skipEventFrame()
+    local options = C_GossipInfo.GetOptions()
+    local numOptions = #options
 
---    if not IsShiftKeyDown() and numOptions == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
---        if gossipSkipIcon[options[1].icon] then
---            SelectGossipOption(options[1].gossipOptionID)
---            if options[1].icon == 132057 then
+    if not IsShiftKeyDown() and numOptions == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
+        if gossipSkipIcon[options[1].icon] then
+            SelectGossipOption(options[1].gossipOptionID)
+            if options[1].icon == 132057 then
                 -- taxi
---                Dismount()
---            end
---            return
---        end
---    end
---    if numOptions > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
---        for _, v in ipairs(options) do
---            if v.icon == 132060 then
+                Dismount()
+            end
+            return
+        end
+    end
+    if numOptions > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
+        for _, v in ipairs(options) do
+            if v.icon == 132060 then
                 -- vendor
---                SelectGossipOption(v.gossipOptionID)
---                return
---            end
---        end
---    end
---end
+                SelectGossipOption(v.gossipOptionID)
+                return
+            end
+        end
+    end
+end
+--]]
 
+--xyz?? probably wont work on Paymena 3.3.5a
+--[[
 -- Add MMR at the bottom of Arena Scoreboard
 local teamRatingFrame = CreateFrame("frame", "TeamRatingTextFrame", WorldStateScoreFrame)
 teamRatingFrame:SetPoint("BOTTOM", WorldStateScoreFrameLeaveButton, "TOP", 0, 12)
@@ -1530,26 +1630,31 @@ end)
 teamRatingFrame:RegisterEvent("UPDATE_BATTLEFIELD_SCORE")
 teamRatingFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
+
+--]]
+
+
+--classic only, not needed on older clients
 -- Moving right and left multibar (actionbars at the right side) to match the 2.4.3 position
-local function SetPosition(frame, ...)
-    if InCombatLockdown() then
-        return
-    end
+--local function SetPosition(frame, ...)
+--    if InCombatLockdown() then
+--        return
+--    end
 
-    if type(frame) == "string" then
-        frame = _G[frame]
-    end
+--    if type(frame) == "string" then
+--        frame = _G[frame]
+--    end
 
-    if type(frame) == "table" and type(frame.IsObjectType) == "function" and frame:IsObjectType("Frame") then
-        if ... then
-            frame:ClearAllPoints()
-            frame:SetPoint(...)
-        end
-    end
-end
+--    if type(frame) == "table" and type(frame.IsObjectType) == "function" and frame:IsObjectType("Frame") then
+--        if ... then
+--            frame:ClearAllPoints()
+--            frame:SetPoint(...)
+--        end
+--    end
+--end
 
 
---XYZ
+--XYZ - chatgpt didnt help - there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons)
 -- Removing the flashing animation of coooldown finish at action bars
 --for k, v in pairs(_G) do
 --    if type(v) == "table" and type(v.SetDrawBling) == "function" then
@@ -1560,54 +1665,60 @@ end
 --    self:SetDrawBling(false)
 --end)
 
+
+
 --XYZ
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
---local IsActionInRange = IsActionInRange
---local IsUsableAction = IsUsableAction
+--[[
+local IsActionInRange = IsActionInRange
+local IsUsableAction = IsUsableAction
 
---local function Usable(button)
---    local isUsable, notEnoughMana = IsUsableAction(button.action)
---    local icon = button.icon
+local function Usable(button)
+    local isUsable, notEnoughMana = IsUsableAction(button.action)
+    local icon = button.icon
 
---    if isUsable then
---        icon:SetVertexColor(1.0, 1.0, 1.0, 1.0)
---        icon:SetDesaturated(false)
---    elseif notEnoughMana then
---        icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
---        icon:SetDesaturated(true)
---    else
---        icon:SetVertexColor(0.4, 0.4, 0.4, 1.0)
---        icon:SetDesaturated(true)
---    end
---end
+    if isUsable then
+        icon:SetVertexColor(1.0, 1.0, 1.0, 1.0)
+        icon:SetDesaturated(false)
+    elseif notEnoughMana then
+        icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
+        icon:SetDesaturated(true)
+    else
+        icon:SetVertexColor(0.4, 0.4, 0.4, 1.0)
+        icon:SetDesaturated(true)
+    end
+end
 
---XYZ
---hooksecurefunc("ActionButton_OnUpdate", function(self)
---    local _, oom = IsUsableAction(self.action)
---    local valid = IsActionInRange(self.action);
---    local checksRange = (valid ~= nil);
---    local inRange = checksRange and valid;
+hooksecurefunc("ActionButton_OnUpdate", function(self)
+    local _, oom = IsUsableAction(self.action)
+    local valid = IsActionInRange(self.action);
+    local checksRange = (valid ~= nil);
+    local inRange = checksRange and valid;
 
---    if self.HotKey and self.HotKey:GetText() == RANGE_INDICATOR then
---        self.HotKey:Hide()
---    end
---    if checksRange and not inRange then
---        if oom then
---            self.icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
---            self.icon:SetDesaturated(true)
---        else
---            self.icon:SetVertexColor(1.0, 0.35, 0.35, 0.75)
---            self.icon:SetDesaturated(true)
---        end
---    else
---        Usable(self)
---    end
---XYZ
+    if self.HotKey and self.HotKey:GetText() == RANGE_INDICATOR then
+        self.HotKey:Hide()
+    end
+    if checksRange and not inRange then
+        if oom then
+            self.icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
+            self.icon:SetDesaturated(true)
+        else
+            self.icon:SetVertexColor(1.0, 0.35, 0.35, 0.75)
+            self.icon:SetDesaturated(true)
+        end
+    else
+        Usable(self)
+    end
+
     -- Preventing the black action bar borders to be hidden due to pressing an action button
---    if self.NormalTexture and not self.NormalTexture:IsShown() then
---        self.NormalTexture:Show()
---    end
---end)
+    if self.NormalTexture and not self.NormalTexture:IsShown() then
+        self.NormalTexture:Show()
+    end
+end)
+--]]
+
+
+
 
 -- Remove debuffs from Target of Target frame
 for _, totFrame in ipairs({ TargetFrameToT, FocusFrameToT }) do
@@ -1736,8 +1847,9 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         CustomCvar() -- Set our CVAR values
         OnInit() -- Init tons of shit
-        SetPosition(MultiBarRight, "TOPRIGHT", VerticalMultiBarsContainer, "TOPRIGHT", 2, 3)
-        SetPosition(MultiBarLeft, "TOPLEFT", VerticalMultiBarsContainer, "TOPLEFT", 2, 3)
+        -- classic only:
+		--SetPosition(MultiBarRight, "TOPRIGHT", VerticalMultiBarsContainer, "TOPRIGHT", 2, 3)
+        --SetPosition(MultiBarLeft, "TOPLEFT", VerticalMultiBarsContainer, "TOPLEFT", 2, 3)
         SetSmooth() -- SmoothBar init
 		--XYZ
         --hooksecurefunc("CompactUnitFrame_UpdateName", PlateNames) -- has to be called after event
@@ -1785,7 +1897,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         else
             plateEventFrame:SetScript("OnEvent", PlateScript)
         end
-	--XYZ (attempt to call global 'skipEventFrame' (a nil value))
+	--XYZ, not needed?gossip skips? (attempt to call global 'skipEventFrame' (a nil value))
     --elseif event == "GOSSIP_SHOW" then
     --    skipEventFrame()
     elseif event == "NAME_PLATE_UNIT_ADDED" then
@@ -1800,6 +1912,7 @@ end)
 
 
 -- Warmane only:
+-- Auto repair / Auto sell grey shit
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
 
@@ -1869,4 +1982,4 @@ COMBAT_TEXT_MISS = "SHIT SERVER"
 --Login message informing all scripts of this file were properly executed
 ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client (v0.1 BETA) Loaded successfully!", 0, 205, 255)
 ChatFrame1:AddMessage("Check for updates at:", 0, 205, 255)
-ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-ClassicWOTLK", 0, 205, 255)
+ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-335a-TBC", 0, 205, 255)

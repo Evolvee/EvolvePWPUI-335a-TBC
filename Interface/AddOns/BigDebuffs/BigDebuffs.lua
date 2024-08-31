@@ -712,6 +712,8 @@ BigDebuffs.Spells = {
 	[12323] = { type = "snare", }, -- Piercing Howl
 	
 	-- Misc
+	--custom hackfix for FF
+	[770] = { type = "snare", },	 	 -- Fearire Fire debuff on PartyFrames
 	[6615] = { type = "immunities", },   -- Free Action (Immunity to Stuns and Movement Impairments for 30s)
 	[24364] = { type = "immunities", },  -- Living Free Action Potion (Immune to Stun and Impairment Effects 5s)
 	[20549] = { type = "cc", },          -- War Stomp (Tauren Racial)
