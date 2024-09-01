@@ -1224,8 +1224,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 end)
 
 
---XYZ
---classic only:
+--classic only (currently handling with MoveAnything - moving debuff row only since Buff row is correct by default):
 -- Change BuffFrame position
 --hooksecurefunc("UIParent_UpdateTopFramePositions", function()
 --    BuffFrame:ClearAllPoints()
@@ -1654,7 +1653,7 @@ teamRatingFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 --end
 
 
---XYZ - chatgpt didnt help - there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons)
+--XYZ- there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons) - and it also just doesnt work at all whatsoever alone anyways
 -- Removing the flashing animation of coooldown finish at action bars
 --for k, v in pairs(_G) do
 --    if type(v) == "table" and type(v.SetDrawBling) == "function" then
@@ -1717,6 +1716,7 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
 end)
 --]]
 
+--handling via TullaRange for now^^ :(
 
 
 

@@ -1,0 +1,6 @@
+## Interface: 30300
+## Author: Yoinked by Evolve
+## Title: Queue Alert
+## Notes: Queue alert from classic - queue pop/whisper and other shit
+
+main.lua
