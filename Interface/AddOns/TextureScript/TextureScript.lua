@@ -55,7 +55,6 @@ local function DarkenFrames(addon)
         MainMenuMaxLevelBar1,
         MainMenuMaxLevelBar2,
         MainMenuMaxLevelBar3,
-        --MainMenuBarTextureExtender, -- classic cancer
         MinimapBorder,
         CastingBarFrameBorder,
         MiniMapBattlefieldBorder,
@@ -68,10 +67,6 @@ local function DarkenFrames(addon)
         MainMenuXPBarTexture1,
         MainMenuXPBarTexture2,
         MainMenuXPBarTexture3,
-		--ReputationWatchBar.StatusBar.XPBarTexture0,
-        --ReputationWatchBar.StatusBar.XPBarTexture1,
-        --ReputationWatchBar.StatusBar.XPBarTexture2,
-        --ReputationWatchBar.StatusBar.XPBarTexture3,
         ReputationXPBarTexture0,
         ReputationXPBarTexture1,
         ReputationXPBarTexture2,
@@ -103,25 +98,11 @@ end
 
 -- CVars
 local cvars = {
-    --ShowClassColorInFriendlyNameplate = "1",
     ShowClassColorInNameplate = "1",
-    --classic only
-	--nameplateMaxDistance = "41",
-    --nameplateGlobalScale = "1.12",
     threatWarning = "0",
     predictedHealth = "1",
     Sound_EnableDSPEffects = "0",
-    --classic only?
-	--countdownForCooldowns = "1",
-    --nameplateShowFriendlyNPCs = "0",
-    --nameplateShowFriendlyMinions = "0",
-    --nameplateShowFriendlyPets = "0",
-    --nameplateShowFriendlyTotems = "0",
-    showPartyPets = "0",
-    -- these are only due to the retarded changes they made in the ICC clAASic Patch
-    --UnitNameFriendlySpecialNPCName = "0",
-    --UnitNameHostleNPC = "0",
-    --UnitNameInteractiveNPC = "0"
+    showPartyPets = "0"
 }
 
 local function CustomCvar()
@@ -148,50 +129,6 @@ local function ColorGuildTabs()
     end
 end
 
---not needed (hackfixed via data/sound folder)
---local sounds = {
-    --569772, -- sound/spells/fizzle/fizzleholya.ogg
-    --569773, -- sound/spells/fizzle/fizzlefirea.ogg
-    --569774, -- sound/spells/fizzle/fizzlenaturea.ogg
-    --569775, -- sound/spells/fizzle/fizzlefrosta.ogg
-    --569776, -- sound/spells/fizzle/fizzleshadowa.ogg
-    --567407, -- sound/interface/uchatscrollbutton.ogg annoying clicking sound when you press a spell on action bar
-    --598127, -- DalaranArena_WaterIncoming
-    --565772, -- DalaranSewer_ArenaWaterFall_Closed
-    --569506, -- DalaranSewer_ArenaWaterFall_Close
-    --598178, -- Orgrimmar_Arena_PillarWarning
-    --545431, -- sound/creature/brann/ur_brann_dalaran01.ogg (dalaran cancer)
-    --559130, -- sound/creature/rhonin/ur_rhonin_event01.ogg
-    --559131, -- sound/creature/rhonin/ur_rhonin_event02.ogg
-    --559126, -- sound/creature/rhonin/ur_rhonin_event03.ogg
-    --559128, -- sound/creature/rhonin/ur_rhonin_event04.ogg
-    --559133, -- sound/creature/rhonin/ur_rhonin_event05.ogg
-    --559129, -- sound/creature/rhonin/ur_rhonin_event06.ogg
-    --559132, -- sound/creature/rhonin/ur_rhonin_event07.ogg
-    --559127, -- sound/creature/rhonin/ur_rhonin_event08.ogg
-    --538978, -- Greenslime
-    --538976, -- Greenslime
-    --1229, -- crab sounds (Blizzard is too dogshit to fix this themselves, as usual)
-    --1230,
-    --1228,
-    --1227,
-    --1226,
-    --1225,
-    --567231, --RiverA
-    --567250,
-    --567272,
-    --567251,
-    --567253,
-    --567266,
-    --567230, -- RiverB
-    --567271,
-    --567234,
-    --567246,
-    --567244,
-    --567261,
-    --567453, -- target
-    --567520, -- untarget
---}
 
 local tooltipOwnerBlacklist = {
     "ActionButton%d+$", -- bar buttons
@@ -210,7 +147,6 @@ local tooltipOwnerBlacklist = {
     "LFGMicroButton",
 	"LFDMicroButton", -- 3.3.5a cancer only
     "HelpMicroButton",
-    --"CollectionsMicroButton", -- classic cancer
     "^KeyRingButton$", -- key ring
     "^CharacterBag%dSlot$", -- bags
     "^MainMenuBarBackpackButton$", -- backpack
@@ -311,17 +247,10 @@ local function OnInit()
     MiniMapMailFrame:SetPoint('BOTTOMRIGHT', 0, -10)
     MinimapZoneTextButton:Hide()
 	PlayerPVPTimerText:SetAlpha(0)
-	
-	--classic only
-    -- MiniMapWorldMapButton:Hide() needs to be done like this since patch 2.5.3 for some reason
-    --hooksecurefunc(MiniMapWorldMapButton, "Show", MiniMapWorldMapButton.Hide)
-	
-	--^^3.3.5a "solution" only:
+	--3.3.5a only:
 	MiniMapWorldMapButton:Hide()
 	
-	
-	
-	
+
 	--ChatGPT made this..:shrug:...classic code didnt work
     -- Color Clock
 	if not IsAddOnLoaded("Blizzard_TimeManager") then
@@ -330,10 +259,7 @@ local function OnInit()
     select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
 	
 	
-	
-	
     -- Position
-
     FocusFrame:StopMovingOrSizing()
     FocusFrame:ClearAllPoints()
     FocusFrame:SetPoint("CENTER", UIParent, "CENTER", -237, 115)
@@ -426,7 +352,7 @@ local function OnInit()
 
     -- Reposition
     PartyMemberFrame1:ClearAllPoints()
-	--on 3.3.5a had to change this to PlayerFrame from CompactRaidFrameManager(Classic) here
+	--on 3.3.5a had to change this anchor to PlayerFrame from CompactRaidFrameManager(Classic)
     PartyMemberFrame1:SetPoint("TOPLEFT", PlayerFrame, "TOPRIGHT", -168.5, -97.3)
 
     PartyMemberFrame2:ClearAllPoints()
@@ -439,7 +365,7 @@ local function OnInit()
     PartyMemberFrame4:SetPoint("TOPLEFT", PartyMemberFrame3PetFrame, "BOTTOMLEFT", -23.33, -32.7)
 	
 	
-	--XYZ (comment out when partydebuffs addon becomes a thing again)
+	--(comment out when partydebuffs addon becomes a thing again)
     --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (using PartyDebuffs addon for now)
     PartyMemberFrame1Debuff1:ClearAllPoints();
     PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
@@ -491,9 +417,6 @@ local function OnInit()
     TargetFrameTextureFrameLeaderIcon:SetAlpha(0)
 
     ChatFrameMenuButton:Hide()
-	--classic only
-    --ChatFrameChannelButton:Hide()
-	
 	--3.3.5a only:
 	FriendsMicroButton:Hide()
 
@@ -524,18 +447,10 @@ local function OnInit()
 
 
 
-
-	--classic only
     --removing character "C" button image
     MicroButtonPortrait:Hide()
-    --CharacterMicroButton:SetNormalTexture("Interface/BUTTONS/Custom Evo C panel");
-    --CharacterMicroButton:SetPushedTexture("Interface/BUTTONS/Custom Evo C panel");
-	
 	--3.3.5a only:
-	
 	PVPMicroButton:Hide()
-	
-	--classic only    --LFGMicroButton:SetNormalTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");    --LFGMicroButton:SetPushedTexture("Interface/BUTTONS/UI-MicroButton-Help-Up");
 	
     -- removing the new "latency" bar unfortunately introduced in wotlk
     MainMenuBarPerformanceBar:SetAlpha(0)
@@ -550,10 +465,6 @@ local function OnInit()
     MinimapCluster:ClearAllPoints();
     MinimapCluster:SetPoint("BOTTOMLEFT", 1186.333618164063, 595.0001831054688);
 	
-	--classic only
-    -- Removing Stance Bar (Shadowform icon literally the most useless and space-taking thing Lizzard invented in WOTLK)
-    --StanceBarFrame:SetAlpha(0)
-    --RegisterStateDriver(StanceBarFrame, "visibility", "hide")
 
     --disable mouseover flashing on buttons
     for i = 1, 12 do
@@ -618,16 +529,9 @@ local function OnInit()
 
     texture = PVPMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-	--classic only
-    --PVPMicroButtonTexture:SetAlpha(0)
 	
 	--3.3.5a only:
 	PVPMicroButtonTexture:Hide()
-	
-	
-	--classic only
-    --texture = LFGMicroButton:GetHighlightTexture()
-    --texture:SetAlpha(0)
 
     texture = MainMenuMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
@@ -638,15 +542,9 @@ local function OnInit()
 
     texture = HelpMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-	
-	
-	--hackfixed by Data/Sounds folder (oldschool)
-    -- Remove Fizzle sounds (this was previously done by replacing the actual sound in Data/Sounds)
-    --for _, fdid in pairs(sounds) do
-    --    MuteSoundFile(fdid)
-    --end
 
-    -- Hide certain Macro & Keybind texts from Action Bar buttons
+
+    -- Hide	Macro & Keybind texts from Action Bar buttons
 
     for i = 1, 12 do
         _G["ActionButton" .. i .. "HotKey"]:SetAlpha(0)
@@ -662,38 +560,7 @@ local function OnInit()
         _G["MultiBarRightButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarLeftButton" .. i .. "Name"]:SetAlpha(0)
     end
-
-	--not needed on 3.3.5a:
-    -- trying to salvage the main action bar abomination they created in the clASSic ICC patch (bringing back the old looks of it)
-
-    --MainMenuBar:SetSize(1024, 53)
-    --MainMenuExpBar:SetSize(1024, 13);
-    --MainMenuBarTexture0:SetPoint("BOTTOM", -384, 0);
-    --MainMenuBarTexture1:SetPoint("BOTTOM", -128, 0);
-    --MainMenuBarTexture2:SetPoint("BOTTOM", 128, 0);
-    --MainMenuBarTexture3:SetPoint("BOTTOM", 384, 0);
-    --MainMenuBarLeftEndCap:SetPoint("BOTTOM", -544, 0);
-    --MainMenuBarRightEndCap:SetPoint("BOTTOM", 544, 0);
-    --MainMenuBarPageNumber:SetPoint("CENTER", 30, -5);
-    --MainMenuXPBarTexture0:SetSize(256, 10);
-    --MainMenuXPBarTexture1:SetSize(256, 10);
-    --MainMenuXPBarTexture2:SetSize(256, 10);
-    --MainMenuXPBarTexture3:SetSize(256, 10);
-    --MainMenuXPBarTexture3:SetPoint("BOTTOM", 384, 3);
-    --classic only
-	--CollectionsMicroButton:Hide()
-    --PVPMicroButton:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
-    --UpdateMicroButtons()
-    --hooksecurefunc(PVPMicroButton, "SetPoint", function(self)
-        --if self.moving then
-            --return
-        --end
-        --self.moving = true
-        --self:ClearAllPoints()
-        --self:SetPoint("BOTTOMLEFT", SocialsMicroButton, "BOTTOMRIGHT", -2, 0)
-        --UpdateMicroButtons()
-        --self.moving = false
-    --end)
+	
 end
 
 -- SpeedyActions level: Garage clicker & Pro Gaymer
@@ -774,10 +641,6 @@ local function UpdateBinds(frame)
     end
 end
 
---classic only
--- Hide the modern shitclient multigroup icon at PlayerFrame
---local mg = PlayerPlayTime:GetParent().MultiGroupFrame
---hooksecurefunc(mg, "Show", mg.Hide)
 
 -- Hide Player and Pet hit indicators
 hooksecurefunc(PlayerHitIndicator, "Show", PlayerHitIndicator.Hide)
@@ -799,13 +662,6 @@ hooksecurefunc("PetFrame_Update", function()
     PetFrameManaBarText:SetFont("Fonts/FRIZQT__.TTF", 9, "OUTLINE")
     PetFrameManaBar:SetPoint("TOPLEFT", 45, -32)
 end)
-
---classic only
---Hide level text
---hooksecurefunc("PlayerFrame_UpdateLevelTextAnchor", function()
---    PlayerLevelText:SetAlpha(0)
---    PlayerFrameHealthBar:SetPoint("TOPLEFT", 106, -22);
---end)
 
 
 -- Remove color on name background
@@ -850,20 +706,7 @@ PaperDollFrame:HookScript("OnHide", function()
 end)
 
 
---classic only:
---current HP/MANA value
---local function TextStatusBar_UpdateTextString(statusFrame)
---    local value = statusFrame.finalValue or statusFrame:GetValue();
---    if statusFrame.TextString and statusFrame.currValue and statusFrame.currValue > 0 then
---        statusFrame.TextString:SetText(value)
---    else
---        statusFrame.TextString:Hide()
---    end
---end
---hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", TextStatusBar_UpdateTextString)
-
-
---ChatGPT for 3.3.5a of ^^:
+--current HP/MANA value [ChatGPT rework for 3.3.5a]
 local function CustomTextStatusBar_UpdateTextString(statusFrame)
     -- Use the current value from the status bar or the final value if it's set
     local value = statusFrame.finalValue or statusFrame:GetValue()
@@ -885,40 +728,8 @@ end
 hooksecurefunc("TextStatusBar_UpdateTextString", CustomTextStatusBar_UpdateTextString)
 
 
---classic only:
---[[
-local function Classification(self, forceNormalTexture)
-    local classification = UnitClassification(self.unit);
 
-    if classification == "elite" or classification == "worldboss" then
-        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Elite")
-    elseif classification == "rareelite" then
-        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Rare-Elite")
-    elseif classification == "rare" then
-        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame-Rare")
-    else
-        self.borderTexture:SetTexture("Interface\\AddOns\\TextureScript\\UI-TargetingFrame")
-    end
-
-    -- fix Blizzard's overlapping backgrounds causing a darker line
-    if forceNormalTexture then
-        if classification ~= "minus" then
-            self.Background:SetHeight(24)
-            -- else
-            -- not sure if "minus" mobs exist in TBC - wowpedia says:
-            -- Patch 5.0.4: used for minion mobs that typically have less health than normal mobs of their level, but engage the player in larger numbers
-            -- if they do exist, have to check if the default 12 is an OK size for it not to overlap
-            -- self.Background:SetHeight(12)
-        end	
-    else
-        self.Background:SetHeight(24)
-    end
-end
-hooksecurefunc("TargetFrame_CheckClassification", Classification)
---]]
-
-
---ChatGPT 3.3.5a version of the above^^ - background element doesnt exist in wrath 3.3.5...
+--[ChatGPT rework for 3.3.5a]
 local function Classification(self, forceNormalTexture)
     local classification = UnitClassification(self.unit);
 
@@ -934,12 +745,10 @@ local function Classification(self, forceNormalTexture)
 end
 
 hooksecurefunc("TargetFrame_CheckClassification", Classification)
-
 
 
 
 --smooth status bars(animated)
-
 local barstosmooth = {
     PlayerFrameHealthBar = "player",
     PlayerFrameManaBar = "player",
@@ -1001,20 +810,8 @@ local function SmoothBar(bar)
 end
 
 
---classic only
---smoothframe:SetScript("OnUpdate", function()
---    if not inArena then
---        for _, plate in pairs(C_NamePlate.GetNamePlates(true)) do
---            if not plate:IsForbidden() and plate:IsVisible() and plate.UnitFrame:IsShown() then
---                SmoothBar(plate.UnitFrame.healthBar)
---            end
---        end
---    end
---    AnimationTick()
---end)
-
---ChatGPT fix for ^^, also removing the "not in arena part", dunno why we had it, maybe it was protected on clASSic:
-
+--[ChatGPT rework for 3.3.5a], also removing the "not in arena part", dunno why we had it, maybe it was protected on clASSic
+-- XYZ - currently doesnt work (nameplate)
 smoothframe:SetScript("OnUpdate", function()
     -- Iterate over all UI frames to find nameplates
     for _, plate in pairs({WorldFrame:GetChildren()}) do
@@ -1028,8 +825,6 @@ smoothframe:SetScript("OnUpdate", function()
     end
     AnimationTick()
 end)
-
-
 
 local function SetSmooth()
     for k, v in pairs(barstosmooth) do
@@ -1045,6 +840,8 @@ local function SetSmooth()
         end
     end
 end
+
+
 
 -- statusbar.lockColor causes taints
 local function colour(statusbar, unit)
@@ -1148,36 +945,7 @@ hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
     _G[buttonName .. index]:SetScale(1.23)
 end)
 
--- remove the shitty new client "raid frame manager" left gray bar next to the party frames (currently shows on/off on mouseover)
---local manager = CompactRaidFrameManager
---manager:SetAlpha(0)
--- look through a frame's parents
---local function FindParent(frame, target)
---    if frame == target then
---        return true
---    elseif frame then
---        return FindParent(frame:GetParent(), target)
---    end
---end
---
---manager:HookScript("OnEnter", function(self)
---    self:SetAlpha(1)
---end)
 
---manager:HookScript("OnLeave", function(self)
---    if manager.collapsed and not FindParent(GetMouseFocus(), self) then
---        self:SetAlpha(0)
---    end
---end)
-
---manager.toggleButton:HookScript("OnClick", function()
---    if manager.collapsed then
---        manager:SetAlpha(0)
---    end
---end)
--- keep the container frame visible
---manager.container:SetIgnoreParentAlpha(true)
---manager.containerResizeFrame:SetIgnoreParentAlpha(true)
 
 -- Hide HealthBar under unit tooltips + Hide Titles, PVP flag and Guild Names from Player tooltips
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
@@ -1224,20 +992,25 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 end)
 
 
---classic only (currently handling with MoveAnything - moving debuff row only since Buff row is correct by default):
--- Change BuffFrame position
---hooksecurefunc("UIParent_UpdateTopFramePositions", function()
---    BuffFrame:ClearAllPoints()
---    BuffFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -180, -13)
---end)
+-- Change BuffFrame/Debuff Frame position
+-- Currently handling with MoveAnything
 
+
+
+
+
+-- NAMEPLATE stuff
+-- NAMEPLATE stuff
+-- NAMEPLATE stuff
+-- NAMEPLATE stuff
+--[[
 
 
 -- stop Gladdy from showing nameplates (necessary for the next script) !! IMPORTANT - You MUST use the "Lock Frame" function in General tab of Gladdy alongside with this!!
 
 -- IT IS ALSO ABSOLUTELY NECESSARY FOR YOU TO DISABLE THE "Totem Plates" PLUGIN IN GLADDY UI
 
--- not necessary on 3.3.5a?? gladdy has this built in?? -- xyz??
+-- XYZ - not necessary on 3.3.5a?? gladdy has this built in??
 if IsAddOnLoaded("Gladdy") then
     local Gladdy = LibStub and LibStub("Gladdy")
     if Gladdy then
@@ -1254,7 +1027,6 @@ if IsAddOnLoaded("Gladdy") then
 end
 
 -- Highlight Tremor Totem (disable nameplates of everything else) + disable Snake Trap Cancer + prevent displaying already dead Tremor Totem (retarded Classic-like behavior)
---XYZ: remove the tremor logic i guess or?
 local ShrinkPlates = {
     ["Viper"] = true,
     ["Venomous Snake"] = true,
@@ -1344,7 +1116,6 @@ local function plateOnUpdateFrame()
 end
 
 -- PlaySound whenever an enemy casts Tremor Totem in arena (previously handled in a standalone addon "EvolveAlert" - https://github.com/Evolvee/EvolvePWPUI-ClassicTBC/tree/main/Interface/AddOns/EvolveAlert)
-
 --xyz: remove the healing part etc? its not needed anymore - im not playing priest for now
 local COMBATLOG_FILTER_HOSTILE_PLAYERS = COMBATLOG_FILTER_HOSTILE_PLAYERS;
 local CombatLog_Object_IsA = CombatLog_Object_IsA
@@ -1540,117 +1311,14 @@ local function RemovePlate(unit)
     end
 end
 
--- Skip certain gossip_menu windows for vendors and especially arena/bg NPCs --> can be bypassed by pressing ctrl/alt/shift
--- To see the icon number of gossip options, use: /dump C_GossipInfo.GetOptions()
-
--- not needed on 3.3.5a??
---[[
-local gossipSkipIcon = {
-    [132050] = 1, -- banker
-    [132051] = 1, -- battlemaster
-    [132057] = 1, -- taxi
-    [132058] = 1, -- trainer
-    [132060] = 1, -- vendor
-    [528409] = 1, -- Dalaran auction house
-}
-
-local IsShiftKeyDown, IsAltKeyDown, IsControlKeyDown = IsShiftKeyDown, IsAltKeyDown, IsControlKeyDown
-
-local GetNumGossipActiveQuests, GetNumGossipAvailableQuests = C_GossipInfo.GetNumActiveQuests, C_GossipInfo.GetNumAvailableQuests
-local SelectGossipOption, Dismount = C_GossipInfo.SelectOption, Dismount
-
-local function skipEventFrame()
-    local options = C_GossipInfo.GetOptions()
-    local numOptions = #options
-
-    if not IsShiftKeyDown() and numOptions == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
-        if gossipSkipIcon[options[1].icon] then
-            SelectGossipOption(options[1].gossipOptionID)
-            if options[1].icon == 132057 then
-                -- taxi
-                Dismount()
-            end
-            return
-        end
-    end
-    if numOptions > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
-        for _, v in ipairs(options) do
-            if v.icon == 132060 then
-                -- vendor
-                SelectGossipOption(v.gossipOptionID)
-                return
-            end
-        end
-    end
-end
---]]
-
---xyz?? probably wont work on Paymena 3.3.5a
---[[
--- Add MMR at the bottom of Arena Scoreboard
-local teamRatingFrame = CreateFrame("frame", "TeamRatingTextFrame", WorldStateScoreFrame)
-teamRatingFrame:SetPoint("BOTTOM", WorldStateScoreFrameLeaveButton, "TOP", 0, 12)
-teamRatingFrame:SetSize(300, 80)
-teamRatingFrame:Hide()
-teamRatingFrame.names = teamRatingFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-teamRatingFrame.ratings = teamRatingFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-teamRatingFrame.names:SetFont("Fonts/FRIZQT__.TTF", 24)
-teamRatingFrame.ratings:SetFont("Fonts/FRIZQT__.TTF", 24)
-teamRatingFrame.names:SetJustifyH("LEFT")
-teamRatingFrame.ratings:SetJustifyH("LEFT")
-teamRatingFrame.ratings:SetPoint("TOPLEFT", teamRatingFrame.names, "TOPRIGHT", 0, 0)
-
-teamRatingFrame:SetScript("OnShow", function()
-    local nWidth = teamRatingFrame.names:GetWidth()
-    local rWidth = teamRatingFrame.ratings:GetWidth()
-    local x = (nWidth / 2) - ((nWidth + rWidth - 10) / 2) -- no idea why "- 10" helps centering it!
-    teamRatingFrame.names:ClearAllPoints()
-    teamRatingFrame.names:SetPoint("BOTTOM", teamRatingFrame, "BOTTOM", x, 0)
-end)
-
-teamRatingFrame:SetScript("OnEvent", function(_, event)
-    if event == "UPDATE_BATTLEFIELD_SCORE" then
-        local _, isRatedArena = IsActiveBattlefieldArena()
-        if isRatedArena then
-            local name1, _, newRating1, mmr1 = GetBattlefieldTeamInfo(0)
-            local name2, _, _, mmr2 = GetBattlefieldTeamInfo(1)
-            if newRating1 and newRating1 > 0 then
-                local nameText = string_format('|cffbd67ff"%s" |r\n|cffffd500"%s" |r', name1, name2)
-                local ratingText = string_format('|cffbd67ffMMR: %d|r\n|cffffd500MMR: %d|r', mmr1, mmr2)
-                teamRatingFrame.names:SetText(nameText)
-                teamRatingFrame.ratings:SetText(ratingText)
-                teamRatingFrame:Show()
-                return
-            end
-        end
-    end
-    teamRatingFrame:Hide()
-end)
-teamRatingFrame:RegisterEvent("UPDATE_BATTLEFIELD_SCORE")
-teamRatingFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 
---]]
+-- END OF NAMEPLATESTUFF
+-- END OF NAMEPLATESTUFF
+-- END OF NAMEPLATESTUFF
+-- END OF NAMEPLATESTUFF
 
-
---classic only, not needed on older clients
--- Moving right and left multibar (actionbars at the right side) to match the 2.4.3 position
---local function SetPosition(frame, ...)
---    if InCombatLockdown() then
---        return
---    end
-
---    if type(frame) == "string" then
---        frame = _G[frame]
---    end
-
---    if type(frame) == "table" and type(frame.IsObjectType) == "function" and frame:IsObjectType("Frame") then
---        if ... then
---            frame:ClearAllPoints()
---            frame:SetPoint(...)
---        end
---    end
---end
+]]--
 
 
 --XYZ- there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons) - and it also just doesnt work at all whatsoever alone anyways
@@ -1668,6 +1336,7 @@ teamRatingFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 --XYZ
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
+--handling via TullaRange for now
 --[[
 local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
@@ -1716,7 +1385,6 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
 end)
 --]]
 
---handling via TullaRange for now^^ :(
 
 
 
@@ -1731,17 +1399,8 @@ for _, totFrame in ipairs({ TargetFrameToT, FocusFrameToT }) do
         end
     end)
 end
---XYZ (not needed tho)
--- Change position of widget showing below minimap
---local widget = _G["UIWidgetBelowMinimapContainerFrame"]
---hooksecurefunc(widget, "SetPoint", function(self, _, parent)
---    if parent and (parent == "MinimapCluster" or parent == _G["MinimapCluster"]) then
---        widget:ClearAllPoints()
---        widget:SetPoint("TOPRIGHT", UIWidgetTopCenterContainerFrame, "BOTTOMRIGHT", 580, -345)
---    end
---end)
 
--- Text formating because Blizzard is a bunch of retarded dogs
+
 
 
 --@@ Wrath stuff below
@@ -1766,7 +1425,7 @@ end
 --    end
 --end)
 
---NOT NEEDED(TBC)
+
 -- Changing DK default colour in order to bring more clarity
 --hooksecurefunc("CompactUnitFrame_UpdateHealthColor", function(frame)
 --    if not frame.unit or frame:IsForbidden() or not string.find(frame.unit, "nameplate") then
@@ -1782,27 +1441,40 @@ end
 --    end
 --end)
 
--- leave arena on PVP icon doubleclick (useful when playing against DK retards)
+-- leave arena on PVP icon doubleclick (useful when playing against RM/RR retards)
 MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
     if inArena then
         LeaveBattlefield()
     end
 end)
 
---NOT NEEDED(hopefully?)
--- "Fix" SCT
---if not CombatText then
---    EventUtil.ContinueOnAddOnLoaded("Blizzard_CombatText", function()
---        CombatText_ClearAnimationList = function()
---            return
---        end
---    end)
---else
---    CombatText_ClearAnimationList = function()
---        return
---    end
---end
 
+-- "Fix" SCT
+--not needed on 3.3.5a? We will see...
+--[[
+if not CombatText then
+    EventUtil.ContinueOnAddOnLoaded("Blizzard_CombatText", function()
+        CombatText_ClearAnimationList = function()
+            return
+        end
+    end)
+else
+    CombatText_ClearAnimationList = function()
+        return
+    end
+end
+]]--
+
+
+
+-- NAMEPLATE STUFF
+-- NAMEPLATE STUFF
+-- NAMEPLATE STUFF
+-- NAMEPLATE STUFF
+-- NAMEPLATE STUFF
+
+
+--[[
 local function PlateNames(frame)
     if not frame or frame:IsForbidden() then
         return
@@ -1833,6 +1505,15 @@ local function PlateNames(frame)
 end
 --@@ Wrath end
 
+-- END OF NAMEPLATE STUFF
+-- END OF NAMEPLATE STUFF
+-- END OF NAMEPLATE STUFF
+-- END OF NAMEPLATE STUFF
+-- END OF NAMEPLATE STUFF
+
+
+]]--
+
 --
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
@@ -1847,11 +1528,9 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         CustomCvar() -- Set our CVAR values
         OnInit() -- Init tons of shit
-        -- classic only:
-		--SetPosition(MultiBarRight, "TOPRIGHT", VerticalMultiBarsContainer, "TOPRIGHT", 2, 3)
-        --SetPosition(MultiBarLeft, "TOPLEFT", VerticalMultiBarsContainer, "TOPLEFT", 2, 3)
         SetSmooth() -- SmoothBar init
 		--XYZ
+		--NAMEPLATE STUFF
         --hooksecurefunc("CompactUnitFrame_UpdateName", PlateNames) -- has to be called after event
         UpdateBinds(self)
         self:UnregisterEvent("PLAYER_LOGIN")
@@ -1869,6 +1548,8 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         local addon = ...
         DarkenFrames(addon)
         self:UnregisterEvent("ADDON_LOADED")
+	-- NAMEPLATE STUFF
+	--[[
     elseif event == "PLAYER_ENTERING_WORLD" then
         local _, type = IsInInstance()
         if type == "arena" then
@@ -1897,21 +1578,22 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         else
             plateEventFrame:SetScript("OnEvent", PlateScript)
         end
-	--XYZ, not needed?gossip skips? (attempt to call global 'skipEventFrame' (a nil value))
-    --elseif event == "GOSSIP_SHOW" then
-    --    skipEventFrame()
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
     elseif event == "NAME_PLATE_UNIT_REMOVED" then
         local unit = ...
         RemovePlate(unit)
+		
+		END OF NAMEPLATE STUFF--]]
     end
 end)
 
 
 
--- Warmane only:
+--@@ 3.3.5.a SHIT ONLY:
+
+
 -- Auto repair / Auto sell grey shit
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
@@ -1951,6 +1633,20 @@ g:SetScript("OnEvent", function()
         end
     end
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -168,7 +168,7 @@ local function ParseCLEU(self, _, timestamp, event, _, srcName, srcFlags, guid, 
 		return
 	end
 	-- Ignore targetted friends
-	if band(flags, CLO_REACTION_FRIENDLY) ~= 0 then return end
+	--if band(flags, CLO_REACTION_FRIENDLY) ~= 0 then return end
 	-- Ignore any spell or event we are not interested with
 	local increase, category = CL_EVENTS[event], SPELLS[spellId] or SPELLS[spell]
 	if not increase or not category then return end

@@ -25,6 +25,16 @@ addon:RegisterAddonSupport('FrameXML', function()
 			xOffset = 14,
 			yOffset = 28,
 		},
+		player = {
+			enabled = true,
+			iconSize = 16,
+			direction = 'BOTTOM',
+			spacing = 2,
+			anchorPoint = 'TOPLEFT',
+			relPoint = 'TOPRIGHT',
+			xOffset = -25,
+			yOffset = -20,
+		},
 	}})
 	
 	local function RegisterFrame(name, unit)
@@ -37,5 +47,6 @@ addon:RegisterAddonSupport('FrameXML', function()
 
 	RegisterFrame('TargetFrame', 'target')
 	RegisterFrame('FocusFrame', 'focus')
+	RegisterFrame('PlayerFrame', 'player')
 end)
 

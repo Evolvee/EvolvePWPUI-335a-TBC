@@ -72,7 +72,7 @@ local function SpawnIcon(self)
 	border:SetHeight(self.iconSize + 2)
 	border:SetBackdrop(borderBackdrop)
 	border:SetBackdropColor(0, 0, 0, 0)
-	border:SetBackdropBorderColor(1, 1, 1, 1)
+	border:SetBackdropBorderColor(0, 0, 0, 0)
 	icon.border = border
 
 	local textFrame = CreateFrame("Frame", nil, icon)

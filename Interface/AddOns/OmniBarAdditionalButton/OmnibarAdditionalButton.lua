@@ -16,11 +16,13 @@ OABframe:SetScript("OnClick", function(self)
     if OmniBar16 then
         if OmniBar16:GetAlpha() > 0 then
             OmniBar16:SetAlpha(0)
-            OmniBar1:SetAlpha(1)
+			-- Classic only - I dont have any static omnibar1 by default anymore
+            --OmniBar1:SetAlpha(1)
 			ChatFrame1:AddMessage("Additional OmniBar OFF", 255, 0, 0)
         else
             OmniBar16:SetAlpha(1)
-            OmniBar1:SetAlpha(0)
+			-- Classic only - I dont have any static omnibar1 by default anymore
+            --OmniBar1:SetAlpha(0)
 			ChatFrame1:AddMessage("Additional OmniBar ON", 0, 205, 255)
         end
     end

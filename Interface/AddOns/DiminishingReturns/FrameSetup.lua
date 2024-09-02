@@ -53,7 +53,7 @@ end
 local addonSupportInitialized
 
 local function IsLoaded(name)
-	if name == "FrameXML" then
+	if string.sub(name, 0, 8) == "FrameXML" then
 		return IsLoggedIn()
 	else
 		return IsAddOnLoaded(name)
@@ -61,7 +61,7 @@ local function IsLoaded(name)
 end
 
 local function CanBeLoaded(name)
-	if name == "FrameXML" then
+	if string.sub(name, 0, 8) == "FrameXML" then
 		return true
 	else
 		return select(5, GetAddOnInfo(name))
