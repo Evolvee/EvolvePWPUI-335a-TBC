@@ -1,22 +1,5 @@
 --EVOLVE PWP UI
 
-local _G = getfenv(0)
-local CombatLogGetCurrentEventInfo = _G.CombatLogGetCurrentEventInfo
-local UnitGUID, UnitIsPlayer, UnitIsConnected, UnitClass, UnitClassification = _G.UnitGUID, _G.UnitIsPlayer, _G.UnitIsConnected, _G.UnitClass, _G.UnitClassification
-local UnitIsEnemy, UnitName = _G.UnitIsEnemy, _G.UnitName
-local select, string_format, string_split = _G.select, _G.string.format, _G.string.split
-local pairs, ipairs, tostring = _G.pairs, _G.ipairs, _G.tostring
-local GetGuildRosterInfo = _G.GetGuildRosterInfo
-local GuildListScrollFrame = _G.GuildListScrollFrame
-local RAID_CLASS_COLORS = _G.RAID_CLASS_COLORS
-local mmin, mmax, mabs = _G.math.min, _G.math.max, _G.math.abs
-local floor, strfind = _G.math.floor, _G.string.find
-local GetFramerate = _G.GetFramerate
-local UnitExists, UnitIsFriend, UnitPowerType = _G.UnitExists, _G.UnitIsFriend, _G.UnitPowerType
-local PlaySound, C_NamePlate = _G.PlaySound, C_NamePlate
-local inArena = false
-local SetCVar, GetCVar = _G.SetCVar, _G.GetCVar
-
 --dark theme
 local function DarkenFrames(addon)
     for _, v in pairs({
@@ -749,28 +732,51 @@ hooksecurefunc("TargetFrame_CheckClassification", Classification)
 
 
 --smooth status bars(animated)
+local floor = math.floor
 local barstosmooth = {
     PlayerFrameHealthBar = "player",
     PlayerFrameManaBar = "player",
     TargetFrameHealthBar = "target",
+    PetFrameHealthBar = "pet",
+    PetFrameManaBar = "pet",
     TargetFrameManaBar = "target",
     FocusFrameHealthBar = "focus",
     FocusFrameManaBar = "focus",
+    MainMenuExpBar = "",
+    ReputationWatchStatusBar = "",
+    PartyMemberFrame1HealthBar = "party1",
+    PartyMemberFrame1ManaBar = "party1",
+    PartyMemberFrame2HealthBar = "party2",
+    PartyMemberFrame2ManaBar = "party2",
+    PartyMemberFrame3HealthBar = "party3",
+    PartyMemberFrame3ManaBar = "party3",
+    PartyMemberFrame4HealthBar = "party4",
+    PartyMemberFrame4ManaBar = "party4",
 }
 
-local smoothframe = CreateFrame("Frame")
+local smoothframe = CreateFrame 'Frame'
+smoothframe:RegisterEvent 'ADDON_LOADED'
 local smoothing = {}
 
+local isPlate = function(frame)
+    local overlayRegion = frame:GetRegions()
+    if not overlayRegion or overlayRegion:GetObjectType() ~= 'Texture'
+            or overlayRegion:GetTexture() ~= [[Interface\Tooltips\Nameplate-Border]] then
+        return false
+    end
+    return true
+end
+
+local min, max = math.min, math.max
 local function AnimationTick()
     local limit = 30 / GetFramerate()
-
     for bar, value in pairs(smoothing) do
         local cur = bar:GetValue()
-        local new = cur + mmin((value - cur) / 3, mmax(value - cur, limit))
+        local new = cur + min((value - cur) / 3, max(value - cur, limit))
         if new ~= new then
             new = value
         end
-        if cur == value or mabs(new - value) < 2 then
+        if cur == value or math.abs(new - value) < 2 then
             bar:SetValue_(value)
             smoothing[bar] = nil
         else
@@ -781,8 +787,8 @@ end
 
 local function SmoothSetValue(self, value)
     self.finalValue = value
-    if self.unit then
-        local guid = UnitGUID(self.unit)
+    if self.unitType then
+        local guid = UnitGUID(self.unitType)
         if value == self:GetValue() or not guid or guid ~= self.lastGuid then
             smoothing[self] = nil
             self:SetValue_(value)
@@ -801,6 +807,11 @@ local function SmoothSetValue(self, value)
         self._max = max
     end
 end
+for bar, value in pairs(smoothing) do
+    if bar.SetValue_ then
+        bar.SetValue = SmoothSetValue
+    end
+end
 
 local function SmoothBar(bar)
     if not bar.SetValue_ then
@@ -809,34 +820,33 @@ local function SmoothBar(bar)
     end
 end
 
+local function ResetBar(bar)
+    if bar.SetValue_ then
+        bar.SetValue = bar.SetValue_
+        bar.SetValue_ = nil
+    end
+end
 
---[ChatGPT rework for 3.3.5a], also removing the "not in arena part", dunno why we had it, maybe it was protected on clASSic
--- XYZ - currently doesnt work (nameplate)
-smoothframe:SetScript("OnUpdate", function()
-    -- Iterate over all UI frames to find nameplates
-    for _, plate in pairs({WorldFrame:GetChildren()}) do
-        if plate:GetName() and plate:IsVisible() then
-            local healthBar = plate:GetChildren()
-            -- Assuming the health bar is the first child of the nameplate frame
-            if healthBar and healthBar:IsObjectType("StatusBar") then
-                SmoothBar(healthBar)
-            end
+smoothframe:SetScript('OnUpdate', function()
+    local frames = { WorldFrame:GetChildren() }
+    for _, plate in ipairs(frames) do
+        if isPlate(plate) and plate:IsVisible() then
+            local v = plate:GetChildren()
+            SmoothBar(v)
         end
     end
     AnimationTick()
 end)
 
-local function SetSmooth()
-    for k, v in pairs(barstosmooth) do
-        if _G[k] then
-            SmoothBar(_G[k])
-            _G[k]:SetScript("OnHide", function(frame)
-                frame.lastGuid = nil;
-                frame.max_ = nil
-            end)
-            if v ~= "" then
-                _G[k].unit = v
-            end
+for k, v in pairs(barstosmooth) do
+    if _G[k] then
+        SmoothBar(_G[k])
+        _G[k]:SetScript("OnHide", function()
+            this.lastGuid = nil;
+            this.max_ = nil
+        end)
+        if v ~= "" then
+            _G[k].unitType = v
         end
     end
 end
@@ -993,17 +1003,206 @@ end)
 
 
 -- Change BuffFrame/Debuff Frame position
--- Currently handling with MoveAnything
+-- Currently handling with MoveAnything (only debuffs, buffs are correct by default on non-clASSic clients)
 
 
+-- tremor stuff from 2.4.3:
+--tremor totem highlight
 
+    local AddOn = "TextureScript"
+
+    local Table = {
+        ["Nameplates"] = {},
+        ["Totems"] = {
+            ["Tremor Totem"] = true,
+        },
+        ["Shits"] = {
+
+            ["Disease Cleansing Totem"] = true,
+            ["Earth Elemental Totem"] = true,
+            ["Earthbind Totem"] = true,
+            ["Fire Elemental Totem"] = true,
+            ["Fire Nova Totem I"] = true,
+            ["Fire Nova Totem II"] = true,
+            ["Fire Nova Totem III"] = true,
+            ["Fire Nova Totem IV"] = true,
+            ["Fire Nova Totem V"] = true,
+            ["Fire Nova Totem VI"] = true,
+            ["Fire Nova Totem VII"] = true,
+            ["Fire Resistance Totem I"] = true,
+            ["Fire Resistance Totem II"] = true,
+            ["Fire Resistance Totem III"] = true,
+            ["Fire Resistance Totem IV"] = true,
+            ["Fire Resistance Totem  "] = true,
+            ["Flametongue Totem I"] = true,
+            ["Flametongue Totem II"] = true,
+            ["Flametongue Totem III"] = true,
+            ["Flametongue Totem IV"] = true,
+            ["Flametongue Totem V"] = true,
+            ["Frost Resistance Totem I"] = true,
+            ["Frost Resistance Totem II"] = true,
+            ["Frost Resistance Totem III"] = true,
+            ["Frost Resistance Totem IV"] = true,
+            ["Grace of Air Totem I"] = true,
+            ["Tranquil Air Totem"] = true,
+            ["Grace of Air Totem II"] = true,
+            ["Grace of Air Totem III"] = true,
+            ["Grounding Totem"] = true,
+            ["Healing Stream Totem"] = true,
+            ["Healing Stream Totem II"] = true,
+            ["Healing Stream Totem III"] = true,
+            ["Healing Stream Totem IV"] = true,
+            ["Healing Stream Totem V "] = true,
+            ["Healing Stream Totem VI"] = true,
+            ["Magma Totem"] = true,
+            ["Magma Totem II"] = true,
+            ["Magma Totem III"] = true,
+            ["Magma Totem IV"] = true,
+            ["Magma Totem V"] = true,
+            ["Mana Spring Totem"] = true,
+            ["Mana Spring Totem II"] = true,
+            ["Mana Spring Totem III"] = true,
+            ["Mana Spring Totem IV"] = true,
+            ["Mana Spring Totem V"] = true,
+            ["Mana Tide Totem"] = true,
+            ["Nature Resistance Totem"] = true,
+            ["Nature Resistance Totem II"] = true,
+            ["Nature Resistance Totem III"] = true,
+            ["Nature Resistance Totem IV"] = true,
+            ["Nature Resistance Totem V"] = true,
+            ["Nature Resistance Totem V"] = true,
+            ["Poison Cleansing Totem"] = true,
+            ["Searing Totem"] = true,
+            ["Searing Totem II"] = true,
+            ["Searing Totem III"] = true,
+            ["Searing Totem IV"] = true,
+            ["Searing Totem V"] = true,
+            ["Searing Totem VI"] = true,
+            ["Searing Totem VII"] = true,
+            ["Sentry Totem"] = true,
+            ["Stoneclaw Totem"] = true,
+            ["Stoneclaw Totem II"] = true,
+            ["Stoneclaw Totem III"] = true,
+            ["Stoneclaw Totem IV"] = true,
+            ["Stoneclaw Totem V"] = true,
+            ["Stoneclaw Totem VI"] = true,
+            ["Stoneclaw Totem VII"] = true,
+            ["Stoneskin Totem"] = true,
+            ["Stoneskin Totem II"] = true,
+            ["Stoneskin Totem III"] = true,
+            ["Stoneskin Totem IV"] = true,
+            ["Stoneskin Totem V"] = true,
+            ["Stoneskin Totem VI"] = true,
+            ["Stoneskin Totem VII"] = true,
+            ["Stoneskin Totem VIII"] = true,
+            ["Strength of Earth Totem"] = true,
+            ["Strength of Earth Totem II"] = true,
+            ["Strength of Earth Totem III"] = true,
+            ["Strength of Earth Totem IV"] = true,
+            ["Strength of Earth Totem V"] = true,
+            ["Strength of Earth Totem VI"] = true,
+            ["Totem of Wrath"] = true,
+            ["Windfury Totem"] = true,
+            ["Windfury Totem II"] = true,
+            ["Windfury Totem III"] = true,
+            ["Windfury Totem IV"] = true,
+            ["Windfury Totem V"] = true,
+            ["Windwall Totem"] = true,
+            ["Windwall Totem II"] = true,
+            ["Windwall Totem III"] = true,
+            ["Windwall Totem IV"] = true,
+            ["Wrath of Air Totem"] = true,
+
+        },
+
+        Scale = 1,
+    }
+    local function log(msg) DEFAULT_CHAT_FRAME:AddMessage(msg) end -- alias for convenience
+
+    local function UpdateObjects(hp)
+        frame = hp:GetParent()
+
+        local hpborder, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon = frame:GetRegions()
+        --local overlayRegion, castBarOverlayRegion, spellIconRegion, highlightRegion, nameTextRegion, bossIconRegion, levelTextRegion, raidIconRegion = frame:GetRegions()
+        local name = oldname:GetText()
+
+        for totem in pairs(Table["Shits"]) do
+            if ( name == totem and Table["Shits"][totem] == true ) then
+
+                overlay:SetAlpha(0)
+                hpborder:Hide()
+                oldname:Hide()
+                level:Hide()
+                hp:SetAlpha(0)
+                raidicon:Hide()
+
+                if not frame.totem then
+                    frame.totem = frame:CreateTexture(nil, "BACKGROUND")
+                    frame.totem:ClearAllPoints()
+                    frame.totem:SetPoint("CENTER",frame,"CENTER",Table.xOfs,Table.yOfs)
+                else
+                    frame.totem:Show()
+                end
+
+                break
+            elseif ( name == totem ) then
+                overlay:SetAlpha(0)
+                hpborder:Hide()
+                oldname:Hide()
+                level:Hide()
+                hp:SetAlpha(0)
+                raidicon:Hide()
+                break
+            else
+                overlay:SetAlpha(1)
+                hpborder:Show()
+                oldname:Show()
+                level:Show()
+                hp:SetAlpha(1)
+                if frame.totem then frame.totem:Hide() end
+            end
+        end
+    end
+
+    local function SkinObjects(frame)
+        local HealthBar, CastBar = frame:GetChildren()
+        --local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = frame:GetRegions()
+        local overlayRegion, castBarOverlayRegion, spellIconRegion, highlightRegion, nameTextRegion, bossIconRegion, levelTextRegion, raidIconRegion = frame:GetRegions()
+
+        HealthBar:SetScript("OnShow", UpdateObjects)
+        HealthBar:SetScript("OnSizeChanged", UpdateObjects)
+
+        UpdateObjects(HealthBar)
+        Table["Nameplates"][frame] = true
+    end
+
+    local select = select
+    local function HookFrames(...)
+        for index = 1, select('#', ...) do
+            local frame = select(index, ...)
+            local region = frame:GetRegions()
+            if ( not Table["Nameplates"][frame] and not frame:GetName() and region and region:GetObjectType() == "Texture" and region:GetTexture() == "Interface\\Tooltips\\Nameplate-Border" ) then
+                SkinObjects(frame)
+                frame.region = region
+            end
+        end
+    end
+
+    local Frame = CreateFrame("Frame")
+    Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    Frame:SetScript("OnUpdate", function(self, elapsed)
+        if ( WorldFrame:GetNumChildren() ~= numChildren ) then
+            numChildren = WorldFrame:GetNumChildren()
+            HookFrames(WorldFrame:GetChildren())
+        end
+    end)
 
 
 -- NAMEPLATE stuff
 -- NAMEPLATE stuff
 -- NAMEPLATE stuff
 -- NAMEPLATE stuff
---[[
+
 
 
 -- stop Gladdy from showing nameplates (necessary for the next script) !! IMPORTANT - You MUST use the "Lock Frame" function in General tab of Gladdy alongside with this!!
@@ -1026,6 +1225,7 @@ if IsAddOnLoaded("Gladdy") then
     end
 end
 
+--[[
 -- Highlight Tremor Totem (disable nameplates of everything else) + disable Snake Trap Cancer + prevent displaying already dead Tremor Totem (retarded Classic-like behavior)
 local ShrinkPlates = {
     ["Viper"] = true,
@@ -1334,45 +1534,40 @@ end
 
 
 
---XYZ
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
---handling via TullaRange for now
---[[
 local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
 
 local function Usable(button)
     local isUsable, notEnoughMana = IsUsableAction(button.action)
-    local icon = button.icon
+    local icon = _G[button:GetName() .. "Icon"]
 
     if isUsable then
         icon:SetVertexColor(1.0, 1.0, 1.0, 1.0)
-        icon:SetDesaturated(false)
+        icon:SetDesaturated(0)
     elseif notEnoughMana then
         icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
-        icon:SetDesaturated(true)
+        icon:SetDesaturated(1)
     else
         icon:SetVertexColor(0.4, 0.4, 0.4, 1.0)
-        icon:SetDesaturated(true)
+        icon:SetDesaturated(1)
     end
 end
 
 hooksecurefunc("ActionButton_OnUpdate", function(self)
     local _, oom = IsUsableAction(self.action)
     local valid = IsActionInRange(self.action);
-    local checksRange = (valid ~= nil);
+    local checksRange = (valid ~= nil)
     local inRange = checksRange and valid;
+    local icon = _G[self:GetName() .. "Icon"]
 
-    if self.HotKey and self.HotKey:GetText() == RANGE_INDICATOR then
-        self.HotKey:Hide()
-    end
-    if checksRange and not inRange then
+    if checksRange and inRange ~= 1 then
         if oom then
-            self.icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
-            self.icon:SetDesaturated(true)
+            icon:SetVertexColor(0.3, 0.3, 0.3, 1.0)
+            icon:SetDesaturated(1)
         else
-            self.icon:SetVertexColor(1.0, 0.35, 0.35, 0.75)
-            self.icon:SetDesaturated(true)
+            icon:SetVertexColor(1.0, 0.35, 0.35, 0.75)
+            icon:SetDesaturated(0)
         end
     else
         Usable(self)
@@ -1383,7 +1578,6 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
         self.NormalTexture:Show()
     end
 end)
---]]
 
 
 
@@ -1528,7 +1722,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         CustomCvar() -- Set our CVAR values
         OnInit() -- Init tons of shit
-        SetSmooth() -- SmoothBar init
+        --SetSmooth() -- SmoothBar init (classic version, nameplate stuff)
 		--XYZ
 		--NAMEPLATE STUFF
         --hooksecurefunc("CompactUnitFrame_UpdateName", PlateNames) -- has to be called after event
