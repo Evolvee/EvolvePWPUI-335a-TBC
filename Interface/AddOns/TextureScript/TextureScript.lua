@@ -1574,9 +1574,10 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
     end
 
     -- Preventing the black action bar borders to be hidden due to pressing an action button
-    if self.NormalTexture and not self.NormalTexture:IsShown() then
-        self.NormalTexture:Show()
-    end
+	local nt = _G[self:GetName().. "NormalTexture"]
+	if nt and nt:IsShown() then
+		nt:SetAlpha(1)
+	end
 end)
 
 

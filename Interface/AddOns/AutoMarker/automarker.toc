@@ -1,0 +1,4 @@
+## Interface: 30300
+## Title: Auto Marker
+## Notes: Automatically puts raid icons when you enter arena
+automarker.lua
