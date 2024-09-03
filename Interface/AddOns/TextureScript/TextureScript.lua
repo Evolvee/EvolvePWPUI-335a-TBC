@@ -433,7 +433,7 @@ local function OnInit()
     --removing character "C" button image
     MicroButtonPortrait:Hide()
 	--3.3.5a only:
-	PVPMicroButton:Hide()
+	PVPMicroButton:SetAlpha(0)
 	
     -- removing the new "latency" bar unfortunately introduced in wotlk
     MainMenuBarPerformanceBar:SetAlpha(0)
@@ -1574,10 +1574,10 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
     end
 
     -- Preventing the black action bar borders to be hidden due to pressing an action button
-	local nt = _G[self:GetName().. "NormalTexture"]
-	if nt and nt:IsShown() then
-		nt:SetAlpha(1)
-	end
+    local nt = _G[self:GetName() .. "NormalTexture"]
+    if nt and not nt:IsShown() then
+        nt:Show()
+    end
 end)
 
 
