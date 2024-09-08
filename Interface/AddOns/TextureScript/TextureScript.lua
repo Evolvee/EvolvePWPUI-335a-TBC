@@ -1002,209 +1002,6 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 end)
 
 
--- Change BuffFrame/Debuff Frame position
--- Currently handling with MoveAnything (only debuffs, buffs are correct by default on non-clASSic clients)
-
-
--- tremor stuff from 2.4.3:
---tremor totem highlight
-
-    local AddOn = "TextureScript"
-
-    local Table = {
-        ["Nameplates"] = {},
-        ["Totems"] = {
-            ["Tremor Totem"] = true,
-        },
-        ["Shits"] = {
-
-            ["Disease Cleansing Totem"] = true,
-            ["Earth Elemental Totem"] = true,
-            ["Earthbind Totem"] = true,
-            ["Fire Elemental Totem"] = true,
-            ["Fire Nova Totem I"] = true,
-            ["Fire Nova Totem II"] = true,
-            ["Fire Nova Totem III"] = true,
-            ["Fire Nova Totem IV"] = true,
-            ["Fire Nova Totem V"] = true,
-            ["Fire Nova Totem VI"] = true,
-            ["Fire Nova Totem VII"] = true,
-            ["Fire Resistance Totem I"] = true,
-            ["Fire Resistance Totem II"] = true,
-            ["Fire Resistance Totem III"] = true,
-            ["Fire Resistance Totem IV"] = true,
-            ["Fire Resistance Totem  "] = true,
-            ["Flametongue Totem I"] = true,
-            ["Flametongue Totem II"] = true,
-            ["Flametongue Totem III"] = true,
-            ["Flametongue Totem IV"] = true,
-            ["Flametongue Totem V"] = true,
-            ["Frost Resistance Totem I"] = true,
-            ["Frost Resistance Totem II"] = true,
-            ["Frost Resistance Totem III"] = true,
-            ["Frost Resistance Totem IV"] = true,
-            ["Grace of Air Totem I"] = true,
-            ["Tranquil Air Totem"] = true,
-            ["Grace of Air Totem II"] = true,
-            ["Grace of Air Totem III"] = true,
-            ["Grounding Totem"] = true,
-            ["Healing Stream Totem"] = true,
-            ["Healing Stream Totem II"] = true,
-            ["Healing Stream Totem III"] = true,
-            ["Healing Stream Totem IV"] = true,
-            ["Healing Stream Totem V "] = true,
-            ["Healing Stream Totem VI"] = true,
-            ["Magma Totem"] = true,
-            ["Magma Totem II"] = true,
-            ["Magma Totem III"] = true,
-            ["Magma Totem IV"] = true,
-            ["Magma Totem V"] = true,
-            ["Mana Spring Totem"] = true,
-            ["Mana Spring Totem II"] = true,
-            ["Mana Spring Totem III"] = true,
-            ["Mana Spring Totem IV"] = true,
-            ["Mana Spring Totem V"] = true,
-            ["Mana Tide Totem"] = true,
-            ["Nature Resistance Totem"] = true,
-            ["Nature Resistance Totem II"] = true,
-            ["Nature Resistance Totem III"] = true,
-            ["Nature Resistance Totem IV"] = true,
-            ["Nature Resistance Totem V"] = true,
-            ["Nature Resistance Totem V"] = true,
-            ["Poison Cleansing Totem"] = true,
-            ["Searing Totem"] = true,
-            ["Searing Totem II"] = true,
-            ["Searing Totem III"] = true,
-            ["Searing Totem IV"] = true,
-            ["Searing Totem V"] = true,
-            ["Searing Totem VI"] = true,
-            ["Searing Totem VII"] = true,
-            ["Sentry Totem"] = true,
-            ["Stoneclaw Totem"] = true,
-            ["Stoneclaw Totem II"] = true,
-            ["Stoneclaw Totem III"] = true,
-            ["Stoneclaw Totem IV"] = true,
-            ["Stoneclaw Totem V"] = true,
-            ["Stoneclaw Totem VI"] = true,
-            ["Stoneclaw Totem VII"] = true,
-            ["Stoneskin Totem"] = true,
-            ["Stoneskin Totem II"] = true,
-            ["Stoneskin Totem III"] = true,
-            ["Stoneskin Totem IV"] = true,
-            ["Stoneskin Totem V"] = true,
-            ["Stoneskin Totem VI"] = true,
-            ["Stoneskin Totem VII"] = true,
-            ["Stoneskin Totem VIII"] = true,
-            ["Strength of Earth Totem"] = true,
-            ["Strength of Earth Totem II"] = true,
-            ["Strength of Earth Totem III"] = true,
-            ["Strength of Earth Totem IV"] = true,
-            ["Strength of Earth Totem V"] = true,
-            ["Strength of Earth Totem VI"] = true,
-            ["Totem of Wrath"] = true,
-            ["Windfury Totem"] = true,
-            ["Windfury Totem II"] = true,
-            ["Windfury Totem III"] = true,
-            ["Windfury Totem IV"] = true,
-            ["Windfury Totem V"] = true,
-            ["Windwall Totem"] = true,
-            ["Windwall Totem II"] = true,
-            ["Windwall Totem III"] = true,
-            ["Windwall Totem IV"] = true,
-            ["Wrath of Air Totem"] = true,
-
-        },
-
-        Scale = 1,
-    }
-    local function log(msg) DEFAULT_CHAT_FRAME:AddMessage(msg) end -- alias for convenience
-
-    local function UpdateObjects(hp)
-        frame = hp:GetParent()
-
-        local hpborder, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon = frame:GetRegions()
-        --local overlayRegion, castBarOverlayRegion, spellIconRegion, highlightRegion, nameTextRegion, bossIconRegion, levelTextRegion, raidIconRegion = frame:GetRegions()
-        local name = oldname:GetText()
-
-        for totem in pairs(Table["Shits"]) do
-            if ( name == totem and Table["Shits"][totem] == true ) then
-
-                overlay:SetAlpha(0)
-                hpborder:Hide()
-                oldname:Hide()
-                level:Hide()
-                hp:SetAlpha(0)
-                raidicon:Hide()
-
-                if not frame.totem then
-                    frame.totem = frame:CreateTexture(nil, "BACKGROUND")
-                    frame.totem:ClearAllPoints()
-                    frame.totem:SetPoint("CENTER",frame,"CENTER",Table.xOfs,Table.yOfs)
-                else
-                    frame.totem:Show()
-                end
-
-                break
-            elseif ( name == totem ) then
-                overlay:SetAlpha(0)
-                hpborder:Hide()
-                oldname:Hide()
-                level:Hide()
-                hp:SetAlpha(0)
-                raidicon:Hide()
-                break
-            else
-                overlay:SetAlpha(1)
-                hpborder:Show()
-                oldname:Show()
-                level:Show()
-                hp:SetAlpha(1)
-                if frame.totem then frame.totem:Hide() end
-            end
-        end
-    end
-
-    local function SkinObjects(frame)
-        local HealthBar, CastBar = frame:GetChildren()
-        --local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = frame:GetRegions()
-        local overlayRegion, castBarOverlayRegion, spellIconRegion, highlightRegion, nameTextRegion, bossIconRegion, levelTextRegion, raidIconRegion = frame:GetRegions()
-
-        HealthBar:SetScript("OnShow", UpdateObjects)
-        HealthBar:SetScript("OnSizeChanged", UpdateObjects)
-
-        UpdateObjects(HealthBar)
-        Table["Nameplates"][frame] = true
-    end
-
-    local select = select
-    local function HookFrames(...)
-        for index = 1, select('#', ...) do
-            local frame = select(index, ...)
-            local region = frame:GetRegions()
-            if ( not Table["Nameplates"][frame] and not frame:GetName() and region and region:GetObjectType() == "Texture" and region:GetTexture() == "Interface\\Tooltips\\Nameplate-Border" ) then
-                SkinObjects(frame)
-                frame.region = region
-            end
-        end
-    end
-
-    local Frame = CreateFrame("Frame")
-    Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    Frame:SetScript("OnUpdate", function(self, elapsed)
-        if ( WorldFrame:GetNumChildren() ~= numChildren ) then
-            numChildren = WorldFrame:GetNumChildren()
-            HookFrames(WorldFrame:GetChildren())
-        end
-    end)
-
-
--- NAMEPLATE stuff
--- NAMEPLATE stuff
--- NAMEPLATE stuff
--- NAMEPLATE stuff
-
-
-
 -- stop Gladdy from showing nameplates (necessary for the next script) !! IMPORTANT - You MUST use the "Lock Frame" function in General tab of Gladdy alongside with this!!
 
 -- IT IS ALSO ABSOLUTELY NECESSARY FOR YOU TO DISABLE THE "Totem Plates" PLUGIN IN GLADDY UI
@@ -1225,7 +1022,7 @@ if IsAddOnLoaded("Gladdy") then
     end
 end
 
---[[
+
 -- Highlight Tremor Totem (disable nameplates of everything else) + disable Snake Trap Cancer + prevent displaying already dead Tremor Totem (retarded Classic-like behavior)
 local ShrinkPlates = {
     ["Viper"] = true,
@@ -1252,12 +1049,85 @@ local tremorTotems = {} -- {[totem GUID] = {[shaman]=GUID, nameplate=<nameplate 
 local nameplatesToRecheck = {}
 
 local plateEventFrame = CreateFrame("Frame")
-plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+
+local origShield, origIcon, origBorder
+
+local function visibilityPlate(plate, bool)
+    local HealthBar, CastBar = plate:GetChildren()
+    local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = plate:GetRegions()
+
+    if not origShield then
+        origShield = cbshield:GetPoint()
+    end
+
+    if not origIcon then
+        origIcon = cbicon:GetPoint()
+    end
+
+    if not origBorder then
+        origBorder = cbborder:GetPoint()
+    end
+
+    if bool then
+        oldname:Hide()
+        threat:SetAlpha(0)
+        hpborder:SetAlpha(0)
+        overlay:SetAlpha(0)
+        level:SetAlpha(0)
+        bossicon:SetAlpha(0)
+        raidicon:SetAlpha(0)
+        elite:SetAlpha(0)
+        HealthBar:Hide()
+        CastBar:Hide()
+        HealthBar:SetAlpha(0)
+        CastBar:SetAlpha(0)
+
+        cbshield:ClearAllPoints()
+        cbshield:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
+
+        cbborder:ClearAllPoints()
+        cbborder:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
+
+        cbicon:ClearAllPoints()
+        cbicon:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
+    else
+        oldname:Show()
+        threat:SetAlpha(1)
+        hpborder:SetAlpha(1)
+        cbshield:SetAlpha(1)
+        cbborder:SetAlpha(1)
+        cbicon:SetAlpha(1)
+        overlay:SetAlpha(1)
+        level:SetAlpha(1)
+        bossicon:SetAlpha(1)
+        raidicon:SetAlpha(1)
+        elite:SetAlpha(1)
+        HealthBar:Show()
+        CastBar:Show()
+        HealthBar:SetAlpha(1)
+        CastBar:SetAlpha(1)
+
+        if origShield then
+            cbshield:ClearAllPoints()
+            cbshield:SetPoint(origShield)
+        end
+
+        if cbborder then
+            cbborder:ClearAllPoints()
+            cbborder:SetPoint(origBorder)
+        end
+
+        if cbicon then
+            cbicon:ClearAllPoints()
+            cbicon:SetPoint(origIcon)
+        end
+    end
+end
 
 local function HideNameplate(nameplate)
-    if nameplate.UnitFrame then
+    if nameplate then
         nameplate.wasHidden = true
-        nameplate.UnitFrame:Hide()
+        visibilityPlate(nameplate, true)
     end
 end
 
@@ -1270,7 +1140,10 @@ local function HandleNewNameplate(nameplate, unit)
         return
     end
 
-    local creatureType, _, _, _, _, npcId = string_split("-", UnitGUID(unit))
+    local HealthBar = nameplate:GetChildren()
+    local _, hpborder, _, _, _, _, oldname = nameplate:GetRegions()
+
+    local creatureType, _, _, _, _, npcId = string.split("-", UnitGUID(unit))
     -- the rest of nameplate stuff
     if name:match("Totem") and not name:match("Tremor Totem") then
         HideNameplate(nameplate)
@@ -1278,13 +1151,12 @@ local function HandleNewNameplate(nameplate, unit)
             or (creatureType == "Pet" and not ShowNameplatePetIds[npcId]) then
         HideNameplate(nameplate)
     elseif ShrinkPlates[name] then
-        nameplate.UnitFrame:ClearAllPoints()
-        nameplate.UnitFrame:SetPoint("TOPLEFT", nameplate, "TOPLEFT", 60, 0)
-        nameplate.UnitFrame:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -67, 0)
-        nameplate.UnitFrame:SetScale(0.5)
-        nameplate.UnitFrame.name:SetAlpha(0)
+        hpborder:ClearAllPoints()
+        hpborder:SetPoint("TOPLEFT", nameplate, "TOPLEFT", 60, 0)
+        hpborder:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -67, 0)
+        hpborder:SetScale(0.5)
+        oldname:SetAlpha(0)
     elseif name == "Tremor Totem" then
-        local texture = (nameplate.UnitFrame.healthBar.border:GetRegions())
         local guid = UnitGUID(unit)
         if guid then
             local totem = tremorTotems[guid]
@@ -1294,24 +1166,8 @@ local function HandleNewNameplate(nameplate, unit)
                 tremorTotems[guid] = { ["shaman"] = "Unknown", ["nameplate"] = nameplate }
             end
             nameplate.tremorTotemGuid = guid
-            texture:SetTexture("Interface/Addons/TextureScript/Nameplate-Border-TREMOR.blp")
+            hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
         end
-    elseif name == "Ebon Gargoyle" then
-        local texture = (nameplate.UnitFrame.healthBar.border:GetRegions())
-        texture:SetTexture("Interface/Addons/TextureScript/Nameplate-Border-GARGOYLE.blp")
-    end
-end
-
-local function plateOnUpdateFrame()
-    for guid, nameplate in pairs(nameplatesToRecheck) do
-        nameplatesToRecheck[guid] = nil
-        if nameplate.recheckGuid == guid and nameplate.UnitFrame then
-            HandleNewNameplate(nameplate, nameplate.UnitFrame.displayedUnit)
-        end
-    end
-
-    if next(nameplatesToRecheck) == nil then
-        plateEventFrame:Hide()
     end
 end
 
@@ -1330,8 +1186,9 @@ local eventRegistered = {
 
 }
 
-local function PlateScript()
-    local _, action, _, sourceGuid, _, sourceFlags, _, destGuid, destName, _, _, ex1, _, _, ex4 = CombatLogGetCurrentEventInfo()
+local function PlateScript(...)
+    local _, action, sourceGuid, _, sourceFlags, destGuid, destName, _, ex1, _, _, ex4 = ...
+
     local isSourceEnemy = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_HOSTILE_PLAYERS)
     local _, instanceType = IsInInstance()
 
@@ -1343,41 +1200,15 @@ local function PlateScript()
         PlaySound(12889)
     end
 
-    if action == "SPELL_PERIODIC_HEAL" then
-        if ex1 == 15290 then
-            COMBAT_TEXT_TYPE_INFO.PERIODIC_HEAL.show = nil
-            if GetCVar("floatingCombatTextCombatHealing") ~= "0" then
-                SetCVar("floatingCombatTextCombatHealing", 0)
-            end
-        else
-            COMBAT_TEXT_TYPE_INFO.PERIODIC_HEAL.show = 1
-            if GetCVar("floatingCombatTextCombatHealing") ~= "1" then
-                SetCVar("floatingCombatTextCombatHealing", 1)
-            end
-        end
-    elseif action == "SPELL_HEAL" then
-        if ex1 == 48300 or ex1 == 75999 then
-            COMBAT_TEXT_TYPE_INFO.HEAL.show = nil
-            if GetCVar("floatingCombatTextCombatHealing") ~= "0" then
-                SetCVar("floatingCombatTextCombatHealing", 0)
-            end
-        else
-            COMBAT_TEXT_TYPE_INFO.HEAL.show = 1
-            if GetCVar("floatingCombatTextCombatHealing") ~= "1" then
-                SetCVar("floatingCombatTextCombatHealing", 1)
-            end
-        end
-    end
-
     if destName == "Tremor Totem" then
         if action == "SPELL_SUMMON" then
             if destName == "Tremor Totem" then
                 for totem, info in pairs(tremorTotems) do
                     if info.shaman == sourceGuid then
                         local nameplate = info.nameplate
-                        if nameplate and nameplate.tremorTotemGuid == totem and nameplate.UnitFrame then
+                        if nameplate and nameplate.tremorTotemGuid == totem and nameplate then
                             nameplate.wasHidden = true
-                            nameplate.UnitFrame:Hide()
+                            visibilityPlate(nameplate, true)
                         end
                     end
                 end
@@ -1397,22 +1228,25 @@ local function PlateScript()
                 local totem = tremorTotems[destGuid]
                 if totem then
                     local nameplate = totem.nameplate
-                    if nameplate and nameplate.tremorTotemGuid == destGuid and nameplate.UnitFrame then
+                    if nameplate and nameplate.tremorTotemGuid == destGuid and nameplate then
                         nameplate.wasHidden = true
-                        nameplate.UnitFrame:Hide()
+                        visibilityPlate(nameplate, true)
                     end
                 end
             end
         end
     end
 end
+plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+plateEventFrame:SetScript("OnEvent", function(self, event, ...) PlateScript(...)  end)
+
+
 -- XYZ: rework for 3.3.5a pls?
 local classmarkers = {
     ["ROGUE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Rogue",
     ["PRIEST"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Priest",
     ["WARRIOR"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Warrior",
     ["PALADIN"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Paladin",
-    ["DEATHKNIGHT"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\RetardedDog",
     ["HUNTER"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Hunter",
     ["DRUID"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Druid",
     ["MAGE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Mage",
@@ -1422,103 +1256,118 @@ local classmarkers = {
 
 local function AddPlates(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
-    if not nameplate or nameplate:IsForbidden() then
+    if not nameplate then
         return
     end
+
+    local HealthBar, CastBar = nameplate:GetChildren()
+    local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = nameplate:GetRegions()
+
     -- Change border plate
-    local texture = (nameplate.UnitFrame.healthBar.border:GetRegions())
-    texture:SetTexture("Interface/Addons/TextureScript/Nameplate-Border.blp")
+    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border.blp")
 
     -- hide level and expand healthbar
-    nameplate.UnitFrame.LevelFrame:Hide()
-    local hb = nameplate.UnitFrame.healthBar
-    hb:ClearAllPoints()
-    hb:SetPoint("BOTTOMLEFT", hb:GetParent(), "BOTTOMLEFT", 4, 4)
-    hb:SetPoint("BOTTOMRIGHT", hb:GetParent(), "BOTTOMRIGHT", -4, 4)
+    level:Hide()
+    bossicon:Hide()
+    raidicon:Hide()
+    elite:Hide()
+
+    HealthBar:ClearAllPoints()
+    HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
+    HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
 
     -- make the selection highlight a tiny bit smaller
-    local sh = nameplate.UnitFrame.selectionHighlight
-    sh:ClearAllPoints()
-    sh:SetPoint("TOPLEFT", sh:GetParent(), "TOPLEFT", 1, -1)
-    sh:SetPoint("BOTTOMRIGHT", sh:GetParent(), "BOTTOMRIGHT", -1, 1)
+    overlay:ClearAllPoints()
+    overlay:SetPoint("TOPLEFT", nameplate, "TOPLEFT", 1, -1)
+    overlay:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -1, 1)
+
+    oldname:SetJustifyH("CENTER")
+    oldname:SetFont("Fonts\\FRIZQT__.TTF", 14)
+    oldname:SetWidth(160)
 
     -- Class icon on friendly plates in arena, WRATH??
     local _, unitClass = UnitClass(unit)
 
-    if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and inArena then
-        if not nameplate.UnitFrame.texture then
-            nameplate.UnitFrame.texture = nameplate.UnitFrame:CreateTexture(nil, "OVERLAY")
-            nameplate.UnitFrame.texture:SetSize(40, 40)
-            nameplate.UnitFrame.texture:SetPoint("CENTER", nameplate.UnitFrame, "CENTER", 0, 20)
-            nameplate.UnitFrame.texture:Hide()
+    if UnitIsPlayer(unit) and UnitIsFriend("player", unit) then -- and inArena
+        if not nameplate.classTexture then
+            nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
+            nameplate.classTexture:SetSize(50, 50)
+            nameplate.classTexture:SetPoint("CENTER", nameplate, "CENTER", 0, 20)
+            nameplate.classTexture:Hide()
         end
         if unitClass then
-            nameplate.UnitFrame.texture:SetTexture(classmarkers[unitClass])
-            if not nameplate.UnitFrame.texture:IsShown() then
-                nameplate.UnitFrame.texture:Show()
+            nameplate.classTexture:SetTexture(classmarkers[unitClass])
+            if not nameplate.classTexture:IsShown() then
+                nameplate.classTexture:Show()
             end
         end
-        if nameplate.UnitFrame.name:GetAlpha() > 0 then
-            nameplate.UnitFrame.name:SetAlpha(0)
+        oldname:SetText("")
+
+        if HealthBar:GetAlpha() > 0 then
+            HealthBar:SetAlpha(0)
         end
-        if nameplate.UnitFrame.healthBar:GetAlpha() > 0 then
-            nameplate.UnitFrame.healthBar:SetAlpha(0)
+        if level:GetAlpha() > 0 then
+            level:SetAlpha(0)
         end
-        if nameplate.UnitFrame.LevelFrame:GetAlpha() > 0 then
-            nameplate.UnitFrame.LevelFrame:SetAlpha(0)
+        if overlay:GetAlpha() > 0 then
+            overlay:SetAlpha(0)
         end
-        if nameplate.UnitFrame.selectionHighlight:GetAlpha() > 0 then
-            nameplate.UnitFrame.selectionHighlight:SetAlpha(0)
+        if hpborder:GetAlpha() > 0 then
+            hpborder:SetAlpha(0)
         end
+
+        cbshield:SetAlpha(0)
+        cbborder:SetAlpha(0)
+        cbicon:SetAlpha(0)
+
+        CastBar:SetAlpha(0)
     else
-        if nameplate.UnitFrame.texture then
-            nameplate.UnitFrame.texture:Hide()
+        if nameplate.classTexture then
+            nameplate.classTexture:Hide()
         end
-        if nameplate.UnitFrame.name:GetAlpha() < 1 then
-            nameplate.UnitFrame.name:SetAlpha(1)
+
+        if HealthBar:GetAlpha() < 1 then
+            HealthBar:SetAlpha(1)
         end
-        if nameplate.UnitFrame.healthBar:GetAlpha() < 1 then
-            nameplate.UnitFrame.healthBar:SetAlpha(1)
+        if level:GetAlpha() < 1 then
+            level:SetAlpha(1)
         end
-        if nameplate.UnitFrame.LevelFrame:GetAlpha() < 1 then
-            nameplate.UnitFrame.LevelFrame:SetAlpha(1)
+        if overlay:GetAlpha() == 0 then
+            overlay:SetAlpha(0.25)
         end
-        if nameplate.UnitFrame.selectionHighlight:GetAlpha() == 0 then
-            nameplate.UnitFrame.selectionHighlight:SetAlpha(0.25)
+        if hpborder:GetAlpha() < 1 then
+            hpborder:SetAlpha(1)
         end
+
+        cbshield:SetAlpha(1)
+        cbborder:SetAlpha(1)
+        cbicon:SetAlpha(1)
+
+        CastBar:SetAlpha(1)
     end
 
     -- This is needed to restore scale due to the ShrinkPlates
-    if nameplate.UnitFrame:GetScale() < 1.0 then
-        nameplate.UnitFrame:SetScale(1.0)
-        nameplate.UnitFrame.name:SetAlpha(1.0)
+    if HealthBar:GetScale() < 1.0 then
+        HealthBar:SetScale(1.0)
+        oldname:SetAlpha(1.0)
     end
     HandleNewNameplate(nameplate, unit)
 end
 
 local function RemovePlate(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
-    if not nameplate or nameplate:IsForbidden() then
+    if not nameplate then
         return
     end
     nameplate.tremorTotemGuid = nil
     tremorTotems[UnitGUID(unit) or ""] = nil
-    if nameplate.UnitFrame then
+    if nameplate then
         if nameplate.wasHidden then
             nameplate.wasHidden = nil
-            nameplate.UnitFrame:Show()
+            visibilityPlate(nameplate, false)
         end
     end
 end
-
-
-
--- END OF NAMEPLATESTUFF
--- END OF NAMEPLATESTUFF
--- END OF NAMEPLATESTUFF
--- END OF NAMEPLATESTUFF
-
-]]--
 
 
 --XYZ- there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons) - and it also just doesnt work at all whatsoever alone anyways
@@ -1669,15 +1518,14 @@ end
 -- NAMEPLATE STUFF
 
 
---[[
 local function PlateNames(frame)
-    if not frame or frame:IsForbidden() then
+    if not frame then
         return
     end
 
     if frame.unit and UnitExists(frame.unit) and strfind(frame.unit, "nameplate") then
         -- static pet names for more clarity
-        local _, _, _, _, _, npcId = string_split("-", UnitGUID(frame.unit))
+        local _, _, _, _, _, npcId = string.split("-", UnitGUID(frame.unit))
         if npcId == "1863" then
             frame.name:SetText("Succubus")
         elseif npcId == "417" then
@@ -1707,8 +1555,6 @@ end
 -- END OF NAMEPLATE STUFF
 
 
-]]--
-
 --
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
@@ -1716,7 +1562,7 @@ evolvedFrame:RegisterEvent("PLAYER_LOGIN")
 evolvedFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 evolvedFrame:RegisterEvent("GOSSIP_SHOW")
 evolvedFrame:RegisterEvent("UPDATE_BINDINGS")
-evolvedFrame:RegisterUnitEvent("UNIT_PET", "player")
+--evolvedFrame:RegisterUnitEvent("UNIT_PET", "player")
 evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 evolvedFrame:SetScript("OnEvent", function(self, event, ...)
@@ -1744,43 +1590,12 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         DarkenFrames(addon)
         self:UnregisterEvent("ADDON_LOADED")
 	-- NAMEPLATE STUFF
-	--[[
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        local _, type = IsInInstance()
-        if type == "arena" then
-            if GetCVar("nameplateShowFriends") == "0" then
-                SetCVar("nameplateShowFriends", 1)
-            end
-            inArena = true
-        else
-            if GetCVar("nameplateShowFriends") == "1" then
-                SetCVar("nameplateShowFriends", 0)
-            end
-            inArena = false
-        end
-
-        -- clear the totems on loading screens
-        tremorTotems = {}
-        if type == "arena" or type == "pvp" then
-            plateEventFrame:SetScript("OnUpdate", plateOnUpdateFrame)
-        else
-            plateEventFrame:SetScript("OnUpdate", nil)
-        end
-
-        if type == "raid" then
-            plateEventFrame:SetScript("OnEvent", nil)
-            SetCVar("floatingCombatTextCombatHealing", 0)
-        else
-            plateEventFrame:SetScript("OnEvent", PlateScript)
-        end
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
     elseif event == "NAME_PLATE_UNIT_REMOVED" then
         local unit = ...
         RemovePlate(unit)
-		
-		END OF NAMEPLATE STUFF--]]
     end
 end)
 
