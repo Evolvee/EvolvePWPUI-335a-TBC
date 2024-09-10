@@ -10,13 +10,14 @@ local mod, UnitDebuff, DebuffTypeColor = _G.mod, _G.UnitDebuff, _G.DebuffTypeCol
 local blacklist = {
     [GetSpellInfo(6788)] = true, -- Weakened Soul
     [GetSpellInfo(99)] = true, -- Demoralizing Roar
+	[GetSpellInfo(1160)] = true, -- Demoralizing Shout
     [GetSpellInfo(16511)] = true, -- Hemorrhage
     [GetSpellInfo(33878)] = true, -- Mangle (Bear)
     [GetSpellInfo(33876)] = true, -- Mangle (Cat)
     [GetSpellInfo(26013)] = true, -- Deserter
     [GetSpellInfo(8647)] = true, -- Expose Armor
     [GetSpellInfo(6343)] = true, -- Thunder Clap
-    [GetSpellInfo(1160)] = true, -- Demoralizing Shout
+    [GetSpellInfo(29836)] = true, -- Blood Frenzy
 }
 
 local function UpdateDebuffs(frame, unit)

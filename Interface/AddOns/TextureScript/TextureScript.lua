@@ -347,9 +347,8 @@ local function OnInit()
     PartyMemberFrame4:ClearAllPoints()
     PartyMemberFrame4:SetPoint("TOPLEFT", PartyMemberFrame3PetFrame, "BOTTOMLEFT", -23.33, -32.7)
 	
-	
-	--(comment out when partydebuffs addon becomes a thing again)
     --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (using PartyDebuffs addon for now)
+	--[[
     PartyMemberFrame1Debuff1:ClearAllPoints();
     PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
     PartyMemberFrame2Debuff1:ClearAllPoints();
@@ -358,7 +357,7 @@ local function OnInit()
     PartyMemberFrame3Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -10.31263004755721);
     PartyMemberFrame4Debuff1:ClearAllPoints();
     PartyMemberFrame4Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437541575172077);
-	
+	]]--
 	
 
     PartyMemberFrame1LeaderIcon:SetAlpha(0)
@@ -664,6 +663,11 @@ hooksecurefunc("PlayerFrame_UpdateStatus", function()
     end
 end)
 hooksecurefunc(PlayerFrameGroupIndicator, "Show", PlayerFrameGroupIndicator.Hide)
+
+-- Hiding the pet combat/attack glowing status, same as above ^^ (3.3.5a)
+local HideCancer = CreateFrame("Frame")
+PetAttackModeTexture:SetParent(HideCancer)
+HideCancer:Hide()
 
 --Action bar buttons are now bigger, better looking and also fixes spellbook/wep switch bugging of dark theme
 hooksecurefunc("ActionButton_ShowGrid", function(button)
@@ -1050,23 +1054,9 @@ local nameplatesToRecheck = {}
 
 local plateEventFrame = CreateFrame("Frame")
 
-local origShield, origIcon, origBorder
-
 local function visibilityPlate(plate, bool)
     local HealthBar, CastBar = plate:GetChildren()
     local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = plate:GetRegions()
-
-    if not origShield then
-        origShield = cbshield:GetPoint()
-    end
-
-    if not origIcon then
-        origIcon = cbicon:GetPoint()
-    end
-
-    if not origBorder then
-        origBorder = cbborder:GetPoint()
-    end
 
     if bool then
         oldname:Hide()
@@ -1107,20 +1097,12 @@ local function visibilityPlate(plate, bool)
         HealthBar:SetAlpha(1)
         CastBar:SetAlpha(1)
 
-        if origShield then
-            cbshield:ClearAllPoints()
-            cbshield:SetPoint(origShield)
-        end
-
-        if cbborder then
-            cbborder:ClearAllPoints()
-            cbborder:SetPoint(origBorder)
-        end
-
-        if cbicon then
-            cbicon:ClearAllPoints()
-            cbicon:SetPoint(origIcon)
-        end
+        cbshield:ClearAllPoints()
+        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.58)
+        cbborder:ClearAllPoints()
+        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.58)
+        cbicon:ClearAllPoints()
+        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
     end
 end
 
@@ -1151,11 +1133,7 @@ local function HandleNewNameplate(nameplate, unit)
             or (creatureType == "Pet" and not ShowNameplatePetIds[npcId]) then
         HideNameplate(nameplate)
     elseif ShrinkPlates[name] then
-        hpborder:ClearAllPoints()
-        hpborder:SetPoint("TOPLEFT", nameplate, "TOPLEFT", 60, 0)
-        hpborder:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -67, 0)
-        hpborder:SetScale(0.5)
-        oldname:SetAlpha(0)
+        oldname:SetText("")
     elseif name == "Tremor Totem" then
         local guid = UnitGUID(unit)
         if guid then
@@ -1238,10 +1216,11 @@ local function PlateScript(...)
     end
 end
 plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-plateEventFrame:SetScript("OnEvent", function(self, event, ...) PlateScript(...)  end)
+plateEventFrame:SetScript("OnEvent", function(self, event, ...)    PlateScript(...)
+end)
 
 
--- XYZ: rework for 3.3.5a pls?
+-- Adding class icons on party members inside arena for more clarity where my teammates are (behind los etc.)
 local classmarkers = {
     ["ROGUE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Rogue",
     ["PRIEST"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Priest",
@@ -1264,7 +1243,7 @@ local function AddPlates(unit)
     local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = nameplate:GetRegions()
 
     -- Change border plate
-    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border.blp")
+    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
 
     -- hide level and expand healthbar
     level:Hide()
@@ -1275,11 +1254,11 @@ local function AddPlates(unit)
     HealthBar:ClearAllPoints()
     HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
     HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
+	
 
-    -- make the selection highlight a tiny bit smaller
+    -- Move the selection highlight
     overlay:ClearAllPoints()
-    overlay:SetPoint("TOPLEFT", nameplate, "TOPLEFT", 1, -1)
-    overlay:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -1, 1)
+    overlay:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
 
     oldname:SetJustifyH("CENTER")
     oldname:SetFont("Fonts\\FRIZQT__.TTF", 14)
@@ -1287,8 +1266,9 @@ local function AddPlates(unit)
 
     -- Class icon on friendly plates in arena, WRATH??
     local _, unitClass = UnitClass(unit)
+	local _, type = IsInInstance()
 
-    if UnitIsPlayer(unit) and UnitIsFriend("player", unit) then -- and inArena
+    if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then
             nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
             nameplate.classTexture:SetSize(50, 50)
@@ -1301,49 +1281,14 @@ local function AddPlates(unit)
                 nameplate.classTexture:Show()
             end
         end
-        oldname:SetText("")
-
-        if HealthBar:GetAlpha() > 0 then
-            HealthBar:SetAlpha(0)
-        end
-        if level:GetAlpha() > 0 then
-            level:SetAlpha(0)
-        end
-        if overlay:GetAlpha() > 0 then
-            overlay:SetAlpha(0)
-        end
-        if hpborder:GetAlpha() > 0 then
-            hpborder:SetAlpha(0)
-        end
-
-        cbshield:SetAlpha(0)
-        cbborder:SetAlpha(0)
-        cbicon:SetAlpha(0)
-
-        CastBar:SetAlpha(0)
+		
+        visibilityPlate(nameplate, true)
     else
         if nameplate.classTexture then
             nameplate.classTexture:Hide()
         end
 
-        if HealthBar:GetAlpha() < 1 then
-            HealthBar:SetAlpha(1)
-        end
-        if level:GetAlpha() < 1 then
-            level:SetAlpha(1)
-        end
-        if overlay:GetAlpha() == 0 then
-            overlay:SetAlpha(0.25)
-        end
-        if hpborder:GetAlpha() < 1 then
-            hpborder:SetAlpha(1)
-        end
-
-        cbshield:SetAlpha(1)
-        cbborder:SetAlpha(1)
-        cbicon:SetAlpha(1)
-
-        CastBar:SetAlpha(1)
+        visibilityPlate(nameplate, false)
     end
 
     -- This is needed to restore scale due to the ShrinkPlates
@@ -1352,7 +1297,19 @@ local function AddPlates(unit)
         oldname:SetAlpha(1.0)
     end
     HandleNewNameplate(nameplate, unit)
+	
+	if unit and UnitExists(unit) then
+        -- static pet names for more clarity
+        local npcId = tonumber((UnitGUID(unit)):sub(-12, -9), 16)
+
+        if npcId == 1109 then
+            oldname:SetText("Succubus")
+        elseif npcId == "417" then
+            oldname:SetText("Felhunter")
+        end
+    end
 end
+
 
 local function RemovePlate(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
@@ -1368,19 +1325,6 @@ local function RemovePlate(unit)
         end
     end
 end
-
-
---XYZ- there is a conflict with CircleCooldownTemplate addon inside BigDebuffs (rounded icons) - and it also just doesnt work at all whatsoever alone anyways
--- Removing the flashing animation of coooldown finish at action bars
---for k, v in pairs(_G) do
---    if type(v) == "table" and type(v.SetDrawBling) == "function" then
---        v:SetDrawBling(false)
---    end
---end
---hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self)
---    self:SetDrawBling(false)
---end)
-
 
 
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
@@ -1446,9 +1390,7 @@ end
 
 
 
-
---@@ Wrath stuff below
---XYZ
+--XYZ - second half of the code is used for nameplate position which we will need to do as WELL
 -- Hide the friendly nameplate cast bars
 --hooksecurefunc("Nameplate_CastBar_AdjustPosition", function(self)
 --    if not self or self:IsForbidden() then
@@ -1470,6 +1412,8 @@ end
 --end)
 
 
+
+
 -- Changing DK default colour in order to bring more clarity
 --hooksecurefunc("CompactUnitFrame_UpdateHealthColor", function(frame)
 --    if not frame.unit or frame:IsForbidden() or not string.find(frame.unit, "nameplate") then
@@ -1487,7 +1431,7 @@ end
 
 -- leave arena on PVP icon doubleclick (useful when playing against RM/RR retards)
 MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
-    if inArena then
+    if select(2, IsInInstance()) == "arena" then
         LeaveBattlefield()
     end
 end)
@@ -1511,50 +1455,6 @@ end
 
 
 
--- NAMEPLATE STUFF
--- NAMEPLATE STUFF
--- NAMEPLATE STUFF
--- NAMEPLATE STUFF
--- NAMEPLATE STUFF
-
-
-local function PlateNames(frame)
-    if not frame then
-        return
-    end
-
-    if frame.unit and UnitExists(frame.unit) and strfind(frame.unit, "nameplate") then
-        -- static pet names for more clarity
-        local _, _, _, _, _, npcId = string.split("-", UnitGUID(frame.unit))
-        if npcId == "1863" then
-            frame.name:SetText("Succubus")
-        elseif npcId == "417" then
-            frame.name:SetText("Felhunter")
-        elseif npcId == "185317" then
-            frame.name:SetText("Succubus")
-        end
-
-        if UnitIsPlayer(frame.unit) then
-            frame.name:SetText((UnitName(frame.unit)):gsub("%-.*", "")) -- not sure if UnitName() adds the realm so :gsub() might not be needed
-            if UnitIsEnemy("player", frame.unit) then
-                local _, _, class = UnitClass(frame.unit)
-                if (class == 6) then
-                    -- Only actual retards play this dogshit broken class that has nothing to do with World of Warcraft design
-                    frame.name:SetText("I AM RETARDED")
-                end
-            end
-        end
-    end
-end
---@@ Wrath end
-
--- END OF NAMEPLATE STUFF
--- END OF NAMEPLATE STUFF
--- END OF NAMEPLATE STUFF
--- END OF NAMEPLATE STUFF
--- END OF NAMEPLATE STUFF
-
-
 --
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
@@ -1569,10 +1469,6 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         CustomCvar() -- Set our CVAR values
         OnInit() -- Init tons of shit
-        --SetSmooth() -- SmoothBar init (classic version, nameplate stuff)
-		--XYZ
-		--NAMEPLATE STUFF
-        --hooksecurefunc("CompactUnitFrame_UpdateName", PlateNames) -- has to be called after event
         UpdateBinds(self)
         self:UnregisterEvent("PLAYER_LOGIN")
     elseif event == "UNIT_PET" then
@@ -1589,6 +1485,19 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         local addon = ...
         DarkenFrames(addon)
         self:UnregisterEvent("ADDON_LOADED")
+	elseif event == "PLAYER_ENTERING_WORLD" then
+        local _, type = IsInInstance()
+        if type == "arena" then
+            if GetCVar("nameplateShowFriends") == "0" then
+                SetCVar("nameplateShowFriends", 1)
+            end
+            inArena = true
+        else
+            if GetCVar("nameplateShowFriends") == "1" then
+                SetCVar("nameplateShowFriends", 0)
+            end
+            inArena = false
+        end
 	-- NAMEPLATE STUFF
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
