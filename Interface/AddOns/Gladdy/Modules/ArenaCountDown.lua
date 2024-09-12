@@ -112,20 +112,39 @@ function ACDFrame.Ticker()
             self.ACDNumTens:SetTexture(self.texturePath .. tens)
             self.ACDNumOnes:SetTexture(self.texturePath .. ones)
             self.ACDNumFrame:SetScale(0.7)
-        elseif (self.countdown and self.countdown < 10 and self.countdown > -1) then
-            -- Display has 1 digit
-            local path = self.countdown <= 0 and self.faction or self.countdown
+
+        elseif (self.countdown and self.countdown < 10 and self.countdown > 0) then
+            -- Display has 1 digit for numbers 1-9
+            local path = self.countdown
             self.ACDNumOne:Show()
             self.ACDNumOne:SetTexture(self.texturePath .. path)
             self.ACDNumOnes:Hide()
             self.ACDNumTens:Hide()
             self.ACDNumFrame:SetScale(1.0)
+
+            -- Play sound for single digits (1 to 9)
+            PlaySoundFile("Interface\\Addons\\TextureScript\\Gladdy\\Countdown.ogg")
+
+        elseif (self.countdown and self.countdown == 0) then
+            -- Display for countdown 0
+            self.ACDNumOne:Show()
+            self.ACDNumOne:SetTexture(self.texturePath .. self.faction)
+            self.ACDNumOnes:Hide()
+            self.ACDNumTens:Hide()
+            self.ACDNumFrame:SetScale(1.0)
+
+            -- Play a different sound when countdown reaches 0
+            PlaySoundFile("Interface\\Addons\\TextureScript\\Gladdy\\Finish.ogg")
+
         else
+            -- Hide everything when countdown is below 0
             ACDFrame:HideAll()
             if (self.countdown) then
                 ACDFrame:Reset()
             end
         end
+
+        -- Decrement the countdown after handling display and sounds
         self.countdown = self.countdown and self.countdown - 1
     else
         ACDFrame:HideAll()

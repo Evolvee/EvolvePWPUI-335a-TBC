@@ -1255,6 +1255,10 @@ local function AddPlates(unit)
     HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
     HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
 	
+	-- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
+	local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
+	HealthBar:SetWidth(newWidth)
+
 
     -- Move the selection highlight
     overlay:ClearAllPoints()
@@ -1558,41 +1562,13 @@ end)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
--- TODO: fix fade macro
-
--- classic cancer to fix the healing on VE party members: /console floatingCombatTextCombatHealing 0
--- ^^ yea idk... dogshit gayme
-
--- Temporary way to disable the dogshit cata spellqueue they brought to tbc instead of using the proper Retail TBC one that bypasses GCD: /console SpellQueueWindow 0
--- ^^ current value: 130 (100+ latency)
+COMBAT_TEXT_RESIST = "NEVER LUCKY"
+COMBAT_TEXT_MISS = "NEVER LUCKY"
 
 -- trying to remove the cancer weather that is not part of the video settings as it used to be in 2.4.3: /console set weatherdensity 0 // /console WeatherDensity 0
 
--- trying to reduce the view distance (maybe reduces fps drops?) because this dragonshit client doesnt even allow you to change it in interface options: /run SetCVar("farclip", 0)
-
 -- Disable the ability to scroll chat with mouse wheel (fucks binds with the mouse-wheel-up/down): /console chatMouseScroll 0
 
--- FUCK BLIZZARD, garbage company:
--- https://eu.forums.blizzard.com/en/wow/t/lf-a-blizzard-response-all-talents-that-reduce-spell-resists-in-pvp-no-longer-works-since-phase-2/320188
--- https://us.forums.blizzard.com/en/wow/t/all-talents-that-reduce-spell-resists-in-pvp-no-longer-works-since-phase-2/1114096/5
-
--- WE DID IT REDDIT-> https://github.com/JamminL/wotlk-classic-bugs/issues/143#issuecomment-1209998266 - after a year of TBC being absolutely fucking unplayable, especially for a shadow priest, they "finally" fixed it... So adding more appropriate message instead for WOTLK (hi sacred cleansing)...
-
-COMBAT_TEXT_RESIST = "SHIT SERVER"
-COMBAT_TEXT_MISS = "SHIT SERVER"
 
 --Login message informing all scripts of this file were properly executed
 ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client (v0.1 BETA) Loaded successfully!", 0, 205, 255)
