@@ -1,5 +1,9 @@
 --EVOLVE PWP UI
 
+local string_match = string.match
+local table_insert = table.insert
+local table_remove = table.remove
+
 --dark theme
 local function DarkenFrames(addon)
     for _, v in pairs({
@@ -1377,6 +1381,86 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
     end
 end)
 
+-- Preventing the black action bar border to be hidden on Spellbook opening (Detective Pyralis is back on the case!)
+-- hide the cooldown bling on action bars
+local cooldownWatcherFrame = CreateFrame("frame")
+local cooldownButtons = {} -- cooldown frames to quickly look them up: {[button]=end_time, ...}
+local cooldownQueue = {} -- priority queue with the lowest ending time last: {[1]={button, end_time}, ...}
+local cooldownCount = 0 -- amount of cooldowns in the lists
+local cooldownNextTime = 0 -- cache of cooldownQueue[cooldownCount][2] to probably overoptimize the OnUpdate script
+
+local function CooldownRemoveButton(button)
+    if cooldownButtons[button] then
+        cooldownButtons[button] = nil
+        for i=cooldownCount, 1, -1 do
+            if button == cooldownQueue[i][1] then
+                table_remove(cooldownQueue, i)
+                break
+            end
+        end
+
+        cooldownCount = cooldownCount - 1
+        if cooldownCount == 0 then
+            cooldownWatcherFrame:Hide()
+        else
+            cooldownNextTime = cooldownQueue[cooldownCount][2]
+        end
+    end
+end
+local function CooldownAddButton(button, endTime)
+    -- endTime = endTime - .033 -- if the bling shows up for a frame, maybe set the end time slightly before the real one
+
+    -- cooldown updates seem to happen twice so skip duplicate additions
+    local foundTime = cooldownButtons[button]
+    if foundTime then
+        if foundTime == endTime then
+            return
+        end
+        -- a new time, so remove the old one first
+        CooldownRemoveButton(button)
+    end
+
+    cooldownButtons[button] = endTime
+    local added
+    for i=cooldownCount, 1, -1 do
+        if endTime <= cooldownQueue[i][2] then
+            table_insert(cooldownQueue, i+1, {button, endTime})
+            added = true
+            break
+        end
+    end
+    if not added then
+        table_insert(cooldownQueue, 1, {button, endTime})
+    end
+    cooldownCount = cooldownCount + 1
+    cooldownNextTime = cooldownQueue[cooldownCount][2]
+    if cooldownCount == 1 then
+        cooldownWatcherFrame:Show()
+    end
+    button:SetAlpha(1)
+end
+hooksecurefunc("CooldownFrame_SetTimer", function(self, start, duration, enable)
+    local name = self:GetName()
+    if name and (string_match(name, "^MultiBar%w+Button") or string_match(name, "^P?e?t?ActionButton")) then
+        if duration > 0 and enable > 0 and start > 0 then
+            CooldownAddButton(self, start + duration)
+        elseif enable == 0 then
+            CooldownRemoveButton(self)
+        end
+    end
+end)
+
+cooldownWatcherFrame:Hide()
+cooldownWatcherFrame:SetScript("OnUpdate", function()
+    if cooldownCount > 0 then
+        local now = GetTime()
+        while cooldownCount > 0 and now >= cooldownNextTime do
+            local button = cooldownQueue[cooldownCount][1]
+            button:SetAlpha(0)
+            CooldownRemoveButton(button)
+        end
+    end
+end)
 
 
 

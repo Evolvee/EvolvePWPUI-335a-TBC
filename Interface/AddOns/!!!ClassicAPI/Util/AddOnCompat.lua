@@ -48,42 +48,75 @@ local function FindPreviousAddOn(AddOn)
 	end
 end
 
-local function Process(AddOn, Ref, Incognito, ...)
+local function Process(AddOn, Mode, ...)
 	local _, _, _, Enabled = GetAddOnInfo(AddOn)
 
 	if ( Enabled ) then
-		if ( not Processor ) then
-			DB = {}
-			Processor = CreateFrame("Frame")
-			Processor:SetScript("OnEvent", Handler)
-			Processor:RegisterEvent("ADDON_LOADED")
-			Processor:RegisterEvent("PLAYER_LOGIN")
-		end
+		if ( Mode == "ALERT" ) then
+			local Meta, Flag = ...
 
-		if ( Incognito ) then
-			Process(FindPreviousAddOn(AddOn), Ref, false, ...)
-		end
+			if ( GetAddOnMetadata(AddOn, Meta) == Flag ) then
+				local PopupID = "CAPI_ADDONCOMPAT_"..AddOn
+				local URL = "https://gitlab.com/users/Tsoukie/projects"
+				local Width, Height = 540, 200
 
-		local Compat = DB[AddOn]
-		if ( not Compat ) then
-			if ( Ref and DB[Ref] ) then
-				DB[AddOn] = DB[Ref]
-				return
+				StaticPopupDialogs[PopupID] = {
+					text = "ClassicAPI - Incompatible:\n\n|cffFFA500%s (%s)|r\n\nTo avoid issues please use version at:",
+					button1 = CLOSE,
+					timeout = 0,
+					whileDead = true,
+					hideOnEscape = false,
+					showAlert =  true,
+					hasEditBox = 1,
+					hasWideEditBox = 1,
+					OnShow = function (Self)
+						Self:SetSize(Width, Height)
+						Self.maxHeightSoFar = Height
+						Self.maxWidthSoFar = Width
+
+						local Edit = Self.wideEditBox
+						Edit:SetWidth(300)
+						Edit:SetText(URL)
+						Edit:SetScript("OnTextChanged", function(S) S:SetText(URL) end)
+					end,
+				}
+
+				StaticPopup_Show(PopupID, AddOn, Flag)
+			end
+		else
+			if ( not Processor ) then
+				DB = {}
+				Processor = CreateFrame("Frame")
+				Processor:SetScript("OnEvent", Handler)
+				Processor:RegisterEvent("ADDON_LOADED")
+				Processor:RegisterEvent("PLAYER_LOGIN")
 			end
 
-			Compat = {}
-			DB[AddOn] = Compat
-		end
+			if ( Mode == "NULL" ) then
+				Process(FindPreviousAddOn(AddOn), "NULL_PROCESSED", ...)
+			end
 
-		for i=1, Select("#", ...) do
-			local Obj = Select(i, ...)
-			Compat[Obj] = (Incognito == false) and "nil" or _G[Obj]
+			local Compat = DB[AddOn]
+			if ( not Compat ) then
+				if ( Mode and DB[Mode] ) then
+					DB[AddOn] = DB[Mode]
+					return
+				end
+
+				Compat = {}
+				DB[AddOn] = Compat
+			end
+
+			for i=1, Select("#", ...) do
+				local Obj = Select(i, ...)
+				Compat[Obj] = (Mode == "NULL_PROCESSED") and "nil" or _G[Obj]
+			end
 		end
 	end
 end
 
--- COMPATIBILITY
-Process("WeakAuras", nil, nil, "IsInGroup", "IsInRaid", "GetNumGroupMembers")
-Process("Details", "WeakAuras", nil, "IsInGroup", "IsInRaid", "GetNumGroupMembers")
-Process("AI_VoiceOver", nil, true, "WOW_PROJECT_ID")
-Process("Outfitter", nil, true, "UnitGetIncomingHeals")
+Process("WeakAuras", nil, "IsInGroup", "IsInRaid", "GetNumGroupMembers")
+Process("Details", "WeakAuras", "IsInGroup", "IsInRaid", "GetNumGroupMembers")
+Process("AI_VoiceOver", "NULL", "WOW_PROJECT_ID")
+Process("Outfitter", "NULL", "UnitGetIncomingHeals")
+Process("CompactRaidFrame", "ALERT", "Author", "RomanSpector & Blizzard")

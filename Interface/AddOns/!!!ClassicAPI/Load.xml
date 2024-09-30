@@ -27,6 +27,7 @@
 	<Script file="Util\C_Spell.lua" />
 	<Script file="Util\C_Item.lua" />
 	<Script file="Util\C_UI.lua" />
+	<Script file="Util\C_NewItems.lua" />
 
 	<Script file="Util\Mixin.lua" />
 	<Script file="Util\Pools.lua" />
