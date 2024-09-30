@@ -116,7 +116,6 @@ local function ColorGuildTabs()
     end
 end
 
-
 local tooltipOwnerBlacklist = {
     "ActionButton%d+$", -- bar buttons
     "MultiBarBottomLeftButton",
@@ -132,7 +131,7 @@ local tooltipOwnerBlacklist = {
     "SocialsMicroButton",
     "PVPMicroButton",
     "LFGMicroButton",
-	"LFDMicroButton", -- 3.3.5a cancer only
+    "LFDMicroButton", -- 3.3.5a cancer only
     "HelpMicroButton",
     "^KeyRingButton$", -- key ring
     "^CharacterBag%dSlot$", -- bags
@@ -233,19 +232,19 @@ local function OnInit()
     MiniMapMailFrame:ClearAllPoints()
     MiniMapMailFrame:SetPoint('BOTTOMRIGHT', 0, -10)
     MinimapZoneTextButton:Hide()
-	PlayerPVPTimerText:SetAlpha(0)
-	--3.3.5a only:
-	MiniMapWorldMapButton:Hide()
-	
+    PlayerPVPTimerText:SetAlpha(0)
+    --3.3.5a only:
+    MiniMapWorldMapButton:Hide()
 
-	--ChatGPT made this..:shrug:...classic code didnt work
+
+    --ChatGPT made this..:shrug:...classic code didnt work
     -- Color Clock
-	if not IsAddOnLoaded("Blizzard_TimeManager") then
-    LoadAddOn("Blizzard_TimeManager")
-	end
+    if not IsAddOnLoaded("Blizzard_TimeManager") then
+        LoadAddOn("Blizzard_TimeManager")
+    end
     select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
-	
-	
+
+
     -- Position
     FocusFrame:StopMovingOrSizing()
     FocusFrame:ClearAllPoints()
@@ -298,17 +297,17 @@ local function OnInit()
     PartyMemberFrame1ManaBar:SetHeight(10)
     PartyMemberFrame1HealthBar:SetPoint("TOPLEFT", 45, -14)
     PartyMemberFrame1ManaBar:SetPoint("TOPLEFT", 45, -32)
-	
-	--hackfix(3.3.5a only... :vomit:)
-	PartyMemberFrame1HealthBar.TextString:SetAlpha(0)
-	PartyMemberFrame1ManaBar.TextString:SetAlpha(0)
-	PartyMemberFrame2HealthBar.TextString:SetAlpha(0)
-	PartyMemberFrame2ManaBar.TextString:SetAlpha(0)
-	PartyMemberFrame3HealthBar.TextString:SetAlpha(0)
-	PartyMemberFrame3ManaBar.TextString:SetAlpha(0)
-	PartyMemberFrame4HealthBar.TextString:SetAlpha(0)
-	PartyMemberFrame4ManaBar.TextString:SetAlpha(0)
-	--end of hackfix (:puke:)
+
+    --hackfix(3.3.5a only... :vomit:)
+    PartyMemberFrame1HealthBar.TextString:SetAlpha(0)
+    PartyMemberFrame1ManaBar.TextString:SetAlpha(0)
+    PartyMemberFrame2HealthBar.TextString:SetAlpha(0)
+    PartyMemberFrame2ManaBar.TextString:SetAlpha(0)
+    PartyMemberFrame3HealthBar.TextString:SetAlpha(0)
+    PartyMemberFrame3ManaBar.TextString:SetAlpha(0)
+    PartyMemberFrame4HealthBar.TextString:SetAlpha(0)
+    PartyMemberFrame4ManaBar.TextString:SetAlpha(0)
+    --end of hackfix (:puke:)
 
     PartyMemberFrame2:SetScale(1.25)
     PartyMemberFrame2Texture:SetTexture("Interface\\AddOns\\TextureScript\\UI-PartyFrame")
@@ -339,7 +338,7 @@ local function OnInit()
 
     -- Reposition
     PartyMemberFrame1:ClearAllPoints()
-	--on 3.3.5a had to change this anchor to PlayerFrame from CompactRaidFrameManager(Classic)
+    --on 3.3.5a had to change this anchor to PlayerFrame from CompactRaidFrameManager(Classic)
     PartyMemberFrame1:SetPoint("TOPLEFT", PlayerFrame, "TOPRIGHT", -168.5, -97.3)
 
     PartyMemberFrame2:ClearAllPoints()
@@ -350,9 +349,9 @@ local function OnInit()
 
     PartyMemberFrame4:ClearAllPoints()
     PartyMemberFrame4:SetPoint("TOPLEFT", PartyMemberFrame3PetFrame, "BOTTOMLEFT", -23.33, -32.7)
-	
+
     --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (using PartyDebuffs addon for now)
-	--[[
+    --[[
     PartyMemberFrame1Debuff1:ClearAllPoints();
     PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
     PartyMemberFrame2Debuff1:ClearAllPoints();
@@ -361,8 +360,8 @@ local function OnInit()
     PartyMemberFrame3Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -10.31263004755721);
     PartyMemberFrame4Debuff1:ClearAllPoints();
     PartyMemberFrame4Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437541575172077);
-	]]--
-	
+    ]]--
+
 
     PartyMemberFrame1LeaderIcon:SetAlpha(0)
     PartyMemberFrame1MasterIcon:SetAlpha(0)
@@ -403,8 +402,8 @@ local function OnInit()
     TargetFrameTextureFrameLeaderIcon:SetAlpha(0)
 
     ChatFrameMenuButton:Hide()
-	--3.3.5a only:
-	FriendsMicroButton:Hide()
+    --3.3.5a only:
+    FriendsMicroButton:Hide()
 
     -- TargetFrame castbar slight up-scaling
     TargetFrameSpellBar:SetScale(1.1)
@@ -427,7 +426,7 @@ local function OnInit()
     CastingBarFrameBorderShield:SetPoint("TOP", 0, 26)
 
 
-	--xyz??
+    --xyz??
     -- removing the "interrupted" red delay bar from nameplate castbars
     --^^ handled in JaxPartyCastBars addon!
 
@@ -435,9 +434,9 @@ local function OnInit()
 
     --removing character "C" button image
     MicroButtonPortrait:Hide()
-	--3.3.5a only:
-	PVPMicroButton:SetAlpha(0)
-	
+    --3.3.5a only:
+    PVPMicroButton:SetAlpha(0)
+
     -- removing the new "latency" bar unfortunately introduced in wotlk
     MainMenuBarPerformanceBar:SetAlpha(0)
 
@@ -450,7 +449,7 @@ local function OnInit()
     --position of minimap(remove to reset minimap position)
     MinimapCluster:ClearAllPoints();
     MinimapCluster:SetPoint("BOTTOMLEFT", 1186.333618164063, 595.0001831054688);
-	
+
 
     --disable mouseover flashing on buttons
     for i = 1, 12 do
@@ -515,15 +514,15 @@ local function OnInit()
 
     texture = PVPMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-	
-	--3.3.5a only:
-	PVPMicroButtonTexture:Hide()
+
+    --3.3.5a only:
+    PVPMicroButtonTexture:Hide()
 
     texture = MainMenuMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
-	
-	--3.3.5a only:
-	texture = LFDMicroButton:GetHighlightTexture()
+
+    --3.3.5a only:
+    texture = LFDMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
 
     texture = HelpMicroButton:GetHighlightTexture()
@@ -546,7 +545,7 @@ local function OnInit()
         _G["MultiBarRightButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarLeftButton" .. i .. "Name"]:SetAlpha(0)
     end
-	
+
 end
 
 -- SpeedyActions level: Garage clicker & Pro Gaymer
@@ -762,25 +761,15 @@ local barstosmooth = {
     PartyMemberFrame4ManaBar = "party4",
 }
 
-local smoothframe = CreateFrame 'Frame'
-smoothframe:RegisterEvent 'ADDON_LOADED'
+local smoothframe = CreateFrame("Frame")
 local smoothing = {}
 
-local isPlate = function(frame)
-    local overlayRegion = frame:GetRegions()
-    if not overlayRegion or overlayRegion:GetObjectType() ~= 'Texture'
-            or overlayRegion:GetTexture() ~= [[Interface\Tooltips\Nameplate-Border]] then
-        return false
-    end
-    return true
-end
-
-local min, max = math.min, math.max
 local function AnimationTick()
     local limit = 30 / GetFramerate()
+
     for bar, value in pairs(smoothing) do
         local cur = bar:GetValue()
-        local new = cur + min((value - cur) / 3, max(value - cur, limit))
+        local new = cur + math.min((value - cur) / 3, math.max(value - cur, limit))
         if new ~= new then
             new = value
         end
@@ -795,8 +784,8 @@ end
 
 local function SmoothSetValue(self, value)
     self.finalValue = value
-    if self.unitType then
-        local guid = UnitGUID(self.unitType)
+    if self.unit then
+        local guid = UnitGUID(self.unit)
         if value == self:GetValue() or not guid or guid ~= self.lastGuid then
             smoothing[self] = nil
             self:SetValue_(value)
@@ -815,11 +804,6 @@ local function SmoothSetValue(self, value)
         self._max = max
     end
 end
-for bar, value in pairs(smoothing) do
-    if bar.SetValue_ then
-        bar.SetValue = SmoothSetValue
-    end
-end
 
 local function SmoothBar(bar)
     if not bar.SetValue_ then
@@ -828,19 +812,11 @@ local function SmoothBar(bar)
     end
 end
 
-local function ResetBar(bar)
-    if bar.SetValue_ then
-        bar.SetValue = bar.SetValue_
-        bar.SetValue_ = nil
-    end
-end
-
-smoothframe:SetScript('OnUpdate', function()
-    local frames = { WorldFrame:GetChildren() }
-    for _, plate in ipairs(frames) do
-        if isPlate(plate) and plate:IsVisible() then
-            local v = plate:GetChildren()
-            SmoothBar(v)
+smoothframe:SetScript("OnUpdate", function()
+    for _, plate in pairs(C_NamePlate.GetNamePlates(true)) do
+        if plate:IsVisible() then
+            local healthBar = plate:GetChildren()
+            SmoothBar(healthBar)
         end
     end
     AnimationTick()
@@ -849,16 +825,15 @@ end)
 for k, v in pairs(barstosmooth) do
     if _G[k] then
         SmoothBar(_G[k])
-        _G[k]:SetScript("OnHide", function()
-            this.lastGuid = nil;
-            this.max_ = nil
+        _G[k]:SetScript("OnHide", function(frame)
+            frame.lastGuid = nil;
+            frame.max_ = nil
         end)
         if v ~= "" then
-            _G[k].unitType = v
+            _G[k].unit = v
         end
     end
 end
-
 
 
 -- statusbar.lockColor causes taints
@@ -1050,7 +1025,6 @@ local HideNameplateUnits = {
 local ShowNameplatePetIds = {
     ["417"] = true, -- Felhunter
     ["1863"] = true, -- Succubus
-    ["185317"] = true, -- Incubus
 }
 
 local tremorTotems = {} -- {[totem GUID] = {[shaman]=GUID, nameplate=<nameplate frame>}, ...}
@@ -1102,11 +1076,11 @@ local function visibilityPlate(plate, bool)
         CastBar:SetAlpha(1)
 
         cbshield:ClearAllPoints()
-        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.58)
+        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
         cbborder:ClearAllPoints()
-        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.58)
+        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
         cbicon:ClearAllPoints()
-        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
+        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 9.12)
     end
 end
 
@@ -1137,7 +1111,9 @@ local function HandleNewNameplate(nameplate, unit)
             or (creatureType == "Pet" and not ShowNameplatePetIds[npcId]) then
         HideNameplate(nameplate)
     elseif ShrinkPlates[name] then
-        oldname:SetText("")
+        HideNameplate(nameplate)
+        oldname:Show()
+        oldname:SetTextColor(1, 0, 0)
     elseif name == "Tremor Totem" then
         local guid = UnitGUID(unit)
         if guid then
@@ -1150,6 +1126,10 @@ local function HandleNewNameplate(nameplate, unit)
             nameplate.tremorTotemGuid = guid
             hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
         end
+    elseif UnitCreatureFamily(unit) == "Succubus" then
+        oldname:SetText("Succubus")
+    elseif UnitCreatureFamily(unit) == "Felhunter" then
+        oldname:SetText("Felhunter")
     end
 end
 
@@ -1220,7 +1200,8 @@ local function PlateScript(...)
     end
 end
 plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-plateEventFrame:SetScript("OnEvent", function(self, event, ...)    PlateScript(...)
+plateEventFrame:SetScript("OnEvent", function(self, event, ...)
+    PlateScript(...)
 end)
 
 
@@ -1258,10 +1239,10 @@ local function AddPlates(unit)
     HealthBar:ClearAllPoints()
     HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
     HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
-	
-	-- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
-	local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
-	HealthBar:SetWidth(newWidth)
+
+    -- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
+    local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
+    HealthBar:SetWidth(newWidth)
 
 
     -- Move the selection highlight
@@ -1274,7 +1255,7 @@ local function AddPlates(unit)
 
     -- Class icon on friendly plates in arena, WRATH??
     local _, unitClass = UnitClass(unit)
-	local _, type = IsInInstance()
+    local _, type = IsInInstance()
 
     if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then
@@ -1289,7 +1270,7 @@ local function AddPlates(unit)
                 nameplate.classTexture:Show()
             end
         end
-		
+
         visibilityPlate(nameplate, true)
     else
         if nameplate.classTexture then
@@ -1305,19 +1286,7 @@ local function AddPlates(unit)
         oldname:SetAlpha(1.0)
     end
     HandleNewNameplate(nameplate, unit)
-	
-	if unit and UnitExists(unit) then
-        -- static pet names for more clarity
-        local npcId = tonumber((UnitGUID(unit)):sub(-12, -9), 16)
-
-        if npcId == 1109 then
-            oldname:SetText("Succubus")
-        elseif npcId == "417" then
-            oldname:SetText("Felhunter")
-        end
-    end
 end
-
 
 local function RemovePlate(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
@@ -1381,8 +1350,8 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
     end
 end)
 
--- Preventing the black action bar border to be hidden on Spellbook opening (Detective Pyralis is back on the case!)
--- hide the cooldown bling on action bars
+
+-- hide the cooldown bling on action bars (Detective Pyralis is back on the case!)
 local cooldownWatcherFrame = CreateFrame("frame")
 local cooldownButtons = {} -- cooldown frames to quickly look them up: {[button]=end_time, ...}
 local cooldownQueue = {} -- priority queue with the lowest ending time last: {[1]={button, end_time}, ...}
@@ -1461,7 +1430,6 @@ cooldownWatcherFrame:SetScript("OnUpdate", function()
         end
     end
 end)
-
 
 
 -- Remove debuffs from Target of Target frame
@@ -1573,7 +1541,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         local addon = ...
         DarkenFrames(addon)
         self:UnregisterEvent("ADDON_LOADED")
-	elseif event == "PLAYER_ENTERING_WORLD" then
+    elseif event == "PLAYER_ENTERING_WORLD" then
         local _, type = IsInInstance()
         if type == "arena" then
             if GetCVar("nameplateShowFriends") == "0" then
@@ -1586,7 +1554,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
             end
             inArena = false
         end
-	-- NAMEPLATE STUFF
+        -- NAMEPLATE STUFF
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
@@ -1605,7 +1573,7 @@ end)
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
 
-g:SetScript("OnEvent", function()  
+g:SetScript("OnEvent", function()
     local bag, slot
     for bag = 0, 4 do
         for slot = 0, GetContainerNumSlots(bag) do
@@ -1616,7 +1584,7 @@ g:SetScript("OnEvent", function()
         end
     end
 
-    if(CanMerchantRepair()) then
+    if (CanMerchantRepair()) then
         local cost = GetRepairAllCost()
         if cost > 0 then
             local money = GetMoney()
@@ -1641,10 +1609,8 @@ g:SetScript("OnEvent", function()
     end
 end)
 
-
-
-
-
+-- Spellbook border disappearing
+MultiActionBar_ShowAllGrids = function() return end
 
 COMBAT_TEXT_RESIST = "NEVER LUCKY"
 COMBAT_TEXT_MISS = "NEVER LUCKY"
