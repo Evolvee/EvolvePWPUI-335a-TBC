@@ -411,7 +411,9 @@ local function OnInit()
     -- FocusFrame castbar slight up-scaling
     FocusFrameSpellBar:SetScale(1.1)
 
-    -- Rework Main Cast-Bar texture (castbar is now going to be round) - this is kinda "idk kev"... not sure if I rly like it, yet...
+    -- Rework Main Cast-Bar texture (castbar is now going to be round)
+	-- Currently testing the retail-like castbar through weakaura
+	--[[
     CastingBarFrame:SetScale(1)
     CastingBarFrameBorder:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border-Small")
     CastingBarFrameFlash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
@@ -424,7 +426,7 @@ local function OnInit()
     CastingBarFrameBorder:SetPoint("TOP", 0, 26)
     CastingBarFrameFlash:SetPoint("TOP", 0, 26)
     CastingBarFrameBorderShield:SetPoint("TOP", 0, 26)
-
+	--]]
 
     --xyz??
     -- removing the "interrupted" red delay bar from nameplate castbars
@@ -674,10 +676,12 @@ HideCancer:Hide()
 
 --Action bar buttons are now bigger, better looking and also fixes spellbook/wep switch bugging of dark theme
 hooksecurefunc("ActionButton_ShowGrid", function(button)
-    if button.NormalTexture then
-        button.NormalTexture:SetVertexColor(1.0, 1.0, 1.0, 1.0)
+    local tex = _G[button:GetName().."NormalTexture"]
+    if tex then
+        tex:SetVertexColor(1.0, 1.0, 1.0, 1.0)
     end
 end)
+
 for _, Bar in pairs({ "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight", "Stance", "PetAction" }) do
     for i = 1, 12 do
         local Button = Bar .. "Button" .. i
@@ -1130,6 +1134,8 @@ local function HandleNewNameplate(nameplate, unit)
         oldname:SetText("Succubus")
     elseif UnitCreatureFamily(unit) == "Felhunter" then
         oldname:SetText("Felhunter")
+    elseif UnitPlayerControlled(unit) and not UnitIsPlayer(unit) then
+        HideNameplate(nameplate)
     end
 end
 
@@ -1609,8 +1615,6 @@ g:SetScript("OnEvent", function()
     end
 end)
 
--- Spellbook border disappearing
-MultiActionBar_ShowAllGrids = function() return end
 
 COMBAT_TEXT_RESIST = "NEVER LUCKY"
 COMBAT_TEXT_MISS = "NEVER LUCKY"
