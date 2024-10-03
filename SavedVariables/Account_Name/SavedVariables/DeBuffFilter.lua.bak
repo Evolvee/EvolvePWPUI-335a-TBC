@@ -1,0 +1,10 @@
+
+DeBuffFilterDB = {
+	["profileKeys"] = {
+		["Evolvepwp - The Burning Crusade PTR"] = "Default",
+	},
+	["profiles"] = {
+		["Default"] = {
+		},
+	},
+}

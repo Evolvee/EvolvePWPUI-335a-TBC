@@ -1,0 +1,31 @@
+
+MADB = {
+	["characters"] = {
+	},
+	["frameListRows"] = 18,
+	["tooltips"] = true,
+	["profiles"] = {
+		["default"] = {
+			["name"] = "default",
+			["frames"] = {
+				["PlayerDebuffsMover"] = {
+					["orgPos"] = {
+						"TOPRIGHT", -- [1]
+						"ConsolidatedBuffs", -- [2]
+						"BOTTOMRIGHT", -- [3]
+						0, -- [4]
+						-60.00000082064688, -- [5]
+					},
+					["name"] = "PlayerDebuffsMover",
+					["pos"] = {
+						"BOTTOMLEFT", -- [1]
+						"UIParent", -- [2]
+						"BOTTOMLEFT", -- [3]
+						1155.333261891464, -- [4]
+						565.0024959290786, -- [5]
+					},
+				},
+			},
+		},
+	},
+}
