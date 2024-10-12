@@ -233,17 +233,13 @@ local function OnInit()
     MiniMapMailFrame:SetPoint('BOTTOMRIGHT', 0, -10)
     MinimapZoneTextButton:Hide()
     PlayerPVPTimerText:SetAlpha(0)
-    --3.3.5a only:
-    MiniMapWorldMapButton:Hide()
+    MiniMapWorldMapButton:Hide() -- 3.3.5a only
 
-
-    --ChatGPT made this..:shrug:...classic code didnt work
-    -- Color Clock
+    -- Color Clock (ChatGPT)
     if not IsAddOnLoaded("Blizzard_TimeManager") then
         LoadAddOn("Blizzard_TimeManager")
     end
     select(1, TimeManagerClockButton:GetRegions()):SetVertexColor(0, 0, 0)
-
 
     -- Position
     FocusFrame:StopMovingOrSizing()
@@ -350,18 +346,7 @@ local function OnInit()
     PartyMemberFrame4:ClearAllPoints()
     PartyMemberFrame4:SetPoint("TOPLEFT", PartyMemberFrame3PetFrame, "BOTTOMLEFT", -23.33, -32.7)
 
-    --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (using PartyDebuffs addon for now)
-    --[[
-    PartyMemberFrame1Debuff1:ClearAllPoints();
-    PartyMemberFrame1Debuff1:SetPoint("BOTTOMLEFT", 45.00000048894432, -9.374971298968035);
-    PartyMemberFrame2Debuff1:ClearAllPoints();
-    PartyMemberFrame2Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437474379317337);
-    PartyMemberFrame3Debuff1:ClearAllPoints();
-    PartyMemberFrame3Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -10.31263004755721);
-    PartyMemberFrame4Debuff1:ClearAllPoints();
-    PartyMemberFrame4Debuff1:SetPoint("BOTTOMLEFT", 44.99999870080508, -8.437541575172077);
-    ]]--
-
+    --POSITION OF DEBUFFS ON PARTY MEMBER FRAMES 1-4 (handled inside PartyDebuffs addon)
 
     PartyMemberFrame1LeaderIcon:SetAlpha(0)
     PartyMemberFrame1MasterIcon:SetAlpha(0)
@@ -402,8 +387,7 @@ local function OnInit()
     TargetFrameTextureFrameLeaderIcon:SetAlpha(0)
 
     ChatFrameMenuButton:Hide()
-    --3.3.5a only:
-    FriendsMicroButton:Hide()
+    FriendsMicroButton:Hide() -- 3.3.5a only
 
     -- TargetFrame castbar slight up-scaling
     TargetFrameSpellBar:SetScale(1.1)
@@ -411,38 +395,15 @@ local function OnInit()
     -- FocusFrame castbar slight up-scaling
     FocusFrameSpellBar:SetScale(1.1)
 
-    -- Rework Main Cast-Bar texture (castbar is now going to be round)
-	-- Currently testing the retail-like castbar through weakaura
-	--[[
-    CastingBarFrame:SetScale(1)
-    CastingBarFrameBorder:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border-Small")
-    CastingBarFrameFlash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
-    CastingBarFrameSpark:SetHeight(50)
-    CastingBarFrameText:ClearAllPoints()
-    CastingBarFrameText:SetPoint("CENTER", 0, 1)
-    CastingBarFrameBorder:SetWidth(CastingBarFrameBorder:GetWidth() + 4)
-    CastingBarFrameFlash:SetWidth(CastingBarFrameFlash:GetWidth() + 4)
-    CastingBarFrameBorderShield:SetWidth(CastingBarFrameBorderShield:GetWidth() + 4)
-    CastingBarFrameBorder:SetPoint("TOP", 0, 26)
-    CastingBarFrameFlash:SetPoint("TOP", 0, 26)
-    CastingBarFrameBorderShield:SetPoint("TOP", 0, 26)
-	--]]
-
-    --xyz??
-    -- removing the "interrupted" red delay bar from nameplate castbars
-    --^^ handled in JaxPartyCastBars addon!
-
-
-
     --removing character "C" button image
     MicroButtonPortrait:Hide()
-    --3.3.5a only:
-    PVPMicroButton:SetAlpha(0)
+	
+    PVPMicroButton:SetAlpha(0) -- 3.3.5a only
 
-    -- removing the new "latency" bar unfortunately introduced in wotlk
+    -- removing the retarded "latency" bar introduced in wotlk
     MainMenuBarPerformanceBar:SetAlpha(0)
 
-    -- move target of target to the right in order to allow clear vision of buffs/debuffs on a target, this will also be prolly mandatory when I try to resize the debuff scale to match 2.4.3
+    -- move target of target to the right side in order to allow cleaner vision of buffs/debuffs on a target/focus
     TargetFrameToT:ClearAllPoints();
     TargetFrameToT:SetPoint("RIGHT", "TargetFrame", "BOTTOMRIGHT", -20, 5);
     FocusFrameToT:ClearAllPoints();
@@ -451,7 +412,6 @@ local function OnInit()
     --position of minimap(remove to reset minimap position)
     MinimapCluster:ClearAllPoints();
     MinimapCluster:SetPoint("BOTTOMLEFT", 1186.333618164063, 595.0001831054688);
-
 
     --disable mouseover flashing on buttons
     for i = 1, 12 do
@@ -476,6 +436,11 @@ local function OnInit()
         end
 
         texture = _G["ActionButton" .. i]:GetHighlightTexture()
+        if texture then
+            texture:SetAlpha(0)
+        end
+		
+		texture = _G["BonusActionButton" .. i]:GetHighlightTexture() --3.3.5a only
         if texture then
             texture:SetAlpha(0)
         end
@@ -517,24 +482,21 @@ local function OnInit()
     texture = PVPMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
 
-    --3.3.5a only:
-    PVPMicroButtonTexture:Hide()
+    PVPMicroButtonTexture:Hide() --3.3.5a only
 
     texture = MainMenuMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
 
-    --3.3.5a only:
-    texture = LFDMicroButton:GetHighlightTexture()
+    texture = LFDMicroButton:GetHighlightTexture() --3.3.5a only
     texture:SetAlpha(0)
 
     texture = HelpMicroButton:GetHighlightTexture()
     texture:SetAlpha(0)
 
-
     -- Hide	Macro & Keybind texts from Action Bar buttons
-
     for i = 1, 12 do
         _G["ActionButton" .. i .. "HotKey"]:SetAlpha(0)
+		_G["BonusActionButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarBottomRightButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarBottomLeftButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarRightButton" .. i .. "HotKey"]:SetAlpha(0)
@@ -542,12 +504,12 @@ local function OnInit()
     end
     for i = 1, 12 do
         _G["ActionButton" .. i .. "Name"]:SetAlpha(0)
+		_G["BonusActionButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarBottomRightButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarBottomLeftButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarRightButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarLeftButton" .. i .. "Name"]:SetAlpha(0)
     end
-
 end
 
 -- SpeedyActions level: Garage clicker & Pro Gaymer
@@ -621,13 +583,13 @@ local function UpdateBinds(frame)
 
     for i = 1, 12 do
         WAHK("ActionButton" .. i, true)
+		WAHK("BonusActionButton" .. i, true)
         WAHK("MultiBarBottomRightButton" .. i)
         WAHK("MultiBarBottomLeftButton" .. i)
         WAHK("MultiBarRightButton" .. i)
         WAHK("MultiBarLeftButton" .. i)
     end
 end
-
 
 -- Hide Player and Pet hit indicators
 hooksecurefunc(PlayerHitIndicator, "Show", PlayerHitIndicator.Hide)
@@ -636,7 +598,7 @@ hooksecurefunc(PetHitIndicator, "Show", PetHitIndicator.Hide)
 -- Color Guild Tabs
 hooksecurefunc("GuildStatus_Update", ColorGuildTabs)
 
--- Pet Frame (IT IS NECCESSARY TO COPY INTERFACE/TARGETINGFRAME FOLDER AS WELL)
+-- Pet Frame
 hooksecurefunc("PetFrame_Update", function()
     PetFrameHealthBar:SetWidth(70)
     PetFrameHealthBar:SetHeight(18)
@@ -650,7 +612,6 @@ hooksecurefunc("PetFrame_Update", function()
     PetFrameManaBar:SetPoint("TOPLEFT", 45, -32)
 end)
 
-
 -- Remove color on name background
 hooksecurefunc("TargetFrame_CheckFaction", function(self)
     if self and self.nameBackground then
@@ -659,7 +620,7 @@ hooksecurefunc("TargetFrame_CheckFaction", function(self)
 end)
 
 local playerTextures = { PlayerStatusTexture, PlayerRestGlow, PlayerRestIcon, PlayerAttackIcon, PlayerAttackGlow, PlayerStatusGlow, PlayerAttackBackground }
--- Hidden Player glow combat/rested flashes + Hidden Focus Flash on Focused Target + Trying to completely hide the red glowing status on target/focus frames when they have low HP(this is not completely fixed yet)
+-- Hidden Player glow combat/rested flashes + Hidden Focus Flash on Focused Target + Hiding the red glowing status on target/focus frames when they have low HP
 hooksecurefunc("PlayerFrame_UpdateStatus", function()
     for _, i in pairs(playerTextures) do
         if i and i:IsShown() then
@@ -669,7 +630,7 @@ hooksecurefunc("PlayerFrame_UpdateStatus", function()
 end)
 hooksecurefunc(PlayerFrameGroupIndicator, "Show", PlayerFrameGroupIndicator.Hide)
 
--- Hiding the pet combat/attack glowing status, same as above ^^ (3.3.5a)
+-- Hiding the pet combat/attack glowing status, similarly to the above ^^
 local HideCancer = CreateFrame("Frame")
 PetAttackModeTexture:SetParent(HideCancer)
 HideCancer:Hide()
@@ -682,7 +643,7 @@ hooksecurefunc("ActionButton_ShowGrid", function(button)
     end
 end)
 
-for _, Bar in pairs({ "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight", "Stance", "PetAction" }) do
+for _, Bar in pairs({ "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight", "Stance", "PetAction", "BonusAction" }) do
     for i = 1, 12 do
         local Button = Bar .. "Button" .. i
         if _G[Button] then
@@ -721,8 +682,6 @@ end
 -- Hook into the original TextStatusBar_UpdateTextString function
 hooksecurefunc("TextStatusBar_UpdateTextString", CustomTextStatusBar_UpdateTextString)
 
-
-
 --[ChatGPT rework for 3.3.5a]
 local function Classification(self, forceNormalTexture)
     local classification = UnitClassification(self.unit);
@@ -741,8 +700,7 @@ end
 hooksecurefunc("TargetFrame_CheckClassification", Classification)
 
 
-
---smooth status bars(animated)
+--Smooth Status Bars (animated progress)
 local floor = math.floor
 local barstosmooth = {
     PlayerFrameHealthBar = "player",
@@ -839,7 +797,6 @@ for k, v in pairs(barstosmooth) do
     end
 end
 
-
 -- statusbar.lockColor causes taints
 local function colour(statusbar, unit)
     if (not statusbar or statusbar.lockValues) then
@@ -853,9 +810,18 @@ local function colour(statusbar, unit)
                 local _, class = UnitClass(unit)
                 local c = RAID_CLASS_COLORS[class]
                 if c then
-                    if class == "DEATHKNIGHT" then
-                        -- experimental DK recoulouring feature (part1)
-                        statusbar:SetStatusBarColor(0, 1, 0.6)
+                    if class == "HUNTER" then
+                        -- experimental Hunter recolouring
+                        statusbar:SetStatusBarColor(0.6, 0.85, 0.2)
+					elseif class == "MAGE" then
+						-- experimental Mage recoloring
+						statusbar:SetStatusBarColor(0, 0.82, 1)
+					elseif class == "WARLOCK" then
+						-- experimental Warlock recoloring
+						statusbar:SetStatusBarColor(0.4, 0, 0.8)
+					elseif class == "WARRIOR" then
+						-- experimental Warrior recoloring
+						statusbar:SetStatusBarColor(0.7, 0.56, 0.42)
                     else
                         statusbar:SetStatusBarColor(c.r, c.g, c.b)
                     end
@@ -896,6 +862,19 @@ hooksecurefunc("UnitFrameHealthBar_Update", colour)
 hooksecurefunc("HealthBar_OnValueChanged", function(self)
     colour(self, self.unit)
 end)
+
+-- Experimental mana colouring
+local function updateManaColor(statusbar, unit)
+    if (not statusbar or statusbar.lockValues) then
+        return
+    end
+
+    if unit and UnitPowerType(unit) == 0 then
+        statusbar:SetStatusBarColor(0, 0.4, 1)
+    end
+end
+hooksecurefunc("UnitFrameManaBar_Update", updateManaColor)
+
 
 -- Remove flashing portraits
 local function RemovePortraitFlash(self, r, g, b)
@@ -943,7 +922,6 @@ hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
 end)
 
 
-
 -- Hide HealthBar under unit tooltips + Hide Titles, PVP flag and Guild Names from Player tooltips
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     GameTooltipStatusBar:Hide()
@@ -977,8 +955,18 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if color then
             local text = GameTooltipTextLeft1:GetText()
             if text then
-                if class == "DEATHKNIGHT" then
-                    GameTooltipTextLeft1:SetFormattedText("|cff00ff99%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
+                if class == "HUNTER" then
+				-- experimental Hunter colouring
+                    GameTooltipTextLeft1:SetFormattedText("|cff99d933%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
+				elseif class == "MAGE" then
+				-- experimental Mage colouring
+                    GameTooltipTextLeft1:SetFormattedText("|cff00d1ff%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
+				elseif class == "WARLOCK" then
+				-- experimental Warlock colouring
+                    GameTooltipTextLeft1:SetFormattedText("|cff6600cc%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
+				elseif class == "WARRIOR" then
+				-- experimental Warrior colouring
+                    GameTooltipTextLeft1:SetFormattedText("|cffb38f6b%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
                 else
                     GameTooltipTextLeft1:SetFormattedText("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
                 end
@@ -988,12 +976,9 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     self:Show()
 end)
 
-
--- stop Gladdy from showing nameplates (necessary for the next script) !! IMPORTANT - You MUST use the "Lock Frame" function in General tab of Gladdy alongside with this!!
-
--- IT IS ALSO ABSOLUTELY NECESSARY FOR YOU TO DISABLE THE "Totem Plates" PLUGIN IN GLADDY UI
-
--- XYZ - not necessary on 3.3.5a?? gladdy has this built in??
+-- stop Gladdy from showing nameplates (necessary for the next script)
+-- "Lock Frame" inside Gladdy must be Toggled ON!
+-- "Totem Plates" plugin inside Gladdy must be Toggled OFF!
 if IsAddOnLoaded("Gladdy") then
     local Gladdy = LibStub and LibStub("Gladdy")
     if Gladdy then
@@ -1008,7 +993,6 @@ if IsAddOnLoaded("Gladdy") then
         end
     end
 end
-
 
 -- Highlight Tremor Totem (disable nameplates of everything else) + disable Snake Trap Cancer + prevent displaying already dead Tremor Totem (retarded Classic-like behavior)
 local ShrinkPlates = {
@@ -1078,13 +1062,14 @@ local function visibilityPlate(plate, bool)
         CastBar:Show()
         HealthBar:SetAlpha(1)
         CastBar:SetAlpha(1)
-
-        cbshield:ClearAllPoints()
-        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
-        cbborder:ClearAllPoints()
-        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
-        cbicon:ClearAllPoints()
-        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 9.12)
+		
+		--Temporarily commenting out to fix https://github.com/Evolvee/EvolvePWPUI-335a-TBC/issues/5
+        --cbshield:ClearAllPoints()
+        --cbshield:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
+        --cbborder:ClearAllPoints()
+        --cbborder:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
+        --cbicon:ClearAllPoints()
+        --cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 9.12)
     end
 end
 
@@ -1139,8 +1124,7 @@ local function HandleNewNameplate(nameplate, unit)
     end
 end
 
--- PlaySound whenever an enemy casts Tremor Totem in arena (previously handled in a standalone addon "EvolveAlert" - https://github.com/Evolvee/EvolvePWPUI-ClassicTBC/tree/main/Interface/AddOns/EvolveAlert)
---xyz: remove the healing part etc? its not needed anymore - im not playing priest for now
+-- PlaySound whenever an enemy casts Tremor Totem inside arena (this is unnecessary overcomplicated due to being backported from clASSic where totems dont disappear instantly upon destroying them)
 local COMBATLOG_FILTER_HOSTILE_PLAYERS = COMBATLOG_FILTER_HOSTILE_PLAYERS;
 local CombatLog_Object_IsA = CombatLog_Object_IsA
 local eventRegistered = {
@@ -1149,9 +1133,6 @@ local eventRegistered = {
     ["SWING_DAMAGE"] = true,
     ["RANGE_DAMAGE"] = true,
     ["SPELL_DAMAGE"] = true,
-    ["SPELL_HEAL"] = true,
-    ["SPELL_PERIODIC_HEAL"] = true,
-
 }
 
 local function PlateScript(...)
@@ -1211,7 +1192,7 @@ plateEventFrame:SetScript("OnEvent", function(self, event, ...)
 end)
 
 
--- Adding class icons on party members inside arena for more clarity where my teammates are (behind los etc.)
+-- Adding class icons on party members inside arena for more clarity where teammates are positioned
 local classmarkers = {
     ["ROGUE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Rogue",
     ["PRIEST"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Priest",
@@ -1233,7 +1214,7 @@ local function AddPlates(unit)
     local HealthBar, CastBar = nameplate:GetChildren()
     local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = nameplate:GetRegions()
 
-    -- Change border plate
+    -- Change border plate texture art
     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
 
     -- hide level and expand healthbar
@@ -1246,12 +1227,14 @@ local function AddPlates(unit)
     HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
     HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
 
-    -- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
-    local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
-    HealthBar:SetWidth(newWidth)
+	-- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
+	local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
+	HealthBar:SetWidth(newWidth)
+	-- Same as above - fixing the 1 pixel space between top of nameplate border and the actual status bar nameplate texture
+	local newHeight = nameplate:GetHeight() - 27  -- Adjust this if necessary
+	HealthBar:SetHeight(newHeight)
 
-
-    -- Move the selection highlight
+    -- Move the selection highlight (3.3.5a only - moving it out of screen, wasnt able to just hide it)
     overlay:ClearAllPoints()
     overlay:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
 
@@ -1259,7 +1242,7 @@ local function AddPlates(unit)
     oldname:SetFont("Fonts\\FRIZQT__.TTF", 14)
     oldname:SetWidth(160)
 
-    -- Class icon on friendly plates in arena, WRATH??
+    -- Class icon on friendly plates in arena
     local _, unitClass = UnitClass(unit)
     local _, type = IsInInstance()
 
@@ -1286,7 +1269,7 @@ local function AddPlates(unit)
         visibilityPlate(nameplate, false)
     end
 
-    -- This is needed to restore scale due to the ShrinkPlates
+    -- This is needed to restore scale due to the ShrinkPlates (hunter snake trap)
     if HealthBar:GetScale() < 1.0 then
         HealthBar:SetScale(1.0)
         oldname:SetAlpha(1.0)
@@ -1357,85 +1340,33 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
 end)
 
 
--- hide the cooldown bling on action bars (Detective Pyralis is back on the case!)
-local cooldownWatcherFrame = CreateFrame("frame")
-local cooldownButtons = {} -- cooldown frames to quickly look them up: {[button]=end_time, ...}
-local cooldownQueue = {} -- priority queue with the lowest ending time last: {[1]={button, end_time}, ...}
-local cooldownCount = 0 -- amount of cooldowns in the lists
-local cooldownNextTime = 0 -- cache of cooldownQueue[cooldownCount][2] to probably overoptimize the OnUpdate script
-
-local function CooldownRemoveButton(button)
-    if cooldownButtons[button] then
-        cooldownButtons[button] = nil
-        for i=cooldownCount, 1, -1 do
-            if button == cooldownQueue[i][1] then
-                table_remove(cooldownQueue, i)
-                break
-            end
-        end
-
-        cooldownCount = cooldownCount - 1
-        if cooldownCount == 0 then
-            cooldownWatcherFrame:Hide()
-        else
-            cooldownNextTime = cooldownQueue[cooldownCount][2]
-        end
-    end
-end
-local function CooldownAddButton(button, endTime)
-    -- endTime = endTime - .033 -- if the bling shows up for a frame, maybe set the end time slightly before the real one
-
-    -- cooldown updates seem to happen twice so skip duplicate additions
-    local foundTime = cooldownButtons[button]
-    if foundTime then
-        if foundTime == endTime then
-            return
-        end
-        -- a new time, so remove the old one first
-        CooldownRemoveButton(button)
-    end
-
-    cooldownButtons[button] = endTime
-    local added
-    for i=cooldownCount, 1, -1 do
-        if endTime <= cooldownQueue[i][2] then
-            table_insert(cooldownQueue, i+1, {button, endTime})
-            added = true
-            break
-        end
-    end
-    if not added then
-        table_insert(cooldownQueue, 1, {button, endTime})
-    end
-    cooldownCount = cooldownCount + 1
-    cooldownNextTime = cooldownQueue[cooldownCount][2]
-    if cooldownCount == 1 then
-        cooldownWatcherFrame:Show()
-    end
-    button:SetAlpha(1)
-end
+-- Hide the cooldown bling on action bars (Detective Pyralis is back on the case!)
 hooksecurefunc("CooldownFrame_SetTimer", function(self, start, duration, enable)
-    local name = self:GetName()
-    if name and (string_match(name, "^MultiBar%w+Button") or string_match(name, "^P?e?t?ActionButton")) then
+    local name = self and self:GetName()
+    if name and (string.match(name, "^MultiBar%w+Button") or string.match(name, "^P?e?t?ActionButton") or string.match(name, "^BonusActionButton%d+")) then
+        -- if a timer already exists, it's either changing from a GCD to real one (so cancel the old one) or is a duplicate that constantly happens (so skip it)
+        if self.timer then
+            if self.duration == duration then -- can't use self.___Duration because it's changed by now
+                return
+            end
+            self.timer:Cancel()
+            self.timer = nil
+        end
         if duration > 0 and enable > 0 and start > 0 then
-            CooldownAddButton(self, start + duration)
-        elseif enable == 0 then
-            CooldownRemoveButton(self)
+            self:SetAlpha(1)
+            self.duration = duration
+            self.timer = C_Timer.NewTimer(duration, function()
+                if self then
+                    self:SetAlpha(0)
+                    self.timer = nil
+                end
+            end)
+        else
+            self:SetAlpha(0)
         end
     end
 end)
 
-cooldownWatcherFrame:Hide()
-cooldownWatcherFrame:SetScript("OnUpdate", function()
-    if cooldownCount > 0 then
-        local now = GetTime()
-        while cooldownCount > 0 and now >= cooldownNextTime do
-            local button = cooldownQueue[cooldownCount][1]
-            button:SetAlpha(0)
-            CooldownRemoveButton(button)
-        end
-    end
-end)
 
 
 -- Remove debuffs from Target of Target frame
@@ -1451,46 +1382,6 @@ for _, totFrame in ipairs({ TargetFrameToT, FocusFrameToT }) do
 end
 
 
-
---XYZ - second half of the code is used for nameplate position which we will need to do as WELL
--- Hide the friendly nameplate cast bars
---hooksecurefunc("Nameplate_CastBar_AdjustPosition", function(self)
---    if not self or self:IsForbidden() then
---        return
---    end
-
---    if UnitIsFriend("player", self.unit) then
---        self:Hide()
---    end
-
---    local parentFrame = self:GetParent()
---    if self.BorderShield:IsShown() then
---        self:ClearAllPoints()
---        self:SetPoint("TOP", parentFrame.healthBar, "BOTTOM", 9, -12)
---    else
---        self:ClearAllPoints()
---        self:SetPoint("TOP", parentFrame.healthBar, "BOTTOM", 9, -4)
---    end
---end)
-
-
-
-
--- Changing DK default colour in order to bring more clarity
---hooksecurefunc("CompactUnitFrame_UpdateHealthColor", function(frame)
---    if not frame.unit or frame:IsForbidden() or not string.find(frame.unit, "nameplate") then
---        return
---    end
-
---    if UnitIsConnected(frame.unit) and UnitIsPlayer(frame.unit) then
---        local _, class = UnitClass(frame.unit)
---        if class == "DEATHKNIGHT" then
---            -- experimental DK recoulouring feature (part2)
---            frame.healthBar:SetStatusBarColor(0, 1, 0.6)
---        end
---    end
---end)
-
 -- leave arena on PVP icon doubleclick (useful when playing against RM/RR retards)
 MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
     if select(2, IsInInstance()) == "arena" then
@@ -1499,25 +1390,7 @@ MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
 end)
 
 
--- "Fix" SCT
---not needed on 3.3.5a? We will see...
---[[
-if not CombatText then
-    EventUtil.ContinueOnAddOnLoaded("Blizzard_CombatText", function()
-        CombatText_ClearAnimationList = function()
-            return
-        end
-    end)
-else
-    CombatText_ClearAnimationList = function()
-        return
-    end
-end
-]]--
 
-
-
---
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
 evolvedFrame:RegisterEvent("PLAYER_LOGIN")
@@ -1571,11 +1444,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
 end)
 
 
-
---@@ 3.3.5.a SHIT ONLY:
-
-
--- Auto repair / Auto sell grey shit
+-- Auto repair / Auto sell grey shit (3.3.5a only)
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
 
@@ -1616,15 +1485,15 @@ g:SetScript("OnEvent", function()
 end)
 
 
-COMBAT_TEXT_RESIST = "NEVER LUCKY"
-COMBAT_TEXT_MISS = "NEVER LUCKY"
-
--- trying to remove the cancer weather that is not part of the video settings as it used to be in 2.4.3: /console set weatherdensity 0 // /console WeatherDensity 0
-
--- Disable the ability to scroll chat with mouse wheel (fucks binds with the mouse-wheel-up/down): /console chatMouseScroll 0
-
+COMBAT_TEXT_RESIST = "RESIST XD"
 
 --Login message informing all scripts of this file were properly executed
 ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client (v0.1 BETA) Loaded successfully!", 0, 205, 255)
 ChatFrame1:AddMessage("Check for updates at:", 0, 205, 255)
 ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-335a-TBC", 0, 205, 255)
+
+
+
+-- trying to remove the cancer weather that is not part of the video settings as it used to be in 2.4.3: /console set weatherdensity 0 // /console WeatherDensity 0
+
+-- Disable the ability to scroll chat with mouse wheel (fucks binds with the mouse-wheel-up/down): /console chatMouseScroll 0
