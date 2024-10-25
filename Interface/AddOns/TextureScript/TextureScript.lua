@@ -864,17 +864,19 @@ hooksecurefunc("HealthBar_OnValueChanged", function(self)
 end)
 
 -- Experimental mana colouring
-local function updateManaColor(statusbar, unit)
-    if (not statusbar or statusbar.lockValues) then
+local function manabarRecolor(manaBar)
+    if not manaBar then
         return
     end
 
-    if unit and UnitPowerType(unit) == 0 then
-        statusbar:SetStatusBarColor(0, 0.4, 1)
+    local powerType = UnitPowerType(manaBar.unit);
+    if powerType == 0 then
+        if not manaBar.lockColor then
+            manaBar:SetStatusBarColor(0, 0.4, 1)
+        end
     end
 end
-hooksecurefunc("UnitFrameManaBar_Update", updateManaColor)
-
+hooksecurefunc("UnitFrameManaBar_UpdateType", manabarRecolor)
 
 -- Remove flashing portraits
 local function RemovePortraitFlash(self, r, g, b)
