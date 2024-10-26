@@ -155,3 +155,11 @@ function CombatLogGetCurrentEventInfo(Timestamp, SubEvent, SrcGUID, SrcName, Src
 		return Timestamp, SubEvent, HideCaster, SrcGUID, SrcName, SrcFlag, SrcRaidFlag, DstGUID, DstName, DstFlag, DstRaidFlag, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12
 	end
 end
+
+function ActionButton_HideOverlayGlow()
+	-- TODO
+end
+
+function ActionButton_ShowOverlayGlow()
+	-- TODO
+end

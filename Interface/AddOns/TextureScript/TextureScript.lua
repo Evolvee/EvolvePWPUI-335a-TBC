@@ -182,7 +182,7 @@ hooksecurefunc("PartyMemberFrame_UpdateMemberHealth", function(self)
     if c then
         _G[prefix .. "HealthBar"]:SetStatusBarColor(c.r, c.g, c.b)
     end
-
+	
     if hp ~= healthbar.lastTextValue then
         healthbar.lastTextValue = hp
         healthbar.fontString:SetText(healthbar.lastTextValue)
@@ -204,6 +204,13 @@ end)
 hooksecurefunc("PartyMemberFrame_UpdateMember", function(self)
     local prefix = self:GetName();
     _G[prefix .. "Name"]:Hide();
+end)
+--3.3.5a only
+hooksecurefunc("PartyMemberHealthCheck", function(self, value)
+local prefix = self:GetParent():GetName();
+if ( (self:GetParent().unitHPPercent > 0) and (self:GetParent().unitHPPercent <= 0.2) ) then
+        _G[prefix.."Portrait"]:SetVertexColor(1.0, 1.0, 1.0);
+    end
 end)
 
 -- Hidden Party Frame Colour-Statuses (debuffs)
@@ -247,6 +254,13 @@ local function OnInit()
     FocusFrame:SetPoint("CENTER", UIParent, "CENTER", -237, 115)
     FocusFrame:SetUserPlaced(true)
     FocusFrame:SetAttribute("*type2", "target") -- right click target focus
+	
+	-- PetFrame dismiss (right click to auto-dissmiss pet)
+	PetFrame:SetScript("OnClick", function(self, button)
+    if button == "RightButton" then
+            PetDismiss()
+		end
+	end)
 
     -- ToT texture closing the alpha gap (previously handled by ClassPortraits itself)
     TargetFrameToTTextureFrameTexture:SetVertexColor(0, 0, 0)
@@ -619,8 +633,9 @@ hooksecurefunc("TargetFrame_CheckFaction", function(self)
     end
 end)
 
-local playerTextures = { PlayerStatusTexture, PlayerRestGlow, PlayerRestIcon, PlayerAttackIcon, PlayerAttackGlow, PlayerStatusGlow, PlayerAttackBackground }
 -- Hidden Player glow combat/rested flashes + Hidden Focus Flash on Focused Target + Hiding the red glowing status on target/focus frames when they have low HP
+local playerTextures = { PlayerStatusTexture, PlayerRestGlow, PlayerRestIcon, PlayerAttackIcon, PlayerAttackGlow, PlayerStatusGlow, PlayerAttackBackground }
+
 hooksecurefunc("PlayerFrame_UpdateStatus", function()
     for _, i in pairs(playerTextures) do
         if i and i:IsShown() then
@@ -713,6 +728,7 @@ local barstosmooth = {
     FocusFrameManaBar = "focus",
     MainMenuExpBar = "",
     ReputationWatchStatusBar = "",
+	--[[ TEMP (checking whether this is the error culprit or not)
     PartyMemberFrame1HealthBar = "party1",
     PartyMemberFrame1ManaBar = "party1",
     PartyMemberFrame2HealthBar = "party2",
@@ -721,6 +737,7 @@ local barstosmooth = {
     PartyMemberFrame3ManaBar = "party3",
     PartyMemberFrame4HealthBar = "party4",
     PartyMemberFrame4ManaBar = "party4",
+	--]]
 }
 
 local smoothframe = CreateFrame("Frame")
@@ -810,21 +827,7 @@ local function colour(statusbar, unit)
                 local _, class = UnitClass(unit)
                 local c = RAID_CLASS_COLORS[class]
                 if c then
-                    if class == "HUNTER" then
-                        -- experimental Hunter recolouring
-                        statusbar:SetStatusBarColor(0.6, 0.85, 0.2)
-					elseif class == "MAGE" then
-						-- experimental Mage recoloring
-						statusbar:SetStatusBarColor(0, 0.82, 1)
-					elseif class == "WARLOCK" then
-						-- experimental Warlock recoloring
-						statusbar:SetStatusBarColor(0.4, 0, 0.8)
-					elseif class == "WARRIOR" then
-						-- experimental Warrior recoloring
-						statusbar:SetStatusBarColor(0.7, 0.56, 0.42)
-                    else
                         statusbar:SetStatusBarColor(c.r, c.g, c.b)
-                    end
                 end
             elseif unit == "player" then
                 local value = UnitHealth("player")
@@ -957,21 +960,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if color then
             local text = GameTooltipTextLeft1:GetText()
             if text then
-                if class == "HUNTER" then
-				-- experimental Hunter colouring
-                    GameTooltipTextLeft1:SetFormattedText("|cff99d933%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
-				elseif class == "MAGE" then
-				-- experimental Mage colouring
-                    GameTooltipTextLeft1:SetFormattedText("|cff00d1ff%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
-				elseif class == "WARLOCK" then
-				-- experimental Warlock colouring
-                    GameTooltipTextLeft1:SetFormattedText("|cff6600cc%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
-				elseif class == "WARRIOR" then
-				-- experimental Warrior colouring
-                    GameTooltipTextLeft1:SetFormattedText("|cffb38f6b%s|r", text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
-                else
                     GameTooltipTextLeft1:SetFormattedText("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
-                end
             end
         end
     end
@@ -1390,6 +1379,21 @@ MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
         LeaveBattlefield()
     end
 end)
+
+
+-- Experimental class-colour changes
+RAID_CLASS_COLORS = {
+    ["HUNTER"] = { r = 0.6, g = 0.85, b = 0.2 },
+    ["WARLOCK"] = { r = 0.4, g = 0, b = 0.8 },
+    ["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0 },
+    ["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73 },
+    ["MAGE"] = { r = 0, g = 0.82, b = 1 },
+    ["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41 },
+    ["DRUID"] = { r = 1.0, g = 0.49, b = 0.04 },
+    ["SHAMAN"] = { r = 0.0, g = 0.44, b = 0.87 },
+    ["WARRIOR"] = { r = 0.7, g = 0.56, b = 0.42 },
+    ["DEATHKNIGHT"] = { r = 0.77, g = 0.12 , b = 0.23 },
+};
 
 
 

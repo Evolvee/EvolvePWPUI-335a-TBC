@@ -330,7 +330,7 @@ CheckButton.ClearAndSetPoint = Method_ClearAndSetPoint
 
 -- COOLDOWN
 hooksecurefunc(Cooldown, "SetCooldown", Method_SetCooldown)
-Cooldown.Clear = function(Self) Self:SetCooldown(0, 0) end
+Cooldown.Clear = function(Self) Self:Hide() end
 Cooldown.SetHideCountdownNumbers = function(Self, Hide) Self.noCooldownCount = (Hide) and true or nil end
 Cooldown.SetDrawBling = Method_TODO
 Cooldown.SetDrawSwipe = Method_TODO

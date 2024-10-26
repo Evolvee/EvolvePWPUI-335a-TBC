@@ -1,19 +1,21 @@
-function CooldownFrame_Set(self, start, duration, enable, forceShowDrawEdge, modRate)
-	if enable and enable ~= 0 and start > 0 and duration > 0 then
+local GetTime = GetTime
+
+function CooldownFrame_Set(Self, Start, Duration, Enable, ForceShowDrawEdge, ModRate)
+	if Enable and Enable ~= 0 and Start > 0 and Duration > 0 then
 		--self:Show()
-		self:SetDrawEdge(forceShowDrawEdge)
-		self:SetCooldown(start, duration, modRate)
+		Self:SetDrawEdge(ForceShowDrawEdge)
+		Self:SetCooldown(Start, Duration, ModRate)
 	else
-		CooldownFrame_Clear(self)
+		Self:Hide()
 	end
 end
 
-function CooldownFrame_Clear(self)
-	self:Hide()
+function CooldownFrame_Clear(Self)
+	Self:Hide()
 end
 
-function CooldownFrame_SetDisplayAsPercentage(self, percentage)
-	local seconds = 100
-	--self:Pause()
-	self:SetCooldown(GetTime() - seconds * percentage, seconds)
+function CooldownFrame_SetDisplayAsPercentage(Self, Percentage)
+	local Seconds = 100
+	--Self:Pause()
+	Self:SetCooldown(GetTime() - Seconds * Percentage, Seconds)
 end

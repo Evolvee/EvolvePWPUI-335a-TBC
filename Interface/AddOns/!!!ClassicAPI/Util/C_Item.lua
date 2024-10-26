@@ -1,4 +1,4 @@
-local GetItemInfo = C_GetItemInfo
+local GetItemInfo = GetItemInfo
 
 C_Item = C_Item or {}
 
@@ -21,11 +21,11 @@ function C_Item.DoesItemExist(itemInfo)
 end
 
 function C_Item.GetItemName(itemInfo)
-	return self.GetItemInfo(itemInfo)
+	return GetItemInfo(itemInfo)
 end
 
 function C_Item.GetItemNameByID(itemID)
-	return self.GetItemInfo(itemID)
+	return GetItemInfo(itemID)
 end
 
 function C_Item.RequestLoadItemDataByID(itemID)

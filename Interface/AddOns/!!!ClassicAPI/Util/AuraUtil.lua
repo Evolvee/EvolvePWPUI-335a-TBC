@@ -1,5 +1,7 @@
 AuraUtil = AuraUtil or {}
 
+local UnitAura = UnitAura
+
 local function FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1, predicateArg2, predicateArg3, ...)
     if ... == nil then
         return nil; -- Not found
@@ -8,13 +10,15 @@ local function FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1
         return ...;
     end
     auraIndex = auraIndex + 1;
-    return FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1, predicateArg2, predicateArg3, UnitAura(unit, auraIndex, filter));
+    local name, rank, icon, count, type, duration, expire, caster, steal, consolidate, id = UnitAura(unit, auraIndex, filter);
+    return FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1, predicateArg2, predicateArg3, name, icon, count, type, duration, expire, caster, steal, consolidate, id);
 end
 -- Find an aura by any predicate, you can pass in up to 3 predicate specific parameters
 -- The predicate will also receive all aura params, if the aura data matches return true
 function AuraUtil.FindAura(predicate, unit, filter, predicateArg1, predicateArg2, predicateArg3)
     local auraIndex = 1;
-    return FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1, predicateArg2, predicateArg3, UnitAura(unit, auraIndex, filter));
+    local name, rank, icon, count, type, duration, expire, caster, steal, consolidate, id = UnitAura(unit, auraIndex, filter);
+    return FindAuraRecurse(predicate, unit, filter, auraIndex, predicateArg1, predicateArg2, predicateArg3, name, icon, count, type, duration, expire, caster, steal, consolidate, id);
 end
 
 do

@@ -21,6 +21,7 @@ Libs\AceSerializer-3.0\AceSerializer-3.0.xml
 Libs\LibDeflate\LibDeflate.lua
 #@end-no-lib-strip@
 
+
 Locales\Locales.xml
 OmniBar.xml
 OmniBar_Wrath.lua
