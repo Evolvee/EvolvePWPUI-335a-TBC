@@ -7,16 +7,14 @@ local UnitGUID = UnitGUID
 local UnitName = UnitName
 local FindUnitID = Private.FindUnitID
 local EventHandler = Private.EventHandler
-local EventHandler_Fire = Private.EventHandler_Fire
+local EventHandler_Fire = EventHandler.Fire
 
 local RESCOMM
 local HEALCOMM
 local HEALCOMM_PLAYER_GUID
 
 --[[
-
 	FUNCTIONS
-
 ]]
 
 function UnitGetIncomingHeals(Unit, Healer, GUID)
@@ -53,10 +51,8 @@ function UnitHasIncomingResurrection(Unit)
 end
 
 --[[
-
 	EVENT HANDLER:
 		UNIT_HEAL_PREDICTION
-
 ]]
 
 local function UNIT_HEAL_PREDICTION(Limit, GUID, ...)
@@ -114,4 +110,4 @@ function EventHandler:UNIT_HEAL_PREDICTION_UNREGISTER()
 	end
 end
 
-Private.EventHandler_AddClassicEvent("UNIT_HEAL_PREDICTION")
+EventHandler.AddEvent("UNIT_HEAL_PREDICTION")

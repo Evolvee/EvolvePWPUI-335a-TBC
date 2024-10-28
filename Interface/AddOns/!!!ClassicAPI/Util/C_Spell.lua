@@ -1,10 +1,10 @@
 local _, Private = ...
 
-local EventHandler_Fire = Private.EventHandler_Fire
+local EventHandler = Private.EventHandler
+local EventHandler_Fire = EventHandler.Fire
+EventHandler.AddEvent("SPELL_DATA_LOAD_RESULT")
 
 C_Spell = C_Spell or {}
-
-Private.EventHandler_AddClassicEvent("SPELL_DATA_LOAD_RESULT")
 
 function C_Spell.RequestLoadSpellData(spellID)
 	-- Fire SPELL_DATA_LOAD_RESULT when requested.

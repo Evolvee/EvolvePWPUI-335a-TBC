@@ -1,163 +1,130 @@
 local _, Private = ...
 
--- EventHandler v1
-
+local CreateFrame = CreateFrame
 local GetMetaTable = getmetatable
 local HookSecureFunc = hooksecurefunc
 
 local EventHandler = CreateFrame("Frame")
-local ___RegisterEvent = EventHandler.RegisterEvent
-local ___UnregisterEvent = EventHandler.UnregisterEvent
+local ___Register = EventHandler.RegisterEvent
+local ___Unregister = EventHandler.UnregisterEvent
 
-local EVENT_STORAGE = {} -- Active Events
-local CLASSIC_EVENT = {} -- New -> Old
-local HANDLER_EVENT = {} -- Old -> New
+local EVENT_ATLAS = {}
+local EVENT_OBJECT = {}
+local EVENT_ARCHIVE = {}
 
---[[
+local function EventHandler_Fire(Self, Listener, ...)
+	local Event = EVENT_ATLAS[Listener] or Listener
 
-	CALLBACK SYSTEM
+	local Trigger = EventHandler[Event.."_TRIGGER"]
+	if ( Trigger and Trigger(nil, Listener, ...) == false ) then return end
 
-]]
+	local Registered = EVENT_OBJECT[Event]
+	local Shuffle = 1
 
-local function EventHandler_Unregister(Self, Event, Event2)
-	local EventData = EVENT_STORAGE[Event]
+	for i=1,#Registered do
+		local Obj = Registered[i]
 
-	if ( EventData ) then
-		local EventDataTotal, Index = 0
-
-		for i=1,#EventData do
-			local Obj = EventData[i]
-
-			if ( Obj ) then
-				EventDataTotal = EventDataTotal + 1
-
-				if ( Obj == Self ) then
-					Index = i
-					if ( EventDataTotal > 1 ) then break end
-				end
+		if ( Obj ) then
+			local OnEvent = Obj:GetScript("OnEvent")
+			if ( OnEvent ) then
+				OnEvent(Obj, Event, ...)
 			end
-		end
 
-		if ( Index ) then
-			if ( EventDataTotal == 1 ) then
-				EVENT_STORAGE[Event] = nil
-				___UnregisterEvent(EventHandler, Event2)
-
-				local UnregisterFunc = EventHandler[Event.."_UNREGISTER"]
-				if ( UnregisterFunc ) then
-					UnregisterFunc(nil, Self)
-				end
-			else
-				EventData[Index] = false
+			if ( i ~= Shuffle ) then
+				Registered[Shuffle] = Obj
+				Registered[i] = nil
 			end
+
+			Shuffle = Shuffle + 1
+		else
+			Registered[i] = nil
 		end
 	end
 end
 
-local function EventHandler_Register(Self, Event, Event2)
-	local EventData = EVENT_STORAGE[Event]
-	local EventDataTotal = 0
-
-	if ( not EventData ) then
-		local _ = {}
-		EVENT_STORAGE[Event] = _
-		EventData = _
+local function EventHandler_Listener(Event, Func)
+	local Archive = EVENT_ARCHIVE[Event]
+	if ( Archive[1] ) then
+		for i=1,#Archive do
+			Func(EventHandler, Archive[i])
+		end
 	else
-		EventDataTotal = #EventData
-
-		for i=1,EventDataTotal do
-			if ( EventData[i] == Self ) then
-				return
-			end
-		end
-	end
-
-	EventData[EventDataTotal + 1] = Self
-	___RegisterEvent(EventHandler, Event2)
-end
-
-local function EventHandler_Fire(Self, Event, ...)
-	Event = HANDLER_EVENT[Event] or Event
-	local EventData = EVENT_STORAGE[Event]
-
-	if ( EventData ) then
-		local TriggerFunc = EventHandler[Event.."_TRIGGER"]
-		if ( TriggerFunc and TriggerFunc(nil, Self, Event, ...) == false ) then
-			return
-		end
-
-		local Shuffle = 1
-		for i=1,#EventData do
-			local Obj = EventData[i]
-
-			if ( Obj ) then
-				local OnEvent = Obj:GetScript("OnEvent")
-				if ( OnEvent ) then
-					OnEvent(Obj, Event, ...)
-				end
-
-				if ( i ~= Shuffle ) then
-					EventData[Shuffle] = Obj
-					EventData[i] = nil
-				end
-
-				Shuffle = Shuffle + 1
-			else
-				EventData[i] = nil
-			end
-		end
+		Func(EventHandler, Archive)
 	end
 end
-EventHandler:SetScript("OnEvent", EventHandler_Fire)
 
 --[[
-
-	METHOD HOOK(S)
-
+	EventHandler: Method Hook(s)
 ]]
 
 local function Method_RegisterEvent(Self, Event)
-	local ClassicEvent = CLASSIC_EVENT[Event]
+	local Archive = EVENT_ARCHIVE[Event]
 
-	if ( ClassicEvent ) then
-		local RegisterFunc = EventHandler[Event.."_REGISTER"]
-		if ( RegisterFunc and RegisterFunc(nil, Self) == false ) then
-			return
-		end
+	if ( Archive ) then
+		local Registered = EVENT_OBJECT[Event]
+		local RegisteredTotal = 0
 
-		if ( ClassicEvent[1] ) then
-			for i=1,#ClassicEvent do
-				EventHandler_Register(Self, Event, ClassicEvent[i])
+		if ( Registered ) then
+			RegisteredTotal = #Registered
+			for i=1,RegisteredTotal do
+				if ( Registered[i] == Self ) then
+					return
+				end
 			end
 		else
-			EventHandler_Register(Self, Event, ClassicEvent)
+			local Trigger = EventHandler[Event.."_REGISTER"]
+			if ( Trigger and Trigger() == false ) then return end
+
+			Registered = {}
+			EVENT_OBJECT[Event] = Registered
+			EventHandler_Listener(Event, ___Register)
 		end
+
+		Registered[RegisteredTotal+1] = Self
 	end
 end
 
 local function Method_UnregisterEvent(Self, Event)
-	local ClassicEvent = CLASSIC_EVENT[Event]
+	local Registered = EVENT_OBJECT[Event]
 
-	if ( ClassicEvent ) then
-		if ( ClassicEvent[1] ) then
-			for i=1,#ClassicEvent do
-				EventHandler_Unregister(Self, Event, ClassicEvent[i])
+	if ( Registered ) then
+		local RegisteredTotal, RegisteredIndex = 0
+
+		for i=1,#Registered do
+			local Obj = Registered[i]
+			if ( Obj ) then
+				RegisteredTotal = RegisteredTotal+1
+
+				if ( Obj == Self ) then
+					RegisteredIndex = i
+					if ( RegisteredTotal > 1 ) then break end
+				end
 			end
-		else
-			EventHandler_Unregister(Self, Event, ClassicEvent)
+		end
+
+		if ( RegisteredIndex ) then
+			if ( RegisteredTotal == 1 ) then
+				local Trigger = EventHandler[Event.."_UNREGISTER"]
+				if ( Trigger and Trigger() == false ) then return end
+
+				EventHandler_Listener(Event, ___Unregister)
+				EVENT_OBJECT[Event] = nil
+			else
+				Registered[RegisteredIndex] = false
+			end
 		end
 	end
 end
 
 local function Method_RegisterUnitEvent(Self, Event, Unit1, Unit2)
-	local UnitEvent = Self.___UnitEventHandler
+	local UnitEventFrame = Self.___UnitEventHandler
 
-	if ( not UnitEvent ) then
-		UnitEvent = CreateFrame("Frame")
-		Self.___UnitEventHandler = UnitEvent
+	if ( not UnitEventFrame ) then
+		UnitEventFrame = CreateFrame("Frame")
+		Self.___UnitEventHandler = UnitEventFrame
 
-		UnitEvent:SetScript("OnEvent", function(_, Event, ...)
-			local Units = UnitEvent[Event]
+		UnitEventFrame:SetScript("OnEvent", function(_, Event, ...)
+			local Units = UnitEventFrame[Event]
 			if ( Units ) then
 				local Unit = ...
 				if ( Units[1] == Unit or Units[2] == Unit ) then
@@ -170,18 +137,18 @@ local function Method_RegisterUnitEvent(Self, Event, Unit1, Unit2)
 		end)
 
 		HookSecureFunc(Self, "UnregisterEvent", function(_, Event)
-			if ( UnitEvent[Event] ) then
-				UnitEvent[Event] = nil
-				___UnregisterEvent(UnitEvent, Event) -- Stop extra method call.
+			if ( UnitEventFrame[Event] ) then
+				UnitEventFrame[Event] = nil
+				___Unregister(UnitEventFrame, Event) -- Avoid our hook, call directly.
 			end
 		end)
 	end
 
-	local Units = UnitEvent[Event]
+	local Units = UnitEventFrame[Event]
 	if ( not Units ) then
 		Units = {}
-		UnitEvent[Event] = Units
-		UnitEvent:RegisterEvent(Event)
+		UnitEventFrame[Event] = Units
+		UnitEventFrame:RegisterEvent(Event)
 	end
 
 	Units[1] = Unit1
@@ -191,23 +158,21 @@ local function Method_RegisterUnitEvent(Self, Event, Unit1, Unit2)
 end
 
 --[[
-	MODERN EVENT TO 335 EVENT: EventHandler_AddClassicEvent
-	----
-	arg1: Modern Event
-	arg2: 335 Event (Table or String)
-
+	EventHandler: AddModernEvent
+	----------
+	arg1 (String): Modern Event
+	arg2 (String): Authentic Event
 ]]
 
-local function EventHandler_AddClassicEvent(ClassicEvent, Event)
-	CLASSIC_EVENT[ClassicEvent] = (Event) and Event or ClassicEvent
-
+local function EventHandler_AddEvent(Modern, Event)
+	EVENT_ARCHIVE[Modern] = (Event) and Event or Modern
 	if ( Event ) then
 		if ( Event[1] ) then
 			for i=1,#Event do
-				HANDLER_EVENT[Event[i]] = ClassicEvent
+				EVENT_ATLAS[Event[i]] = Modern
 			end
 		else
-			HANDLER_EVENT[Event] = ClassicEvent
+			EVENT_ATLAS[Event] = Modern
 		end
 	end
 end
@@ -220,10 +185,11 @@ HookSecureFunc(FrameMeta, "RegisterEvent", Method_RegisterEvent)
 HookSecureFunc(FrameMeta, "UnregisterEvent", Method_UnregisterEvent)
 HookSecureFunc(ButtonMeta, "RegisterEvent", Method_RegisterEvent)
 HookSecureFunc(ButtonMeta, "UnregisterEvent", Method_UnregisterEvent)
+EventHandler:SetScript("OnEvent", EventHandler_Fire)
+
+-- Module
+EventHandler.Fire = EventHandler_Fire
+EventHandler.AddEvent = EventHandler_AddEvent
 
 -- Private Namespace
 Private.EventHandler = EventHandler
-Private.EventHandler_Fire = EventHandler_Fire
-Private.EventHandler_Register = EventHandler_Register
-Private.EventHandler_Unregister = EventHandler_Unregister
-Private.EventHandler_AddClassicEvent = EventHandler_AddClassicEvent

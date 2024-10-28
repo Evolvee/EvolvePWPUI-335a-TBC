@@ -327,9 +327,9 @@ end
 
 --[ Item Event Query Handler ]
 
-local EventHandler_Fire = Private.EventHandler_Fire
-
-Private.EventHandler_AddClassicEvent("ITEM_DATA_LOAD_RESULT")
+local EventHandler = Private.EventHandler
+local EventHandler_Fire = EventHandler.Fire
+EventHandler.AddEvent("ITEM_DATA_LOAD_RESULT")
 
 function ItemEventListener:QueryItemDataStart(init)
 	if init and self.Pending or self.Pending == 2 then
