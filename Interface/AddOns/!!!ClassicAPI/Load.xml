@@ -55,4 +55,7 @@
 
 	<!-- Templates -->
 	<Include file="Templates\Load.xml" />
+
+	<!-- Technically a lib, relies on CAPI -->
+	<Include file="Lib\LibHealComm-4.0\LibHealComm-4.0.xml" />
 </Ui>

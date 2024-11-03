@@ -30,7 +30,7 @@ do
 		ctrlstun = [[Interface\Icons\Spell_Frost_FrozenCore]],
 		cyclone = 33786, -- Cyclone
 		disarm = 676, -- Disarm
-		disorient = 1776, -- Gouge
+		disorient = 11297, -- Sap
 		entrapment = 19184, -- Entrapment
 		fear = 5782, -- Fear
 		horror = 6789, -- Death Coil

@@ -11,7 +11,7 @@ local EventHandler = Private.EventHandler
 local EventHandler_Fire = EventHandler.Fire
 local _ = EventHandler.AddEvent
 
-local UnitIsConnected = UnitIsConnected
+--local UnitIsConnected = UnitIsConnected
 
 -- SPELL_DATA_LOAD_RESULT : C_Spell.lua
 -- ITEM_DATA_LOAD_RESULT : ItemUtil.lua

@@ -90,7 +90,7 @@ TPT.Default.Spells = {
 	},
 	["ROGUE"] = {
 		{1766, 10}, -- Kick
-		{2094, 120}, -- Blind
+		{2094, 90}, -- Blind
 		{8643, 20}, -- Kidney Shot
 		{26669, 180}, -- Evasion
 		{26889, 120}, -- Vanish

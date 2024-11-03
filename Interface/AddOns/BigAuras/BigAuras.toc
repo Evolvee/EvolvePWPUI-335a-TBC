@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: BigAuras
+## Author: Qblolz, Aura list reworked for TBC by Evolve
+## Notes: |@Version: 4@|
+## Version: 1.0.14 (TBC edit)
+## SavedVariables: BigAurasDB
+## OptionalDeps: OmniCC, sArena, Blizzard_ArenaUI
+## X-Sirus-Update: https://github.com/Qblolz/BigAuras/tree/master/BigAuras
+
+embeds.xml
+load.xml

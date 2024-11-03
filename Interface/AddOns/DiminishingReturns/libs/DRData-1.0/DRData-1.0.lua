@@ -206,7 +206,7 @@ Data.spells = {
 	
 	--[[ FEARS ]]--
 	-- Blind
-	[2094] = "fear",
+	[2094] = "cyclone",
 
 	-- Fear (Warlock)
 	[5782] = "fear",

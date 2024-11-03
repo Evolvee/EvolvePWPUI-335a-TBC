@@ -728,16 +728,7 @@ local barstosmooth = {
     FocusFrameManaBar = "focus",
     MainMenuExpBar = "",
     ReputationWatchStatusBar = "",
-	--[[ TEMP (checking whether this is the error culprit or not)
-    PartyMemberFrame1HealthBar = "party1",
-    PartyMemberFrame1ManaBar = "party1",
-    PartyMemberFrame2HealthBar = "party2",
-    PartyMemberFrame2ManaBar = "party2",
-    PartyMemberFrame3HealthBar = "party3",
-    PartyMemberFrame3ManaBar = "party3",
-    PartyMemberFrame4HealthBar = "party4",
-    PartyMemberFrame4ManaBar = "party4",
-	--]]
+
 }
 
 local smoothframe = CreateFrame("Frame")
@@ -791,15 +782,7 @@ local function SmoothBar(bar)
     end
 end
 
-smoothframe:SetScript("OnUpdate", function()
-    for _, plate in pairs(C_NamePlate.GetNamePlates(true)) do
-        if plate:IsVisible() then
-            local healthBar = plate:GetChildren()
-            SmoothBar(healthBar)
-        end
-    end
-    AnimationTick()
-end)
+smoothframe:SetScript("OnUpdate", AnimationTick)
 
 for k, v in pairs(barstosmooth) do
     if _G[k] then
@@ -1194,6 +1177,8 @@ local classmarkers = {
     ["MAGE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Mage",
     ["SHAMAN"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Shaman",
     ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Warlock",
+	["Shadowfiend"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Fiend",
+	["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
 }
 
 local function AddPlates(unit)
@@ -1396,60 +1381,6 @@ RAID_CLASS_COLORS = {
 };
 
 
-
-local evolvedFrame = CreateFrame("Frame")
-evolvedFrame:RegisterEvent("ADDON_LOADED")
-evolvedFrame:RegisterEvent("PLAYER_LOGIN")
-evolvedFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-evolvedFrame:RegisterEvent("GOSSIP_SHOW")
-evolvedFrame:RegisterEvent("UPDATE_BINDINGS")
---evolvedFrame:RegisterUnitEvent("UNIT_PET", "player")
-evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-evolvedFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        CustomCvar() -- Set our CVAR values
-        OnInit() -- Init tons of shit
-        UpdateBinds(self)
-        self:UnregisterEvent("PLAYER_LOGIN")
-    elseif event == "UNIT_PET" then
-        local _, type = IsInInstance()
-        if type ~= "arena" then
-            return
-        end
-        if GetRaidTargetIndex("pet") ~= 3 then
-            SetRaidTarget("pet", 3)
-        end
-    elseif event == "UPDATE_BINDINGS" then
-        UpdateBinds(self)
-    elseif event == "ADDON_LOADED" then
-        local addon = ...
-        DarkenFrames(addon)
-        self:UnregisterEvent("ADDON_LOADED")
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        local _, type = IsInInstance()
-        if type == "arena" then
-            if GetCVar("nameplateShowFriends") == "0" then
-                SetCVar("nameplateShowFriends", 1)
-            end
-            inArena = true
-        else
-            if GetCVar("nameplateShowFriends") == "1" then
-                SetCVar("nameplateShowFriends", 0)
-            end
-            inArena = false
-        end
-        -- NAMEPLATE STUFF
-    elseif event == "NAME_PLATE_UNIT_ADDED" then
-        local unit = ...
-        AddPlates(unit)
-    elseif event == "NAME_PLATE_UNIT_REMOVED" then
-        local unit = ...
-        RemovePlate(unit)
-    end
-end)
-
-
 -- Auto repair / Auto sell grey shit (3.3.5a only)
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
@@ -1489,6 +1420,52 @@ g:SetScript("OnEvent", function()
         end
     end
 end)
+
+
+local evolvedFrame = CreateFrame("Frame")
+evolvedFrame:RegisterEvent("ADDON_LOADED")
+evolvedFrame:RegisterEvent("PLAYER_LOGIN")
+evolvedFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+evolvedFrame:RegisterEvent("GOSSIP_SHOW")
+evolvedFrame:RegisterEvent("UPDATE_BINDINGS")
+evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+evolvedFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" then
+        CustomCvar() -- Set our CVAR values
+        OnInit() -- Init tons of shit
+        UpdateBinds(self)
+        self:UnregisterEvent("PLAYER_LOGIN")
+    elseif event == "UPDATE_BINDINGS" then
+        UpdateBinds(self)
+    elseif event == "ADDON_LOADED" then
+        local addon = ...
+        DarkenFrames(addon)
+        self:UnregisterEvent("ADDON_LOADED")
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        local _, type = IsInInstance()
+        if type == "arena" then
+            if GetCVar("nameplateShowFriends") == "0" then
+                SetCVar("nameplateShowFriends", 1)
+            end
+            inArena = true
+        else
+            if GetCVar("nameplateShowFriends") == "1" then
+                SetCVar("nameplateShowFriends", 0)
+            end
+            inArena = false
+        end
+        -- NAMEPLATE STUFF
+    elseif event == "NAME_PLATE_UNIT_ADDED" then
+        local unit = ...
+        AddPlates(unit)
+    elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        local unit = ...
+        RemovePlate(unit)
+    end
+end)
+
+
 
 
 COMBAT_TEXT_RESIST = "RESIST XD"

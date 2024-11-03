@@ -135,7 +135,6 @@ if Lib.gameExpansion == "wotlk" then
         [8124]  = "fear", -- Psychic Scream (Rank 2)
         [10888] = "fear", -- Psychic Scream (Rank 3)
         [10890] = "fear", -- Psychic Scream (Rank 4)
-        [2094]  = "fear", -- Blind
         [5782]  = "fear", -- Fear (Rank 1)
         [6213]  = "fear", -- Fear (Rank 2)
         [6215]  = "fear", -- Fear (Rank 3)
@@ -241,6 +240,7 @@ if Lib.gameExpansion == "wotlk" then
 
         -- Spells that DR with itself only
         [33786] = "cyclone",        -- Cyclone
+		[2094] = "cyclone",        -- Blind
         [605]   = "mind_control",   -- Mind Control
         [13181] = "mind_control",   -- Gnomish Mind Control Cap
         [67799] = "mind_control",   -- Mind Amplification Dish
