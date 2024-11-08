@@ -1,0 +1,5 @@
+## Interface: 20400
+## Title: EnergyAndManaTick
+## Notes: Energy tick and Mana tick from pfUI code
+
+EnergyAndManaTick.lua

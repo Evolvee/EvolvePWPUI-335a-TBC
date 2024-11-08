@@ -15,7 +15,7 @@
 
       <Frame parentKey="Edge" setAllPoints="true" hidden="true">
         <Layers>
-          <Layer level="ARTWORK">
+          <Layer level="BACKGROUND">
             <Texture file="Interface\AddOns\BigAuras\Libs\CircleCooldownTemplate\Cooldown\edge" parentKey="texture" setAllPoints="true" />
           </Layer>
         </Layers>

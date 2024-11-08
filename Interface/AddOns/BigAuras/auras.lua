@@ -390,6 +390,9 @@ BigAurasSpells.spells = {
 		[22734] = {category = "other", priority = 1}, -- Drink (Water)
 			[46755] = {parent = 22734},
 			[27089] = {parent = 22734},
+			[43183] = {parent = 22734},
+			[27089] = {parent = 22734},
+			[44166] = {parent = 22734},
 		[770] = {category = "other", priority = 1}, -- Fearie Fire (priest dispel prio for PartyFrames)
 			[778] = {parent = 770},
 			[9749] = {parent = 770},

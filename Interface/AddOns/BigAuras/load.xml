@@ -1,6 +1,6 @@
 <Ui>
     <Include file="Libs\CircleCooldownTemplate\CircleCooldownTemplate.xml"/>
-    <Frame name="BigAurasIconTemplate" enablemouse="true" movable="true" virtual="true">
+    <Frame name="BigAurasIconTemplate" enablemouse="false" movable="false" virtual="true">
         <Layers>
             <Layer level="BORDER">
                 <Texture parentKey="Icon" setAllPoints="true"/>
@@ -16,13 +16,13 @@
             </Layer>
         </Layers>
         <Frames>
-            <Frame parentKey="CircuitCooldown" inherits="CircleCooldownFrameTemplate">
+            <Frame parentKey="CircuitCooldown" drawEdge="true" inherits="CircleCooldownFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="0" y="0"/>
                     <Anchor point="BOTTOMRIGHT" x="0" y="0"/>
                 </Anchors>
             </Frame>
-            <Cooldown parentKey="Cooldown" inherits="CooldownFrameTemplate">
+            <Cooldown parentKey="Cooldown" drawEdge="true" inherits="CooldownFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="3" y="-3"/>
                     <Anchor point="BOTTOMRIGHT" x="-3" y="3"/>

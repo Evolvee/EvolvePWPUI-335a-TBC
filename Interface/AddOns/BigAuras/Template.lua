@@ -454,6 +454,12 @@ function BigAuras:getOrCreate(unit)
         frame.CircuitCooldown:SetFrameLevel(frame:GetFrameLevel())
         frame.CircuitCooldown:SetAllPoints()
         frame.CircuitCooldown:SetReverse(true)
+		
+		--custom shit xd
+		--frame.CircuitCooldown:SetDrawEdge(true)
+		frame.Cooldown:SetDrawEdge(true)
+		--end of custom shit xdd
+		
 
         frame.Cooldown:SetFrameLevel(frame:GetFrameLevel())
         frame.Cooldown:SetAllPoints()

@@ -1177,8 +1177,8 @@ local classmarkers = {
     ["MAGE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Mage",
     ["SHAMAN"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Shaman",
     ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Warlock",
-	["Shadowfiend"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Fiend",
-	["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
+    ["Shadowfiend"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Fiend",
+    ["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
 }
 
 local function AddPlates(unit)
@@ -1193,7 +1193,7 @@ local function AddPlates(unit)
     -- Change border plate texture art
     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
 
-    -- hide level and expand healthbar
+    -- Hide level and expand healthbar
     level:Hide()
     bossicon:Hide()
     raidicon:Hide()
@@ -1221,6 +1221,7 @@ local function AddPlates(unit)
     -- Class icon on friendly plates in arena
     local _, unitClass = UnitClass(unit)
     local _, type = IsInInstance()
+    local unitName = UnitName(unit)
 
     if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then
@@ -1235,14 +1236,28 @@ local function AddPlates(unit)
                 nameplate.classTexture:Show()
             end
         end
-
         visibilityPlate(nameplate, true)
     else
-        if nameplate.classTexture then
-            nameplate.classTexture:Hide()
+        -- Check for own pet textures (Shadowfiend and Elemental)
+        if UnitIsUnit(unit, "pet") and (unitName == "Shadowfiend" or unitName == "Water Elemental") then
+            if not nameplate.classTexture then
+                nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
+                nameplate.classTexture:SetSize(35, 35)
+                nameplate.classTexture:SetPoint("CENTER", nameplate, "CENTER", 0, 20)
+            end
+            if unitName == "Shadowfiend" then
+                nameplate.classTexture:SetTexture(classmarkers["Shadowfiend"])
+            elseif unitName == "Water Elemental" then
+                nameplate.classTexture:SetTexture(classmarkers["Elemental"])
+            end
+            nameplate.classTexture:Show()
+            visibilityPlate(nameplate, true)
+        else
+            if nameplate.classTexture then
+                nameplate.classTexture:Hide()
+            end
+            visibilityPlate(nameplate, false)
         end
-
-        visibilityPlate(nameplate, false)
     end
 
     -- This is needed to restore scale due to the ShrinkPlates (hunter snake trap)
@@ -1471,7 +1486,7 @@ end)
 COMBAT_TEXT_RESIST = "RESIST XD"
 
 --Login message informing all scripts of this file were properly executed
-ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client (v0.1 BETA) Loaded successfully!", 0, 205, 255)
+ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client v1.0 Loaded successfully!", 0, 205, 255)
 ChatFrame1:AddMessage("Check for updates at:", 0, 205, 255)
 ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-335a-TBC", 0, 205, 255)
 
