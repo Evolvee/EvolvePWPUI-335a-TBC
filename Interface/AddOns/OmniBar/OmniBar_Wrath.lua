@@ -107,7 +107,7 @@ addon.Resets = {
     --[[ Summon Felhunter
         - Spell Lock
       ]]
-    [691] = { 19244 },
+    [691] = { 19244, 19647 },
 }
 
 addon.Cooldowns = {
@@ -1469,6 +1469,7 @@ addon.Cooldowns = {
     --]]
 
     [642] = { duration = 300, class = "PALADIN", adjust = { Protection = -60 } }, -- Divine Shield
+		[1020] = { parent = 642 }, -- Divine Shield r2
 
     --[[ Hammer of Justice Modifiers
 
@@ -1533,9 +1534,9 @@ addon.Cooldowns = {
 
     --]]
 
-    [1022] = { duration = 300, class = "PALADIN", adjust = -120 }, -- Hand of Protection (Rank 1)
-        [5599] = { parent = 1022 }, -- Hand of Protection (Rank 2)
-        [10278] = { parent = 1022 }, -- Hand of Protection (Rank 3)
+    [1022] = { duration = 300, class = "PALADIN", adjust = -120 }, -- Blessing of Protection r1
+        [5599] = { parent = 1022 }, -- Blessing of Protection r2
+        [10278] = { parent = 1022 }, -- Blessing of Protection r3
 
     [1038] = { duration = 120, class = "PALADIN" }, -- Hand of Salvation
 
@@ -3921,7 +3922,7 @@ addon.Cooldowns = {
      -- Rogue
 
     [408] = { duration = 20, class = "ROGUE" }, -- Kidney Shot (Rank 1)
-    [8643] = { parent = 408 }, -- Kidney Shot (Rank 2)
+		[8643] = { parent = 408 }, -- Kidney r2
 
     --[[ Distract Modifiers
 
@@ -3938,7 +3939,11 @@ addon.Cooldowns = {
     [1725] = { duration = 30, class = "ROGUE", adjust = { Subtlety = -10 } }, -- Distract
 
     [1766] = { duration = 10, class = "ROGUE", default = true }, -- Kick
-
+		[1767] = { parent = 1766 }, -- Kick r2
+        [1768] = { parent = 1766 }, -- Kick r3
+        [1769] = { parent = 1766 }, -- Kick r4
+		[38768] = { parent = 1766 }, -- Kick r5
+		
     [1776] = { duration = 10, class = "ROGUE" }, -- Gouge
 
     --[[ Stealth Modifiers
@@ -3996,7 +4001,7 @@ addon.Cooldowns = {
 
     --]]
 
-    [2094] = { duration = 180, class = "ROGUE", adjust = -60 }, -- Blind
+    [2094] = { duration = 150, class = "ROGUE", adjust = -60 }, -- Blind
 
     --[[ Sprint Modifiers
 
@@ -4126,6 +4131,9 @@ addon.Cooldowns = {
     -- Warrior
 
     [72] = { duration = 12, class = "WARRIOR", default = true }, -- Shield Bash
+		[1671] = { parent = 72 }, -- Shield Bash r2
+        [1672] = { parent = 72 }, -- Shield Bash r3
+        [29704] = { parent = 72 }, -- Shield Bash r4
 
     --[[ Charge Modifiers
 
@@ -4268,6 +4276,7 @@ addon.Cooldowns = {
         [47502] = { parent = 6343 }, -- Thunder Clap (Rank 9)
 
     [6552] = { duration = 10, class = "WARRIOR", default = true }, -- Pummel
+		[6554] = { parent = 6552 }, -- Pummel r2
 
     --[[ Revenge Modifiers
 

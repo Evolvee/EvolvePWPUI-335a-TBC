@@ -71,7 +71,7 @@ TPT.Default.Spells = {
 	},
 	["PRIEST"] = {
 		{6346, 180}, -- Fear Ward
-		{10890, 27}, -- Psychic Scream
+		{10890, 30}, -- Psychic Scream
 		{34433, 300}, -- Shadowfiend
 		{48158, 12}, -- Shadow Word: Death
 		{48172, 120}, -- Desperate Prayer
