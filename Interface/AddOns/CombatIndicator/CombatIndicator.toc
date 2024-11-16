@@ -1,3 +1,4 @@
-## Interface: 30400
+## Interface: 30300
 ## Title: CombatIndicator
+## Author: Xyz
 CombatIndicator.lua

@@ -128,7 +128,10 @@ function ACDFrame.Ticker()
         elseif (self.countdown and self.countdown == 0) then
             -- Display for countdown 0
             self.ACDNumOne:Show()
-            self.ACDNumOne:SetTexture(self.texturePath .. self.faction)
+			-- Display a random blue-haired Blizzard employee of the year
+			local randomTexture = math.random(1, 7) -- Generate a random number between 1 and 7
+			self.ACDNumOne:SetTexture("Interface\\Addons\\TextureScript\\Gladdy\\BlizzardEmployees\\" .. randomTexture)
+
             self.ACDNumOnes:Hide()
             self.ACDNumTens:Hide()
             self.ACDNumFrame:SetScale(1.0)

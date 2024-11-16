@@ -1,8 +1,7 @@
-## Interface: 40400, 40401, 40402, 40403, 40404, 40405
+## Interface: 30300
 ## Title: DeBuffFilter
-## Version: v4.8
-## Notes: discord.gg/CtxPasSQnQ
-## Author: Xyz, Asuri (bugs, jk)
+## Version: v4.8 (3.3.5a TBC)
+## Author: Xyz, Asuri, Evolve
 ## SavedVariables: DeBuffFilterDB
 
 Embeds.xml

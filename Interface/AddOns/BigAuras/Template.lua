@@ -458,6 +458,7 @@ function BigAuras:getOrCreate(unit)
 		--custom shit xd
 		--frame.CircuitCooldown:SetDrawEdge(true)
 		frame.Cooldown:SetDrawEdge(true)
+		frame.CircuitCooldown:SetSwipeColor(0, 0, 0, 1)
 		--end of custom shit xdd
 		
 

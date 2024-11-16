@@ -1,5 +1,5 @@
 ## Interface: 30300
-## Title: BindPad
+## Title: BindPad (Evolve Edit)
 ## Version: 2.2.4
 ## Author: Tageshi
 ## Notes: BindPad - Keybinding UI for Items, Spells and Macroes. Drag anything into BindPad's slot and click it to bind a key.

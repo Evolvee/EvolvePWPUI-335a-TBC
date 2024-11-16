@@ -1,4 +1,4 @@
-## Interface: 30403
+## Interface: 30300
 ## Author: Evolve, Xyz
 ## Notes: Button that enables to switch between two OmniBarFrames on demand.
 ## Version: 1

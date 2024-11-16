@@ -281,7 +281,7 @@ function DeBuffFilter:SetupOptions()
         plugins = {},
         args = {
             author = {
-                name = "|cff4693E6Author:|r Xyz - discord.gg/CtxPasSQnQ",
+                name = "|cff4693E6Author:|r Xyz",
                 type = "description"
             },
             version = {

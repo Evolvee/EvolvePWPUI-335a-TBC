@@ -130,7 +130,7 @@
 		<Scripts>
 			<OnLoad>
 				self:ClearAllPoints()
-				self:SetPoint("TOP", GameMenuButtonContinue, "BOTTOM", 0, -25)
+				self:SetPoint("TOP", GameMenuButtonContinue, "BOTTOM", 0, 4)
 			</OnLoad>
 			<OnClick>
 				if IsShiftKeyDown() and IsControlKeyDown() and IsAltKeyDown() then

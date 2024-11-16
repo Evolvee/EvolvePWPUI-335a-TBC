@@ -1,5 +1,5 @@
 ## Interface: 30300
-## Title: Gladdy - WotLK
+## Title: Gladdy - WotLK (Evolve Edit)
 ## Version: 2.39-Release
 ## Notes: The most powerful arena AddOn for WoW 3.3.5
 ## Author: XiconQoo, DnB_Junkee, Knall, Tsoukie
