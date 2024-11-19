@@ -1120,7 +1120,7 @@ local function PlateScript(...)
     end
 
     if isSourceEnemy and instanceType == "arena" and ex1 == 8143 and action == "SPELL_CAST_SUCCESS" then
-        PlaySound(12889)
+        PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.wav", "master")
     end
 
     if destName == "Tremor Totem" then

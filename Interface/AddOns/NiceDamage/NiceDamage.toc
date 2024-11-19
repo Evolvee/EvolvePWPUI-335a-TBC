@@ -1,4 +1,4 @@
-## Interface: 30400
+## Interface: 30300
 ## Title: NiceDamage
 ## DefaultState: Enabled
 ## Author: Montyburns

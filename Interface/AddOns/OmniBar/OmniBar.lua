@@ -151,7 +151,7 @@ function OmniBar:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnEnable")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnEnable")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	--self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE", "GetSpecs")
 	self:RegisterComm("OmniBarSpell", function(_, payload, _, sender)
 		if (not UnitExists(sender)) or sender == PLAYER_NAME then return end
@@ -396,12 +396,10 @@ end
 
 -- create a lookup table since CombatLogGetCurrentEventInfo() returns 0 for spellId
 local SPELL_ID_BY_NAME
-if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
 	SPELL_ID_BY_NAME = {}
 	for id, value in pairs(addon.Cooldowns) do
 		if (not value.parent) then SPELL_ID_BY_NAME[GetSpellInfo(id)] = id end
 	end
-end
 
 function OmniBar:AddCustomSpells()
 	-- Restore any overrides
@@ -927,7 +925,16 @@ end
 -- Needed to track PvP trinkets and possibly other spells that do not show up in COMBAT_LOG_EVENT_UNFILTERED
 function OmniBar:UNIT_SPELLCAST_SUCCEEDED(event, unit, spellName, _)
 	local spellID = SPELL_ID_BY_NAME and SPELL_ID_BY_NAME[spellName]
-
+	
+	if spellName == "Summon Felhunter" then
+                local name = UnitName(unit)
+                if not name or not self.spellCasts[name] then return end
+                self.spellCasts[name][19244] = nil
+                self.spellCasts[name][19647] = nil
+                self:SendMessage("OmniBar_ResetSpellCast", name, 19244)
+                self:SendMessage("OmniBar_ResetSpellCast", name, 19647)
+	end
+	
 	if (not addon.Cooldowns[spellID]) then return end
 
 	local sourceFlags = 0
@@ -941,6 +948,7 @@ function OmniBar:UNIT_SPELLCAST_SUCCEEDED(event, unit, spellName, _)
 	end
 
 	self:AddSpellCast(event, UnitGUID(unit), GetUnitName(unit, true), sourceFlags, spellID)
+
 end
 
 function OmniBar:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
@@ -1388,7 +1396,7 @@ function OmniBar_AddIcon(self, info)
 				end
 
 				-- if it's the same source, reuse the icon
-				if info.sourceGUID and IconIsUnit(self.active[i].sourceGUID, info.sourceGUID) then
+				if info.sourceGUID and (self.active[i].sourceName == info.ownerName or IconIsUnit(self.active[i].sourceGUID, info.sourceGUID)) then
 					duplicate = nil
 					icon = self.active[i]
 					break

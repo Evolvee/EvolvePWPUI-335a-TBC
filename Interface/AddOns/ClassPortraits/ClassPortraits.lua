@@ -98,10 +98,11 @@ hooksecurefunc("UnitFramePortrait_Update", function(self)
 end)
 
 -- character sheet frame
-hooksecurefunc("CharacterFrame_OnShow", function()
+CharacterFrame:HookScript("OnShow", function()
    UpdatePortrait(CharacterFramePortrait, "player")
 end)
-hooksecurefunc("CharacterFrame_OnEvent", function(event)
+
+CharacterFrame:HookScript("OnEvent", function(self, event)
    if event == "UNIT_PORTRAIT_UPDATE" then
       UpdatePortrait(CharacterFramePortrait, "player")
    end
@@ -125,7 +126,7 @@ addonLoadEvent:SetScript("OnEvent", function(self, e, addon)
    end
    -- inspect frame
    if addon == "Blizzard_InspectUI" then
-      hooksecurefunc("InspectFrame_OnShow", function()
+      InspectFrame:HookScript("OnShow", function()
          UpdatePortrait(InspectFramePortrait, InspectFrame.unit)
       end)
       hooksecurefunc("InspectFrame_UnitChanged", function()
@@ -141,7 +142,16 @@ addonLoadEvent:SetScript("OnEvent", function(self, e, addon)
 end)
 
 -- LFG, quest log, spellbook, and social window icons
--- (LFG not introduced on Classic YET) LFGParentFrame:HookScript("OnShow", function() UpdatePortrait(LFGParentFrameIcon, "player") end)
 UpdatePortrait((select(1, QuestLogFrame:GetRegions())), "player")
 UpdatePortrait((SpellBookFrame:GetRegions()), "player")
 UpdatePortrait((FriendsFrame:GetRegions()), "player")
+PVPFrame:HookScript("OnShow", function()
+    C_Timer.After(0.01, function() 
+        PVPFramePortrait:SetTexture("Interface\\Addons\\ClassPortraits\\MYSKIN") 
+    end)
+end)
+
+LFDParentFrame:HookScript("OnShow", function()
+    LFDParentFramePortraitIcon:SetTexture("Interface\\Addons\\ClassPortraits\\MYSKIN")
+    LFDParentFramePortraitTexture:SetAlpha(0)
+end)

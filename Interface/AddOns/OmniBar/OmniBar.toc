@@ -1,8 +1,8 @@
 ## Interface: 30300
 ## Title: OmniBar
 ## Notes: Tracks enemy cooldowns
-## Version: 1.0.7
-## Author: Jordon, Tsoukie
+## Version: 1.3.3.7
+## Author: Jordon, Tsoukie, Xyz
 ## SavedVariables: OmniBarDB
 ## RequiredDeps: !!!ClassicAPI
 
