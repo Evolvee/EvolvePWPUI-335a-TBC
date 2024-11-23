@@ -1,17 +1,31 @@
 local _, Private = ...
 
 local BitBand = bit.band
-local LibStub = LibStub
 local GetTime = GetTime
 local UnitGUID = UnitGUID
 local UnitName = UnitName
-local FindUnitID = Private.FindUnitID
 local EventHandler = Private.EventHandler
 local EventHandler_Fire = EventHandler.Fire
+local GetNumRaidMembers = GetNumRaidMembers
+local GetNumPartyMembers = GetNumPartyMembers
 
 local RESCOMM
 local HEALCOMM
 local HEALCOMM_PLAYER_GUID
+
+local UNIT_INDEX = {"player", "pet", "target", "focus"}
+
+for i=1,4 do
+	local Index = #UNIT_INDEX+1
+	UNIT_INDEX[Index] = "party"..i
+	UNIT_INDEX[Index+1] = "partypet"..i
+end
+
+for i=1, 40 do
+	local Index = #UNIT_INDEX+1
+	UNIT_INDEX[Index] = "raid"..i
+	UNIT_INDEX[Index+1] = "raidpet"..i
+end
 
 --[[
 	FUNCTIONS
@@ -19,8 +33,12 @@ local HEALCOMM_PLAYER_GUID
 
 function UnitGetIncomingHeals(Unit, Healer, GUID)
 	if ( Unit ) then
-		if ( HEALCOMM == nil ) then
+		if ( HEALCOMM == nil and LibStub ) then
 			HEALCOMM = LibStub:GetLibrary("LibHealComm-4.0", true) or false
+
+			if ( HEALCOMM and not HEALCOMM_PLAYER_GUID ) then
+				HEALCOMM_PLAYER_GUID = UnitGUID("player")
+			end
 		end
 
 		if ( HEALCOMM ) then
@@ -28,7 +46,7 @@ function UnitGetIncomingHeals(Unit, Healer, GUID)
 				Unit = UnitGUID(Unit)
 			end
 
-			return HEALCOMM:GetHealAmount(Unit, HEALCOMM.CASTED_HEALS, GetTime() + 5, UnitGUID("player"))
+			return HEALCOMM:GetHealAmount(Unit, HEALCOMM.CASTED_HEALS, GetTime() + 5, HEALCOMM_PLAYER_GUID)
 		end
 	end
 end
@@ -43,7 +61,7 @@ end
 
 function UnitHasIncomingResurrection(Unit)
 	if ( Unit ) then
-		if ( RESCOMM == nil ) then
+		if ( RESCOMM == nil and LibStub ) then
 			RESCOMM = LibStub:GetLibrary("LibResComm-1.0", true) or false
 		end
 		return (RESCOMM) and RESCOMM:IsUnitBeingRessed(UnitName(Unit))
@@ -56,9 +74,16 @@ end
 ]]
 
 local function UNIT_HEAL_PREDICTION(Limit, GUID, ...)
-	local UnitID, Limit = FindUnitID(GUID, Limit)
-	if ( UnitID ) then
-		EventHandler_Fire(nil, "UNIT_HEAL_PREDICTION", UnitID)
+	if ( not Limit ) then
+		local Raid = GetNumRaidMembers()
+		Limit = 4 + (Raid > 0 and 8 + (Raid*2) or (GetNumPartyMembers()*2))
+	end
+
+	for i=1, Limit do
+		local UnitID = UNIT_INDEX[i]
+		if ( GUID == UnitGUID(UnitID) ) then
+			EventHandler_Fire(nil, "UNIT_HEAL_PREDICTION", UnitID)
+		end
 	end
 
 	if ( ... ) then
@@ -77,12 +102,10 @@ local function HealComm_ModifierChanged(_, _, SrcGUID)
 end
 
 function EventHandler:UNIT_HEAL_PREDICTION_REGISTER()
-	if ( not HEALCOMM_PLAYER_GUID ) then
-		if ( HEALCOMM == nil ) then
-			HEALCOMM = LibStub:GetLibrary("LibHealComm-4.0", true) or false
-		end
+	if ( HEALCOMM == nil and LibStub ) then
+		HEALCOMM = LibStub:GetLibrary("LibHealComm-4.0", true) or false
 
-		if ( HEALCOMM ) then
+		if ( HEALCOMM and not HEALCOMM_PLAYER_GUID ) then
 			HEALCOMM_PLAYER_GUID = UnitGUID("player")
 		end
 	end

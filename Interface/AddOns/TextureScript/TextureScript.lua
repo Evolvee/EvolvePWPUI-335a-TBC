@@ -111,10 +111,38 @@ local function ColorGuildTabs()
         if not class then
             break
         end
-        color = RAID_CLASS_COLORS[class]
+        color = CUSTOM_CLASS_COLORS[class]
         _G["GuildFrameButton" .. i .. "Class"]:SetTextColor(color.r, color.g, color.b)
     end
 end
+
+-- adding modified class colours to chat
+local newClassColors = {}
+        for class, color in pairs(CUSTOM_CLASS_COLORS) do
+            newClassColors[class] =  color
+        end
+
+        setfenv(GetColoredName, setmetatable({}, {
+            __index = function(t, k)
+                if k == "RAID_CLASS_COLORS" then
+                    return newClassColors
+                else
+                    return _G[k]
+                end
+            end
+        }))
+		
+-- adding modified class colours to chat
+hooksecurefunc("WhoList_Update", function()
+    local offset = FauxScrollFrame_GetOffset(WhoListScrollFrame)
+    for i = 1, WHOS_TO_DISPLAY do
+        local _, _, _, _, _, _, class = GetWhoInfo(i + offset)
+        local color = class and CUSTOM_CLASS_COLORS[class]
+        if color then
+            _G["WhoFrameButton"..i.."Class"]:SetTextColor(color.r, color.g, color.b)
+        end
+    end
+end)
 
 local tooltipOwnerBlacklist = {
     "ActionButton%d+$", -- bar buttons
@@ -178,7 +206,7 @@ hooksecurefunc("PartyMemberFrame_UpdateMemberHealth", function(self)
     local prefix = self:GetName()
 
     local _, class = UnitClass(self.unit)
-    local c = RAID_CLASS_COLORS[class]
+    local c = CUSTOM_CLASS_COLORS[class]
     if c then
         _G[prefix .. "HealthBar"]:SetStatusBarColor(c.r, c.g, c.b)
     end
@@ -535,6 +563,8 @@ local function WAHK(button, ok)
     if not button then
         return
     end
+	
+	if button =="MultiBarBottomRightButton3" then return end --3.3.5a hackfix for First Aid usage (was interrupting before this)
 
     local btn = _G[button]
     if not btn then
@@ -808,7 +838,7 @@ local function colour(statusbar, unit)
             if (UnitIsConnected(unit) and UnitClass(unit) and unit ~= "player" and not statusbar.lockColor) then
                 -- ArenaFrames lock/unlock color
                 local _, class = UnitClass(unit)
-                local c = RAID_CLASS_COLORS[class]
+                local c = CUSTOM_CLASS_COLORS[class]
                 if c then
                         statusbar:SetStatusBarColor(c.r, c.g, c.b)
                 end
@@ -939,7 +969,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 
         -- Add class-coloured names on mouseover tooltips
         local _, class = UnitClass(unit)
-        local color = class and RAID_CLASS_COLORS[class]
+        local color = class and CUSTOM_CLASS_COLORS[class]
         if color then
             local text = GameTooltipTextLeft1:GetText()
             if text then
@@ -1068,7 +1098,7 @@ local function HandleNewNameplate(nameplate, unit)
 
     local creatureType, _, _, _, _, npcId = string.split("-", UnitGUID(unit))
     -- the rest of nameplate stuff
-    if name:match("Totem") and not name:match("Tremor Totem") then
+    if name:match("Totem") and UnitCreatureType(unit) == "Totem" and not name:match("Tremor Totem") then
         HideNameplate(nameplate)
     elseif (HideNameplateUnits[name] or HideNameplateUnits[npcId])
             or (creatureType == "Pet" and not ShowNameplatePetIds[npcId]) then
@@ -1242,7 +1272,7 @@ local function AddPlates(unit)
         if UnitIsUnit(unit, "pet") and (unitName == "Shadowfiend" or unitName == "Water Elemental") then
             if not nameplate.classTexture then
                 nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
-                nameplate.classTexture:SetSize(35, 35)
+                nameplate.classTexture:SetSize(30, 30)
                 nameplate.classTexture:SetPoint("CENTER", nameplate, "CENTER", 0, 20)
             end
             if unitName == "Shadowfiend" then
@@ -1381,21 +1411,6 @@ MiniMapBattlefieldFrame:HookScript("OnDoubleClick", function()
 end)
 
 
--- Experimental class-colour changes
-RAID_CLASS_COLORS = {
-    ["HUNTER"] = { r = 0.6, g = 0.85, b = 0.2 },
-    ["WARLOCK"] = { r = 0.4, g = 0, b = 0.8 },
-    ["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0 },
-    ["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73 },
-    ["MAGE"] = { r = 0, g = 0.82, b = 1 },
-    ["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41 },
-    ["DRUID"] = { r = 1.0, g = 0.49, b = 0.04 },
-    ["SHAMAN"] = { r = 0.0, g = 0.44, b = 0.87 },
-    ["WARRIOR"] = { r = 0.7, g = 0.56, b = 0.42 },
-    ["DEATHKNIGHT"] = { r = 0.77, g = 0.12 , b = 0.23 },
-};
-
-
 -- Auto repair / Auto sell grey shit (3.3.5a only)
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
@@ -1435,6 +1450,42 @@ g:SetScript("OnEvent", function()
         end
     end
 end)
+
+
+-- Skip certain gossip_menu windows for vendors and especially arena/bg NPCs --> can be bypassed by pressing ctrl/alt/shift
+
+local gossipSkipType = {
+    ["banker"]=1,
+    ["taxi"]=1,
+    ["trainer"]=1,
+    ["vendor"]=1,
+    ["battlemaster"]=1,
+}
+
+local skipEventFrame = CreateFrame("frame")
+skipEventFrame:SetScript("OnEvent", function(self)
+    if not IsShiftKeyDown() and GetNumGossipOptions() == 1 and GetNumGossipActiveQuests() == 0 and GetNumGossipAvailableQuests() == 0 then
+        local gossipText, gossipType = GetGossipOptions()
+        if gossipSkipType[gossipType] then
+            SelectGossipOption(1)
+            if gossipType == "taxi" then
+                Dismount()
+            end
+            return
+        end
+    end
+    if GetNumGossipOptions() > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
+        local options = {GetGossipOptions()}
+        for i=1,GetNumGossipOptions() do
+            if options[(i-1)*2+2] == "vendor" then
+                SelectGossipOption(i)
+                return
+            end
+        end
+    end
+end)
+skipEventFrame:RegisterEvent("GOSSIP_SHOW")
+
 
 
 local evolvedFrame = CreateFrame("Frame")

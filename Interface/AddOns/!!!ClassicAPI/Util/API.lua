@@ -65,8 +65,9 @@ end
 function PassClickToParent(Self, ...)
 	-- This is def not working on secure frames.
 	local Parent = Self:GetParent()
-	if ( Parent.OnClick ) then
-		Parent:GetScript("OnClick")(Parent, ...)
+	local OnClick = Parent:GetScript("OnClick")
+	if ( OnClick ) then
+		OnClick(Parent, ...)
 	end
 end
 

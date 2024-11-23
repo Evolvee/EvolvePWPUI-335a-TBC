@@ -3,15 +3,12 @@ if ( ColorMixin and not ColorMixin.___CAPI ) then return end
 ColorMixin.___CAPI = nil
 
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local Mixin = Mixin
 
-for k, v in pairs(RAID_CLASS_COLORS) do
-	if ( v.colorStr ) then
-		break
-	end
-
-	local colorMixin = CreateColor(v.r, v.g, v.b, 1);
-	colorMixin.colorStr = colorMixin:GenerateHexColor();
-	RAID_CLASS_COLORS[k] = colorMixin;
+for _, classColor in pairs(RAID_CLASS_COLORS) do
+	if ( classColor.colorStr ) then break end
+	Mixin(classColor, ColorMixin);
+	classColor.colorStr = classColor:GenerateHexColor();
 end
 
 function ExtractColorValueFromHex(str, index)

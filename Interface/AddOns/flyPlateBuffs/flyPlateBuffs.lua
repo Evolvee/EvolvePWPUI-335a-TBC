@@ -935,7 +935,7 @@ fPB.Events:SetScript("OnEvent", function(self, event, ...)
 	elseif event == "NAME_PLATE_UNIT_REMOVED" then
 		Nameplate_Removed(...)
 	elseif event == "UNIT_AURA" then
-		if strmatch((...),"nameplate%d+") then
+		if ... and strmatch((...),"nameplate%d+") then
 			UpdateUnitAuras(...)
 		end
 	end

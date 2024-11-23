@@ -143,6 +143,11 @@ BigAurasSpells.spells = {
         [2094]= {category = "crowdControl",priority = 1},	-- Blind
         [1833]= {category = "crowdControl",priority = 1},	-- Cheap Shot
         [1776]= {category = "crowdControl",priority = 1},	-- Gouge
+			[1777] = {parent = 1776},
+			[8629] = {parent = 1776},
+			[11285] = {parent = 1776},
+			[11286] = {parent = 1776},
+			[38764] = {parent = 1776},
         [8643]= {category = "crowdControl",priority = 1},	-- Kidney Shot
             [408] = {parent = 8643},
         [51724]= {category = "crowdControl",priority = 1},	-- Sap

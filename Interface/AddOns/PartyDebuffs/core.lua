@@ -18,6 +18,7 @@ local blacklist = {
     [GetSpellInfo(8647)] = true, -- Expose Armor
     [GetSpellInfo(6343)] = true, -- Thunder Clap
     [GetSpellInfo(29836)] = true, -- Blood Frenzy
+	[GetSpellInfo(33191)] = true, -- Misery
 }
 
 local function UpdateDebuffs(frame, unit)
@@ -115,7 +116,7 @@ local gg = CreateFrame("Frame")
 gg:RegisterEvent("UNIT_AURA")
 gg:RegisterEvent("PLAYER_LOGIN")
 gg:SetScript("OnEvent", function(self, event, arg1)
-    if (event == "UNIT_AURA" and arg1:match("party%d")) then
+    if (event == "UNIT_AURA" and arg1 and arg1:match("party%d")) then
         local nr = arg1:match("%d")
         local frame = _G["PartyMemberFrame" .. nr]
         if arg1 ~= frame.unit then return end
