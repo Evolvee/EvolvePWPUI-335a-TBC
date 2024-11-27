@@ -786,20 +786,26 @@ local function ShouldAuraBeLarge(caster)
     end
 end
 
-local function isCircular(debuffs, buffs)
-    local frame = debuffs
-    while frame do
-        local _, x = frame:GetPoint()
-        if not x then
-            return false
+local function safeSetPoint(frame, point, relativeTo, relativePoint, x, y)
+    if not frame or not relativeTo then return end
+
+    local current = relativeTo
+    while current do
+        if current == frame then
+            print("Circular dependency detected. Bugsack error?")
+            frame:ClearAllPoints()
+            frame:SetPoint(point, relativeTo:GetParent(), relativePoint, x, y)
+            return
         end
-        if x == buffs then
-            return true
-        end
-        frame = x
+
+        local _, parent = current:GetPoint()
+        current = parent
     end
-    return false
+
+    frame:ClearAllPoints()
+    frame:SetPoint(point, relativeTo, relativePoint, x, y)
 end
+
 
 local function UpdateBuffAnchor(self, buffName, numDebuffs, anchorBuff, size, offsetX, offsetY, mirrorVertically, newRow)
     --For mirroring vertically
@@ -828,14 +834,9 @@ local function UpdateBuffAnchor(self, buffName, numDebuffs, anchorBuff, size, of
             -- unit is friendly or there are no debuffs...buffs start on top
             buffName:SetPoint(point .. "LEFT", self, relativePoint .. "LEFT", AURA_START_X, startY);
         else
-            if isCircular(self.debuffz, self.buffz) then
-                self.debuffz:ClearAllPoints()
-                self.debuffz:SetPoint(point .. "LEFT", self, point .. "LEFT", 0, 0)
-                self.debuffz:SetPoint(relativePoint .. "LEFT", self, relativePoint .. "LEFT", 0, -auraOffsetY)
-            end
-            -- unit is not friendly and we have debuffs...buffs start on bottom
-            buffName:SetPoint(point .. "LEFT", self.debuffz, relativePoint .. "LEFT", 0, -offsetY);
+            safeSetPoint(buffName, point .. "LEFT", self.debuffz, relativePoint .. "LEFT", 0, -offsetY);
         end
+
         self.buffz:ClearAllPoints()
         self.buffz:SetPoint(point .. "LEFT", buffName, point .. "LEFT", 0, 0);
         self.buffz:SetPoint(relativePoint .. "LEFT", buffName, relativePoint .. "LEFT", 0, -auraOffsetY);
@@ -1389,7 +1390,9 @@ DeBuffFilter.event:SetScript("OnEvent", function(self)
     end
 
     TargetFrameSpellBar:SetScale(DeBuffFilter.db.profile.targetCastBarSize)
-    FocusFrameSpellBar:SetScale(DeBuffFilter.db.profile.focusCastBarSize)
+    if FocusFrameSpellBar then
+        FocusFrameSpellBar:SetScale(DeBuffFilter.db.profile.focusCastBarSize)
+    end
 
     playerClass = select(2, UnitClass("player"))
 end)

@@ -132,7 +132,7 @@ local newClassColors = {}
             end
         }))
 		
--- adding modified class colours to chat
+-- adding modified class colours to who-list
 hooksecurefunc("WhoList_Update", function()
     local offset = FauxScrollFrame_GetOffset(WhoListScrollFrame)
     for i = 1, WHOS_TO_DISPLAY do
@@ -934,10 +934,11 @@ GameTooltip:HookScript("OnShow", function(self, ...)
     end
 end)
 
+-- Commented out - on 3.3.5a handled with MoveAnything itself
 --increasing bufframe debuff size
-hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
-    _G[buttonName .. index]:SetScale(1.23)
-end)
+--hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
+--    _G[buttonName .. index]:SetScale(1.23)
+--end)
 
 
 -- Hide HealthBar under unit tooltips + Hide Titles, PVP flag and Guild Names from Player tooltips
@@ -1486,6 +1487,24 @@ skipEventFrame:SetScript("OnEvent", function(self)
 end)
 skipEventFrame:RegisterEvent("GOSSIP_SHOW")
 
+
+-- Attemt to fix shit Warmane error
+do
+        local originalFunc = LFDQueueFrameRandomCooldownFrame_OnEvent
+        local originalScript = LFDQueueFrameCooldownFrame:GetScript("OnEvent")
+        LFDQueueFrameRandomCooldownFrame_OnEvent = function(self, event, unit, ...)
+            if event == "UNIT_AURA" and not unit then return end
+            originalFunc(self, event, unit, ...)
+        end
+        if originalFunc == originalScript then
+            LFDQueueFrameCooldownFrame:SetScript("OnEvent", LFDQueueFrameRandomCooldownFrame_OnEvent)
+        else
+            LFDQueueFrameCooldownFrame:SetScript("OnEvent", function(self, event, unit, ...)
+                if event == "UNIT_AURA" and not unit then return end
+                originalScript(self, event, unit, ...)
+            end)
+        end
+    end
 
 
 local evolvedFrame = CreateFrame("Frame")

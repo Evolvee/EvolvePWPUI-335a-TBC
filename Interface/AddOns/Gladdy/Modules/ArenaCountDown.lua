@@ -112,7 +112,6 @@ function ACDFrame.Ticker()
             self.ACDNumTens:SetTexture(self.texturePath .. tens)
             self.ACDNumOnes:SetTexture(self.texturePath .. ones)
             self.ACDNumFrame:SetScale(0.7)
-
         elseif (self.countdown and self.countdown < 10 and self.countdown > 0) then
             -- Display has 1 digit for numbers 1-9
             local path = self.countdown

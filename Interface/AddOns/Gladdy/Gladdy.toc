@@ -1,6 +1,6 @@
 ## Interface: 30300
-## Title: Gladdy - WotLK (Evolve Edit)
-## Version: 2.39-Release
+## Title: Gladdy
+## Version: 2.45-Release
 ## Notes: The most powerful arena AddOn for WoW 3.3.5
 ## Author: XiconQoo, DnB_Junkee, Knall, Tsoukie
 ## SavedVariables: GladdyXZ
@@ -16,6 +16,7 @@ Frame.lua
 Options.lua
 Constants_shared.lua
 Constants_Wrath.lua
+Constants_BCC.lua
 ImportStrings.lua
 
 Modules\Announcements.lua

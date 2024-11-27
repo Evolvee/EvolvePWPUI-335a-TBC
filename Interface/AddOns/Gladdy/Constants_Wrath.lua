@@ -1,3 +1,7 @@
+if ( WOW_PROJECT_ID_RCE ~= WOW_PROJECT_WRATH_CLASSIC ) then
+	return
+end
+
 local tbl_sort, select, string_lower = table.sort, select, string.lower
 
 local GetSpellInfo = GetSpellInfo
@@ -1117,6 +1121,7 @@ local racials = {
 		texture = select(3, GetSpellInfo(20594))
 	},
 }
+
 function Gladdy:Racials()
 	return racials
 end
@@ -1125,18 +1130,27 @@ end
 -- TOTEM STUFF
 ---------------------
 
-local totemData = {
-	-- Fire
-	-- Water
-	[string_lower("Disease Cleansing Totem")] = {id = 8170,texture = select(3, GetSpellInfo(8170)), color = {r = 0, g = 0, b = 0, a = 1}, pulse = 3},
-	[string_lower("Mana Spring Totem")] = { id = 5675, texture = select(3, GetSpellInfo(5675)), color = { r = 0, g = 0, b = 0, a = 1 } },
-	-- Earth
-	-- Air
+--[[local totemData = {
+    -- Fire
+    -- Water
+    [string_lower("Disease Cleansing Totem")] = {id = 8170,texture = select(3, GetSpellInfo(8170)), color = {r = 0, g = 0, b = 0, a = 1}, pulse = 3},
+    [string_lower("Mana Spring Totem")] = { id = 5675, texture = select(3, GetSpellInfo(5675)), color = { r = 0, g = 0, b = 0, a = 1 } },
+    -- Earth
+    -- Air
 }
+Gladdy:AddEntriesToTable(Gladdy:GetTotemData(), totemData)]]
 
-local totemDataShared, totemNameTotemData, totemSpellIdToPulseShared = Gladdy:GetSharedTotemData()
-Gladdy:AddEntriesToTable(totemData, totemDataShared)
-
-function Gladdy:GetTotemData()
-	return totemData, totemNameTotemData
-end
+Gladdy:SetTotemDataRank({
+	[8071] = 10,
+	[5730] = 10,
+	[8075] = 8,
+	[3599] = 10,
+	[8190] = 7,
+	[8227] = 8,
+	[30706] = 4,
+	[5394] = 9,
+	[5675] = 8,
+	[10595] = 6,
+	[8184] = 6,
+	[8181] = 6,
+})

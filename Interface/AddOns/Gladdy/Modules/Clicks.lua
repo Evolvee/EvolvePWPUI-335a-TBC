@@ -136,10 +136,19 @@ function Clicks:SetupAttribute(button, key, mod, action, spell)
 
     button.secure:SetAttribute(attr, text)
 	-- custom hack shit, copy to new gladdy when updating!!
-    GladdyButton1:SetAttribute("type1", "macro")
-    GladdyButton1:SetAttribute("macrotext1", "/target arena1\n/focus [nodead] arena2")
-    GladdyButton2:SetAttribute("type1", "macro")
-    GladdyButton2:SetAttribute("macrotext1", "/target arena2\n/focus [nodead] arena1")
+    -- GladdyButton1
+	GladdyButton1:SetAttribute("type1", "macro")
+	GladdyButton1:SetAttribute("macrotext1", "/target arena1\n/focus [nodead] arena2")
+
+	GladdyButton1:SetAttribute("type2", "macro")
+	GladdyButton1:SetAttribute("macrotext2", "/focus arena1")
+
+	-- GladdyButton2
+	GladdyButton2:SetAttribute("type1", "macro")
+	GladdyButton2:SetAttribute("macrotext1", "/target arena2\n/focus [nodead] arena1")
+
+	GladdyButton2:SetAttribute("type2", "macro") 
+	GladdyButton2:SetAttribute("macrotext2", "/focus arena2")
 end
 
 local buttons = { ["1"] = L["Left button"], ["2"] = L["Right button"], ["3"] = L["Middle button"], ["4"] = L["Button 4"], ["5"] = L["Button 5"] }

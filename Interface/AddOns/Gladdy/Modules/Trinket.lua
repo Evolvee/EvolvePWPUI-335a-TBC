@@ -241,9 +241,7 @@ function Trinket:UpdateFrame(unit)
 	trinket.cooldown:SetAlpha(Gladdy.db.trinketCooldownAlpha)
 
 	if Gladdy.db.trinketDisableCircle then
-		trinket.cooldown:Hide()
-	else
-		trinket.cooldown:Show()
+		trinket.cooldown:SetAlpha(0)
 	end
 
 	if (not Gladdy.db.trinketEnabled) then
@@ -259,7 +257,7 @@ end
 
 function Trinket:Reset()
 	--self:UnregisterEvent("ARENA_COOLDOWNS_UPDATE")
-	self:SetScript("OnEvent", nil)
+	--self:SetScript("OnEvent", nil)
 end
 
 function Trinket:ResetUnit(unit)

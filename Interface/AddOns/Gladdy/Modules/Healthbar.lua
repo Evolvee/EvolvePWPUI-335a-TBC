@@ -748,4 +748,3 @@ function Healthbar:GetOptions()
         },
     }
 end
-

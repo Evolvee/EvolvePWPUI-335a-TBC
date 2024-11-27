@@ -227,23 +227,23 @@ end
 
 
 --[[schoolColoring = {
-    [SCHOOL_MASK_NONE]	= {a=1.0,r=1.00,g=1.00,b=1.00};
-    [SCHOOL_MASK_PHYSICAL]	= {a=1.0,r=1.00,g=1.00,b=0.00};
-    [SCHOOL_MASK_HOLY] 	= {a=1.0,r=1.00,g=0.90,b=0.50};
-    [SCHOOL_MASK_FIRE] 	= {a=1.0,r=1.00,g=0.50,b=0.00};
-    [SCHOOL_MASK_NATURE] 	= {a=1.0,r=0.30,g=1.00,b=0.30};
-    [SCHOOL_MASK_FROST] 	= {a=1.0,r=0.50,g=1.00,b=1.00};
-    [SCHOOL_MASK_SHADOW] 	= {a=1.0,r=0.50,g=0.50,b=1.00};
-    [SCHOOL_MASK_ARCANE] 	= {a=1.0,r=1.00,g=0.50,b=1.00};
+    [SCHOOL_MASK_NONE]  = {a=1.0,r=1.00,g=1.00,b=1.00};
+    [SCHOOL_MASK_PHYSICAL]  = {a=1.0,r=1.00,g=1.00,b=0.00};
+    [SCHOOL_MASK_HOLY]  = {a=1.0,r=1.00,g=0.90,b=0.50};
+    [SCHOOL_MASK_FIRE]  = {a=1.0,r=1.00,g=0.50,b=0.00};
+    [SCHOOL_MASK_NATURE]    = {a=1.0,r=0.30,g=1.00,b=0.30};
+    [SCHOOL_MASK_FROST]     = {a=1.0,r=0.50,g=1.00,b=1.00};
+    [SCHOOL_MASK_SHADOW]    = {a=1.0,r=0.50,g=0.50,b=1.00};
+    [SCHOOL_MASK_ARCANE]    = {a=1.0,r=1.00,g=0.50,b=1.00};
 
-SCHOOL_MASK_NONE		= 0x00;
-SCHOOL_MASK_PHYSICAL	= 0x01;
-SCHOOL_MASK_HOLY		= 0x02;
-SCHOOL_MASK_FIRE		= 0x04;
-SCHOOL_MASK_NATURE		= 0x08;
-SCHOOL_MASK_FROST		= 0x10;
-SCHOOL_MASK_SHADOW		= 0x20;
-SCHOOL_MASK_ARCANE		= 0x40;
+SCHOOL_MASK_NONE        = 0x00;
+SCHOOL_MASK_PHYSICAL    = 0x01;
+SCHOOL_MASK_HOLY        = 0x02;
+SCHOOL_MASK_FIRE        = 0x04;
+SCHOOL_MASK_NATURE      = 0x08;
+SCHOOL_MASK_FROST       = 0x10;
+SCHOOL_MASK_SHADOW      = 0x20;
+SCHOOL_MASK_ARCANE      = 0x40;
 --]]
 local spellSchoolColors = {}
 spellSchoolColors[1] = { r = 1, g = 1, b = 0, a = 1, type = "Physical" } -- "physical" 255, 255, 0
@@ -355,39 +355,25 @@ local totemData = {
 }
 
 local totemNameToTotemData = {}
+local totemNumeric = {"", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"}
 
-function Gladdy:GetSharedTotemData()
+function Gladdy:GetTotemData()
     return totemData, totemNameToTotemData
 end
 
--- Totem Name -> Totem Data
-local totemNumeric = {"", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"}
+function Gladdy:SetTotemDataRank(totemRankData)
+    for Name, Data in pairs(totemData) do
+        local TotemID = Data.id
+        local TotemRanks = totemRankData[TotemID]
+        local TotemName = GetSpellInfo(TotemID)
 
-local totemRanks = {
-	[8071] = 10,
-	[5730] = 10,
-	[8075] = 8,
-	[3599] = 10,
-	[8190] = 7,
-	[8227] = 8,
-	[30706] = 4,
-	[5394] = 9,
-	[5675] = 8,
-	[10595] = 6,
-	[8184] = 6,
-	[8181] = 6,
-}
-
-for Name, Data in pairs(totemData) do
-	local TotemID = Data.id
-	local TotemRanks = totemRanks[TotemID]
-	local TotemName = GetSpellInfo(TotemID)
-
-	if ( TotemRanks ) then
-		for i=1, TotemRanks do
-			totemNameToTotemData[TotemName..totemNumeric[i]] = Data
-		end
-	else
-		totemNameToTotemData[TotemName] = Data
-	end
+        if ( TotemRanks ) then
+            for i=1, TotemRanks do
+                totemNameToTotemData[TotemName..totemNumeric[i]] = Data
+            end
+        else
+            totemNameToTotemData[TotemName] = Data
+        end
+    end
 end
+

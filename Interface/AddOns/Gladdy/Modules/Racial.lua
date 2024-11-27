@@ -212,6 +212,10 @@ function Racial:UpdateFrame(unit)
 				0, 0, "racialEnabled")
 	end
 
+	if Gladdy.db.racialDisableCircle then
+		racial.cooldown:SetAlpha(0)
+	end
+
 	if (Gladdy.db.racialEnabled == false) then
 		racial:Hide()
 	else
@@ -224,11 +228,11 @@ function Racial:UpdateFrame(unit)
 end
 
 function Racial:JOINED_ARENA()
-	self:SetScript("OnEvent", function(self, event, ...)
+	--[[self:SetScript("OnEvent", function(self, event, ...)
 		if self[event] then
 			self[event](self, ...)
 		end
-	end)
+	end)]]
 end
 
 function Racial:RACIAL_USED(unit, expirationTime, spellName)
