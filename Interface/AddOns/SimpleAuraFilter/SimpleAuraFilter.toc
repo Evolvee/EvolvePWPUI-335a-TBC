@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: SimpleAuraFilter
+## Version: v1
+## Author: Xyz, Jax (GUI)
+## SavedVariables: SimpleAuraFilterDB
+
+Embeds.xml
+SimpleAuraFilter.lua
+Options.lua

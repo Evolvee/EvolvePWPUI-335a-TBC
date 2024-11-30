@@ -7,8 +7,8 @@ local AURA_START_Y = 32
 local AURA_START_X = 5
 local mabs, pairs, mfloor = math.abs, pairs, math.floor
 local tinsert, tsort, tostring = table.insert, table.sort, tostring
-local UnitBuff, UnitDebuff, UnitCanAttack = _G.UnitBuff, _G.UnitDebuff, _G.UnitCanAttack
-local UnitIsUnit, UnitIsOwnerOrControllerOfUnit, UnitCanAssist = _G.UnitIsUnit, _G.UnitIsOwnerOrControllerOfUnit, _G.UnitCanAssist
+local UnitBuff, UnitDebuff, UnitIsEnemy = _G.UnitBuff, _G.UnitDebuff, _G.UnitIsEnemy
+local UnitIsUnit, UnitIsOwnerOrControllerOfUnit, UnitIsFriend = _G.UnitIsUnit, _G.UnitIsOwnerOrControllerOfUnit, _G.UnitIsFriend
 local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 local GetAddOnInfo = C_AddOns and C_AddOns.GetAddOnInfo or GetAddOnInfo
 local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
@@ -806,7 +806,6 @@ local function safeSetPoint(frame, point, relativeTo, relativePoint, x, y)
     frame:SetPoint(point, relativeTo, relativePoint, x, y)
 end
 
-
 local function UpdateBuffAnchor(self, buffName, numDebuffs, anchorBuff, size, offsetX, offsetY, mirrorVertically, newRow)
     --For mirroring vertically
     local point, relativePoint;
@@ -830,7 +829,7 @@ local function UpdateBuffAnchor(self, buffName, numDebuffs, anchorBuff, size, of
     buffName:ClearAllPoints()
 
     if anchorBuff == nil then
-        if (UnitCanAssist("player", self.unit) or numDebuffs == 0) then
+        if (UnitIsFriend("player", self.unit) or numDebuffs == 0) then
             -- unit is friendly or there are no debuffs...buffs start on top
             buffName:SetPoint(point .. "LEFT", self, relativePoint .. "LEFT", AURA_START_X, startY);
         else
@@ -856,7 +855,7 @@ local function UpdateBuffAnchor(self, buffName, numDebuffs, anchorBuff, size, of
 end
 
 local function UpdateDebuffAnchor(self, debuffName, numBuffs, anchorDebuff, size, offsetX, offsetY, mirrorVertically, newRow)
-    local isFriend = UnitCanAssist("player", self.unit);
+    local isFriend = UnitIsFriend("player", self.unit);
 
     --For mirroring vertically
     local point, relativePoint;
@@ -1191,7 +1190,7 @@ local function Filterino(self)
     local numDebuffs, numBuffs = 0, 0
     local numDebuff, numBuff = 0, 0
     local playerIsTarget = UnitIsUnit("player", self.unit);
-    local isEnemy = UnitCanAttack("player", self.unit)
+    local isEnemy = UnitIsEnemy("player", self.unit)
 
     for i = 1, MAX_TARGET_BUFFS do
         local buffName, rank, icon, _, debuffType, _, _, caster, canStealOrPurge, _, spellId = UnitBuff(self.unit, i, "HELPFUL");

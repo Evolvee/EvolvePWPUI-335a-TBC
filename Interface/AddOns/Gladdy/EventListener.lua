@@ -397,7 +397,7 @@ function EventListener:UNIT_SPELLCAST_SUCCEEDED(...)
 
         -- trinket
         --if spellID == 42292 or spellID == 59752 then
-        if Gladdy:Racials()["Human"].spellName == spellID or spellID == PVP_TRINKET then
+        if spellID == PVP_TRINKET then
             Gladdy:Debug("INFO", "UNIT_SPELLCAST_SUCCEEDED - TRINKET_USED", unit, spellID)
             Gladdy:SendMessage("TRINKET_USED", unit)
         end

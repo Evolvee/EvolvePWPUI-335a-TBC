@@ -934,11 +934,11 @@ GameTooltip:HookScript("OnShow", function(self, ...)
     end
 end)
 
--- Commented out - on 3.3.5a handled with MoveAnything itself
+
 --increasing bufframe debuff size
---hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
---    _G[buttonName .. index]:SetScale(1.23)
---end)
+hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
+    _G[buttonName .. index]:SetScale(1.23)
+end)
 
 
 -- Hide HealthBar under unit tooltips + Hide Titles, PVP flag and Guild Names from Player tooltips
