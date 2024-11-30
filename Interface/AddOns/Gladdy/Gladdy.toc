@@ -1,8 +1,8 @@
 ## Interface: 30300
-## Title: Gladdy
+## Title: Gladdy (Evolve Edit)
 ## Version: 2.45-Release
-## Notes: The most powerful arena AddOn for WoW 3.3.5
-## Author: XiconQoo, DnB_Junkee, Knall, Tsoukie
+## Notes: Edited for 2v2
+## Author: XiconQoo, DnB_Junkee, Knall, Tsoukie, Xyz, Evolve
 ## SavedVariables: GladdyXZ
 ## RequiredDeps: !!!ClassicAPI
 ## OptionalDeps: SharedMedia, Blizzard_CombatLog, Blizzard_ArenaUI, Blizzard_CombatText

@@ -1212,6 +1212,8 @@ local classmarkers = {
     ["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
 }
 
+--local np = {}
+
 local function AddPlates(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
     if not nameplate then
@@ -1253,6 +1255,21 @@ local function AddPlates(unit)
     local _, unitClass = UnitClass(unit)
     local _, type = IsInInstance()
     local unitName = UnitName(unit)
+	
+	-- Custom Class-coloured nameplate names
+--	if not np[nameplate] then
+--    np[nameplate] = true
+
+--    nameplate:HookScript("OnUpdate", function()
+--        local classColor = unitClass and CUSTOM_CLASS_COLORS[unitClass]
+--        if classColor and UnitIsPlayer(unit) then
+--            oldname:SetTextColor(classColor.r, classColor.g, classColor.b)
+--        else
+--            oldname:SetTextColor(1, 1, 1)
+--        end
+--        nameplate:SetAlpha(1)
+--    end)
+--end
 
     if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then

@@ -1,0 +1,6 @@
+## Interface: 30100
+## Title: Addon Usage
+## Notes: Displays addon memory/cpu usage
+## SavedVariables: AddonUsageSettings
+AddonUsage.lua
+AddonUsage.xml

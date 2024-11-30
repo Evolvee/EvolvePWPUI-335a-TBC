@@ -781,16 +781,7 @@ local function TriggerCooldown(SpellName, Anchor)
 		if ( Icon.Name == SpellName ) then
 			Start(Anchor, Icon)
 		elseif ( Icon.Name ) then
-			-- Undead Racial <-> PvP Trinket (45s)
-			if ( Anchor.Race == "Scourge" ) then
-				local Trinket = TPT.Default.Trinket[1][3]
-				if ( (Icon.Name == RACIAL_UNDEAD and SpellName == Trinket) or (Icon.Name == Trinket and SpellName == RACIAL_UNDEAD) ) then
-					if ( not Icon.Swipe:IsShown() ) then
-						Start(Anchor, Icon, 45)
-					end
-				end
-			end
-
+			-- Undead Racial <-> PvP Trinket (45s) (DELETED cuz of TBC)
 			-- Shared CD
 			local SharedClassSpells = TPT.Default.Shared[Anchor.Class]
 			if ( SharedClassSpells ) then
