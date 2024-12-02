@@ -1,2 +1,0 @@
-
-CU_HideBG = nil

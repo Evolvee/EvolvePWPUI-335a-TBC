@@ -1,0 +1,12 @@
+
+flyPlateBuffsDB = {
+	["profileKeys"] = {
+		["Uitest - Blackrock [PvP only]"] = "Default",
+	},
+	["profiles"] = {
+		["Default"] = {
+			["showOnPets"] = false,
+			["showOnFriend"] = false,
+		},
+	},
+}

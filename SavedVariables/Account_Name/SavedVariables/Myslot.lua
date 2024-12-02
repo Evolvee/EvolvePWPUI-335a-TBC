@@ -1,5 +1,0 @@
-
-MyslotExports = {
-	["exports"] = {
-	},
-}

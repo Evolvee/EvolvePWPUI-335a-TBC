@@ -1,0 +1,1 @@
+-- The author of this addon did not allow me to publish it yet - and I respect that, Im already throwing too many good shits for free in here without getting anything in return (literally nobody helps me with anything)... so yea... atleast it wont be re-sold by French cucks behind Twitch sub-paywall :))

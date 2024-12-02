@@ -1,0 +1,4 @@
+## Interface: 30300
+## Title: TremorPulse
+## Author: Xyz, visual edit by Evolve xd
+core.lua

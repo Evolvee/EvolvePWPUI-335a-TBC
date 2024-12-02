@@ -281,7 +281,7 @@ function Gladdy:SetupOptions()
                 order = 5,
                 width = 3,
                 type = "description",
-                name = "     " .. Gladdy.version .. "   |cffaaaaaaBased on v2.23   |cff707070Backported by Tsoukie"
+                name = "     " .. Gladdy.version .. "  (Evolve edit)  |cffaaaaaaBased on v2.23   |cff707070Backported by Tsoukie"
             },
             general = {
                 type = "group",

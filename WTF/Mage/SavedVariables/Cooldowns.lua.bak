@@ -1,0 +1,21 @@
+
+YarkoCooldowns_SavedVars = {
+	["Outline"] = 1,
+	["Tenths"] = "N",
+	["FlashColor"] = {
+		["b"] = 0,
+		["g"] = 0,
+		["r"] = 1,
+	},
+	["FontHeight"] = 18,
+	["FontFile"] = "FRIZQT__.TTF",
+	["Seconds"] = 60,
+	["BelowTwo"] = "N",
+	["MainColor"] = {
+		["b"] = 0,
+		["g"] = 0.82,
+		["r"] = 1,
+	},
+	["Shadow"] = "Y",
+	["FontLocation"] = "Fonts",
+}

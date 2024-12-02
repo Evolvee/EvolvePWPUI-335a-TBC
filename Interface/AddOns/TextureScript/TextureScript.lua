@@ -3,6 +3,7 @@
 local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
+local np = {}
 
 --dark theme
 local function DarkenFrames(addon)
@@ -118,20 +119,20 @@ end
 
 -- adding modified class colours to chat
 local newClassColors = {}
-        for class, color in pairs(CUSTOM_CLASS_COLORS) do
-            newClassColors[class] =  color
-        end
+for class, color in pairs(CUSTOM_CLASS_COLORS) do
+    newClassColors[class] = color
+end
 
-        setfenv(GetColoredName, setmetatable({}, {
-            __index = function(t, k)
-                if k == "RAID_CLASS_COLORS" then
-                    return newClassColors
-                else
-                    return _G[k]
-                end
-            end
-        }))
-		
+setfenv(GetColoredName, setmetatable({}, {
+    __index = function(t, k)
+        if k == "RAID_CLASS_COLORS" then
+            return newClassColors
+        else
+            return _G[k]
+        end
+    end
+}))
+
 -- adding modified class colours to who-list
 hooksecurefunc("WhoList_Update", function()
     local offset = FauxScrollFrame_GetOffset(WhoListScrollFrame)
@@ -139,7 +140,7 @@ hooksecurefunc("WhoList_Update", function()
         local _, _, _, _, _, _, class = GetWhoInfo(i + offset)
         local color = class and CUSTOM_CLASS_COLORS[class]
         if color then
-            _G["WhoFrameButton"..i.."Class"]:SetTextColor(color.r, color.g, color.b)
+            _G["WhoFrameButton" .. i .. "Class"]:SetTextColor(color.r, color.g, color.b)
         end
     end
 end)
@@ -210,7 +211,7 @@ hooksecurefunc("PartyMemberFrame_UpdateMemberHealth", function(self)
     if c then
         _G[prefix .. "HealthBar"]:SetStatusBarColor(c.r, c.g, c.b)
     end
-	
+
     if hp ~= healthbar.lastTextValue then
         healthbar.lastTextValue = hp
         healthbar.fontString:SetText(healthbar.lastTextValue)
@@ -235,9 +236,9 @@ hooksecurefunc("PartyMemberFrame_UpdateMember", function(self)
 end)
 --3.3.5a only
 hooksecurefunc("PartyMemberHealthCheck", function(self, value)
-local prefix = self:GetParent():GetName();
-if ( (self:GetParent().unitHPPercent > 0) and (self:GetParent().unitHPPercent <= 0.2) ) then
-        _G[prefix.."Portrait"]:SetVertexColor(1.0, 1.0, 1.0);
+    local prefix = self:GetParent():GetName();
+    if ((self:GetParent().unitHPPercent > 0) and (self:GetParent().unitHPPercent <= 0.2)) then
+        _G[prefix .. "Portrait"]:SetVertexColor(1.0, 1.0, 1.0);
     end
 end)
 
@@ -282,13 +283,13 @@ local function OnInit()
     FocusFrame:SetPoint("CENTER", UIParent, "CENTER", -237, 115)
     FocusFrame:SetUserPlaced(true)
     FocusFrame:SetAttribute("*type2", "target") -- right click target focus
-	
-	-- PetFrame dismiss (right click to auto-dissmiss pet)
-	PetFrame:SetScript("OnClick", function(self, button)
-    if button == "RightButton" then
+
+    -- PetFrame dismiss (right click to auto-dissmiss pet)
+    PetFrame:SetScript("OnClick", function(self, button)
+        if button == "RightButton" then
             PetDismiss()
-		end
-	end)
+        end
+    end)
 
     -- ToT texture closing the alpha gap (previously handled by ClassPortraits itself)
     TargetFrameToTTextureFrameTexture:SetVertexColor(0, 0, 0)
@@ -439,7 +440,7 @@ local function OnInit()
 
     --removing character "C" button image
     MicroButtonPortrait:Hide()
-	
+
     PVPMicroButton:SetAlpha(0) -- 3.3.5a only
 
     -- removing the retarded "latency" bar introduced in wotlk
@@ -481,8 +482,8 @@ local function OnInit()
         if texture then
             texture:SetAlpha(0)
         end
-		
-		texture = _G["BonusActionButton" .. i]:GetHighlightTexture() --3.3.5a only
+
+        texture = _G["BonusActionButton" .. i]:GetHighlightTexture() --3.3.5a only
         if texture then
             texture:SetAlpha(0)
         end
@@ -538,7 +539,7 @@ local function OnInit()
     -- Hide	Macro & Keybind texts from Action Bar buttons
     for i = 1, 12 do
         _G["ActionButton" .. i .. "HotKey"]:SetAlpha(0)
-		_G["BonusActionButton" .. i .. "HotKey"]:SetAlpha(0)
+        _G["BonusActionButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarBottomRightButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarBottomLeftButton" .. i .. "HotKey"]:SetAlpha(0)
         _G["MultiBarRightButton" .. i .. "HotKey"]:SetAlpha(0)
@@ -546,7 +547,7 @@ local function OnInit()
     end
     for i = 1, 12 do
         _G["ActionButton" .. i .. "Name"]:SetAlpha(0)
-		_G["BonusActionButton" .. i .. "Name"]:SetAlpha(0)
+        _G["BonusActionButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarBottomRightButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarBottomLeftButton" .. i .. "Name"]:SetAlpha(0)
         _G["MultiBarRightButton" .. i .. "Name"]:SetAlpha(0)
@@ -563,8 +564,10 @@ local function WAHK(button, ok)
     if not button then
         return
     end
-	
-	if button =="MultiBarBottomRightButton3" then return end --3.3.5a hackfix for First Aid usage (was interrupting before this)
+	--3.3.5a hackfix for First Aid usage (was interrupting the cast before)
+    if button == "MultiBarBottomRightButton3" then
+        return
+    end
 
     local btn = _G[button]
     if not btn then
@@ -627,7 +630,7 @@ local function UpdateBinds(frame)
 
     for i = 1, 12 do
         WAHK("ActionButton" .. i, true)
-		WAHK("BonusActionButton" .. i, true)
+        WAHK("BonusActionButton" .. i, true)
         WAHK("MultiBarBottomRightButton" .. i)
         WAHK("MultiBarBottomLeftButton" .. i)
         WAHK("MultiBarRightButton" .. i)
@@ -682,7 +685,7 @@ HideCancer:Hide()
 
 --Action bar buttons are now bigger, better looking and also fixes spellbook/wep switch bugging of dark theme
 hooksecurefunc("ActionButton_ShowGrid", function(button)
-    local tex = _G[button:GetName().."NormalTexture"]
+    local tex = _G[button:GetName() .. "NormalTexture"]
     if tex then
         tex:SetVertexColor(1.0, 1.0, 1.0, 1.0)
     end
@@ -840,7 +843,7 @@ local function colour(statusbar, unit)
                 local _, class = UnitClass(unit)
                 local c = CUSTOM_CLASS_COLORS[class]
                 if c then
-                        statusbar:SetStatusBarColor(c.r, c.g, c.b)
+                    statusbar:SetStatusBarColor(c.r, c.g, c.b)
                 end
             elseif unit == "player" then
                 local value = UnitHealth("player")
@@ -974,7 +977,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if color then
             local text = GameTooltipTextLeft1:GetText()
             if text then
-                    GameTooltipTextLeft1:SetFormattedText("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
+                GameTooltipTextLeft1:SetFormattedText("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
             end
         end
     end
@@ -1020,21 +1023,18 @@ local ShowNameplatePetIds = {
     ["1863"] = true, -- Succubus
 }
 
-local tremorTotems = {} -- {[totem GUID] = {[shaman]=GUID, nameplate=<nameplate frame>}, ...}
-local nameplatesToRecheck = {}
-
-local plateEventFrame = CreateFrame("Frame")
 
 local function visibilityPlate(plate, bool)
     local HealthBar, CastBar = plate:GetChildren()
-    local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = plate:GetRegions()
+    local threat, hpborder, cbborder, cbshield, cbicon, overlay, oldname, level, bossicon, raidicon, elite = plate:GetRegions()
 
     if bool then
-        oldname:Hide()
+        if plate.newName then
+            plate.newName:Hide()
+        end
         threat:SetAlpha(0)
         hpborder:SetAlpha(0)
         overlay:SetAlpha(0)
-        level:SetAlpha(0)
         bossicon:SetAlpha(0)
         raidicon:SetAlpha(0)
         elite:SetAlpha(0)
@@ -1043,23 +1043,19 @@ local function visibilityPlate(plate, bool)
         HealthBar:SetAlpha(0)
         CastBar:SetAlpha(0)
 
-        cbshield:ClearAllPoints()
-        cbshield:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
-
+        -- Pets show castbar that keep resetting on every cast
         cbborder:ClearAllPoints()
         cbborder:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
-
-        cbicon:ClearAllPoints()
-        cbicon:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
     else
-        oldname:Show()
+        if plate.newName then
+            plate.newName:Show()
+        end
         threat:SetAlpha(1)
         hpborder:SetAlpha(1)
         cbshield:SetAlpha(1)
         cbborder:SetAlpha(1)
         cbicon:SetAlpha(1)
         overlay:SetAlpha(1)
-        level:SetAlpha(1)
         bossicon:SetAlpha(1)
         raidicon:SetAlpha(1)
         elite:SetAlpha(1)
@@ -1067,14 +1063,6 @@ local function visibilityPlate(plate, bool)
         CastBar:Show()
         HealthBar:SetAlpha(1)
         CastBar:SetAlpha(1)
-		
-		--Temporarily commenting out to fix https://github.com/Evolvee/EvolvePWPUI-335a-TBC/issues/5
-        --cbshield:ClearAllPoints()
-        --cbshield:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
-        --cbborder:ClearAllPoints()
-        --cbborder:SetPoint("CENTER", plate, "CENTER", 0, -17.58)
-        --cbicon:ClearAllPoints()
-        --cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 9.12)
     end
 end
 
@@ -1087,43 +1075,29 @@ end
 
 local function HandleNewNameplate(nameplate, unit)
     local name = UnitName(unit)
-    if name == "Unknown" then
-        nameplate.recheckGuid = UnitGUID(unit)
-        nameplatesToRecheck[UnitGUID(unit)] = nameplate
-        plateEventFrame:Show()
-        return
-    end
 
-    local HealthBar = nameplate:GetChildren()
-    local _, hpborder, _, _, _, _, oldname = nameplate:GetRegions()
+    local _, hpborder = nameplate:GetRegions()
 
-    local creatureType, _, _, _, _, npcId = string.split("-", UnitGUID(unit))
     -- the rest of nameplate stuff
-    if name:match("Totem") and UnitCreatureType(unit) == "Totem" and not name:match("Tremor Totem") then
+    if name and name:match("Totem") and UnitCreatureType(unit) == "Totem" and not name:match("Tremor Totem") then
         HideNameplate(nameplate)
-    elseif (HideNameplateUnits[name] or HideNameplateUnits[npcId])
-            or (creatureType == "Pet" and not ShowNameplatePetIds[npcId]) then
+    elseif name and (HideNameplateUnits[name]) then
         HideNameplate(nameplate)
-    elseif ShrinkPlates[name] then
+    elseif name and ShrinkPlates[name] then
         HideNameplate(nameplate)
-        oldname:Show()
-        oldname:SetTextColor(1, 0, 0)
-    elseif name == "Tremor Totem" then
-        local guid = UnitGUID(unit)
-        if guid then
-            local totem = tremorTotems[guid]
-            if totem then
-                totem.nameplate = nameplate
-            else
-                tremorTotems[guid] = { ["shaman"] = "Unknown", ["nameplate"] = nameplate }
-            end
-            nameplate.tremorTotemGuid = guid
-            hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
+        if nameplate.newName then
+            nameplate.newName:SetTextColor(1, 0, 0)
         end
+    elseif name and name == "Tremor Totem" then
+        hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
     elseif UnitCreatureFamily(unit) == "Succubus" then
-        oldname:SetText("Succubus")
+        if nameplate.newName then
+            nameplate.newName:SetText("Succubus")
+        end
     elseif UnitCreatureFamily(unit) == "Felhunter" then
-        oldname:SetText("Felhunter")
+        if nameplate.newName then
+            nameplate.newName:SetText("Felhunter")
+        end
     elseif UnitPlayerControlled(unit) and not UnitIsPlayer(unit) then
         HideNameplate(nameplate)
     end
@@ -1132,65 +1106,23 @@ end
 -- PlaySound whenever an enemy casts Tremor Totem inside arena (this is unnecessary overcomplicated due to being backported from clASSic where totems dont disappear instantly upon destroying them)
 local COMBATLOG_FILTER_HOSTILE_PLAYERS = COMBATLOG_FILTER_HOSTILE_PLAYERS;
 local CombatLog_Object_IsA = CombatLog_Object_IsA
-local eventRegistered = {
-    ["SPELL_CAST_SUCCESS"] = true,
-    ["SPELL_SUMMON"] = true,
-    ["SWING_DAMAGE"] = true,
-    ["RANGE_DAMAGE"] = true,
-    ["SPELL_DAMAGE"] = true,
-}
 
 local function PlateScript(...)
-    local _, action, sourceGuid, _, sourceFlags, destGuid, destName, _, ex1, _, _, ex4 = ...
+    local _, action, _, _, sourceFlags, _, _, _, spellId  = ...
 
     local isSourceEnemy = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_HOSTILE_PLAYERS)
     local _, instanceType = IsInInstance()
 
-    if not (eventRegistered[action]) then
+    if action ~= "SPELL_CAST_SUCCESS" or spellId ~= 8143 then
         return
     end
 
-    if isSourceEnemy and instanceType == "arena" and ex1 == 8143 and action == "SPELL_CAST_SUCCESS" then
+    if isSourceEnemy and instanceType == "arena" and spellId == 8143 and action == "SPELL_CAST_SUCCESS" then
         PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.wav", "master")
     end
 
-    if destName == "Tremor Totem" then
-        if action == "SPELL_SUMMON" then
-            if destName == "Tremor Totem" then
-                for totem, info in pairs(tremorTotems) do
-                    if info.shaman == sourceGuid then
-                        local nameplate = info.nameplate
-                        if nameplate and nameplate.tremorTotemGuid == totem and nameplate then
-                            nameplate.wasHidden = true
-                            visibilityPlate(nameplate, true)
-                        end
-                    end
-                end
-                tremorTotems[destGuid] = { ["shaman"] = sourceGuid }
-            end
-        else
-            local damage
-            if action == "SWING_DAMAGE" or action == "RANGE_DAMAGE" then
-                damage = ex1
-            elseif action == "SPELL_DAMAGE" then
-                damage = ex4
-            else
-                damage = 0
-            end
-
-            if damage >= 5 then
-                local totem = tremorTotems[destGuid]
-                if totem then
-                    local nameplate = totem.nameplate
-                    if nameplate and nameplate.tremorTotemGuid == destGuid and nameplate then
-                        nameplate.wasHidden = true
-                        visibilityPlate(nameplate, true)
-                    end
-                end
-            end
-        end
-    end
 end
+local plateEventFrame = CreateFrame("Frame")
 plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 plateEventFrame:SetScript("OnEvent", function(self, event, ...)
     PlateScript(...)
@@ -1212,7 +1144,16 @@ local classmarkers = {
     ["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
 }
 
---local np = {}
+local function MovePlateTexture(texture, addOffset)
+    if not addOffset then
+        addOffset = 0
+    end
+
+    for i = 1, texture:GetNumPoints() do
+        local point, relativeTo, relativePoint, x, y = texture:GetPoint(i)
+        texture:SetPoint(point, relativeTo, relativePoint, x, y + addOffset)
+    end
+end
 
 local function AddPlates(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
@@ -1221,13 +1162,18 @@ local function AddPlates(unit)
     end
 
     local HealthBar, CastBar = nameplate:GetChildren()
-    local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, level, bossicon, raidicon, elite = nameplate:GetRegions()
+    local threat, hpborder, cbborder, cbshield, cbicon, overlay, oldname, level, bossicon, raidicon, elite = nameplate:GetRegions()
 
     -- Change border plate texture art
-    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
+    if UnitIsUnit("target", unit) then
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
+                else
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
+	end
 
     -- Hide level and expand healthbar
     level:Hide()
+    level:SetAlpha(0)
     bossicon:Hide()
     raidicon:Hide()
     elite:Hide()
@@ -1236,41 +1182,97 @@ local function AddPlates(unit)
     HealthBar:SetPoint("BOTTOMLEFT", nameplate, "BOTTOMLEFT", 4, 4)
     HealthBar:SetPoint("BOTTOMRIGHT", nameplate, "BOTTOMRIGHT", -4, 4)
 
-	-- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
-	local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
-	HealthBar:SetWidth(newWidth)
-	-- Same as above - fixing the 1 pixel space between top of nameplate border and the actual status bar nameplate texture
-	local newHeight = nameplate:GetHeight() - 27  -- Adjust this if necessary
-	HealthBar:SetHeight(newHeight)
+    -- ChatGPT "fix" for displaying fucked up status bar HP values due to the bar resizing
+    local newWidth = nameplate:GetWidth() - 8  -- Adjust this if necessary
+    HealthBar:SetWidth(newWidth)
+    -- Same as above - fixing the 1 pixel space between top of nameplate border and the actual status bar nameplate texture
+    local newHeight = nameplate:GetHeight() - 27  -- Adjust this if necessary
+    HealthBar:SetHeight(newHeight)
 
     -- Move the selection highlight (3.3.5a only - moving it out of screen, wasnt able to just hide it)
     overlay:ClearAllPoints()
     overlay:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
 
-    oldname:SetJustifyH("CENTER")
-    oldname:SetFont("Fonts\\FRIZQT__.TTF", 14)
-    oldname:SetWidth(160)
+    -- Move plates visually up
+    MovePlateTexture(HealthBar, 20)
+    if not nameplate.hasMoved then
+        MovePlateTexture(hpborder, 20)
+        MovePlateTexture(oldname, 20)
+        nameplate.hasMoved = true
+    end
+    cbborder:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 24)
+
+    -- Set shield castbar like a regular castbar (TBC had no shield castbars, so begone cancer WOTLK ugly "feature"!)
+    if cbshield:GetTexture() ~= cbborder:GetTexture() then
+        cbshield:SetTexture(cbborder:GetTexture())
+        cbshield:SetSize(cbborder:GetSize())
+        cbshield:SetTexCoord(1, 0, 0, 1)
+    end
+    cbshield:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 24)
+    CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
+    cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
 
     -- Class icon on friendly plates in arena
     local _, unitClass = UnitClass(unit)
     local _, type = IsInInstance()
     local unitName = UnitName(unit)
+
+    -- Custom Class-coloured nameplate names
+    if not nameplate.newName then
+        nameplate.newName = nameplate:CreateFontString(nil, "ARTWORK")
+        nameplate.newName:SetFont("Fonts\\FRIZQT__.TTF", 14)
+        nameplate.newName:SetJustifyH("CENTER")
+        nameplate.newName:SetWidth(160)
+        nameplate.newName:SetHeight(9)
+        nameplate.newName:SetAllPoints(oldname)
+        nameplate.newName:SetShadowOffset(1, -1)
+    end
+
+    if unitName and nameplate.newName then
+        oldname:Hide()
+        nameplate.newName:SetText(unitName)
+
+        if UnitIsPlayer(unit) then
+            local classColor = CUSTOM_CLASS_COLORS[unitClass]
+            if classColor then
+                nameplate.newName:SetTextColor(classColor.r, classColor.g, classColor.b)
+                -- Color HealthBar
+                HealthBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b)
+            else
+                nameplate.newName:SetTextColor(1, 1, 1)
+            end
+        else
+            nameplate.newName:SetTextColor(1, 1, 1)
+        end
+    elseif not unitName and nameplate.newName then
+        nameplate.newName:SetText("")
+    end
 	
-	-- Custom Class-coloured nameplate names
---	if not np[nameplate] then
---    np[nameplate] = true
+    -- set unit
+    nameplate.unitToken = unit
 
---    nameplate:HookScript("OnUpdate", function()
---        local classColor = unitClass and CUSTOM_CLASS_COLORS[unitClass]
---        if classColor and UnitIsPlayer(unit) then
---            oldname:SetTextColor(classColor.r, classColor.g, classColor.b)
---        else
---            oldname:SetTextColor(1, 1, 1)
---        end
---        nameplate:SetAlpha(1)
---    end)
---end
+    -- Prevent fading out nameplates
+    if not np[nameplate] then
+        np[nameplate] = true
 
+        nameplate:HookScript("OnUpdate", function()
+            nameplate:SetAlpha(1)
+        end)
+
+        nameplate:RegisterEvent("PLAYER_TARGET_CHANGED")
+        nameplate:HookScript("OnEvent", function(self, event)
+            if event == "PLAYER_TARGET_CHANGED" then
+                if UnitIsUnit("target", nameplate.unitToken) then
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
+                elseif UnitName(nameplate.unitToken) == "Tremor Totem" then
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
+                else
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
+                end
+            end
+        end)
+    end
+	
     if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then
             nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
@@ -1308,29 +1310,8 @@ local function AddPlates(unit)
         end
     end
 
-    -- This is needed to restore scale due to the ShrinkPlates (hunter snake trap)
-    if HealthBar:GetScale() < 1.0 then
-        HealthBar:SetScale(1.0)
-        oldname:SetAlpha(1.0)
-    end
     HandleNewNameplate(nameplate, unit)
 end
-
-local function RemovePlate(unit)
-    local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
-    if not nameplate then
-        return
-    end
-    nameplate.tremorTotemGuid = nil
-    tremorTotems[UnitGUID(unit) or ""] = nil
-    if nameplate then
-        if nameplate.wasHidden then
-            nameplate.wasHidden = nil
-            visibilityPlate(nameplate, false)
-        end
-    end
-end
-
 
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
 local IsActionInRange = IsActionInRange
@@ -1385,7 +1366,8 @@ hooksecurefunc("CooldownFrame_SetTimer", function(self, start, duration, enable)
     if name and (string.match(name, "^MultiBar%w+Button") or string.match(name, "^P?e?t?ActionButton") or string.match(name, "^BonusActionButton%d+")) then
         -- if a timer already exists, it's either changing from a GCD to real one (so cancel the old one) or is a duplicate that constantly happens (so skip it)
         if self.timer then
-            if self.duration == duration then -- can't use self.___Duration because it's changed by now
+            if self.duration == duration then
+                -- can't use self.___Duration because it's changed by now
                 return
             end
             self.timer:Cancel()
@@ -1406,18 +1388,16 @@ hooksecurefunc("CooldownFrame_SetTimer", function(self, start, duration, enable)
     end
 end)
 
-
-
 -- Remove debuffs from Target of Target frame
 for _, totFrame in ipairs({ TargetFrameToT, FocusFrameToT }) do
-    totFrame:HookScript("OnShow", function()
-        for i = 1, 4 do
-            local dbf = _G[totFrame:GetName() .. "Debuff" .. i]
-            if dbf and dbf:GetAlpha() > 0 then
-                dbf:SetAlpha(0)
-            end
+    --totFrame:HookScript("OnShow", function()
+    for i = 1, 4 do
+        local dbf = _G[totFrame:GetName() .. "Debuff" .. i]
+        if dbf and dbf:GetAlpha() > 0 then
+            dbf:SetAlpha(0)
         end
-    end)
+    end
+    -- end)
 end
 
 
@@ -1432,7 +1412,6 @@ end)
 -- Auto repair / Auto sell grey shit (3.3.5a only)
 local g = CreateFrame("Frame")
 g:RegisterEvent("MERCHANT_SHOW")
-
 g:SetScript("OnEvent", function()
     local bag, slot
     for bag = 0, 4 do
@@ -1473,11 +1452,11 @@ end)
 -- Skip certain gossip_menu windows for vendors and especially arena/bg NPCs --> can be bypassed by pressing ctrl/alt/shift
 
 local gossipSkipType = {
-    ["banker"]=1,
-    ["taxi"]=1,
-    ["trainer"]=1,
-    ["vendor"]=1,
-    ["battlemaster"]=1,
+    ["banker"] = 1,
+    ["taxi"] = 1,
+    ["trainer"] = 1,
+    ["vendor"] = 1,
+    ["battlemaster"] = 1,
 }
 
 local skipEventFrame = CreateFrame("frame")
@@ -1493,9 +1472,9 @@ skipEventFrame:SetScript("OnEvent", function(self)
         end
     end
     if GetNumGossipOptions() > 0 and not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
-        local options = {GetGossipOptions()}
-        for i=1,GetNumGossipOptions() do
-            if options[(i-1)*2+2] == "vendor" then
+        local options = { GetGossipOptions() }
+        for i = 1, GetNumGossipOptions() do
+            if options[(i - 1) * 2 + 2] == "vendor" then
                 SelectGossipOption(i)
                 return
             end
@@ -1505,24 +1484,27 @@ end)
 skipEventFrame:RegisterEvent("GOSSIP_SHOW")
 
 
--- Attemt to fix shit Warmane error
+-- Attempt to fix shit 3.3.5 error. Credits to https://github.com/ElvUI-WotLK/ElvUI/issues/704
 do
-        local originalFunc = LFDQueueFrameRandomCooldownFrame_OnEvent
-        local originalScript = LFDQueueFrameCooldownFrame:GetScript("OnEvent")
-        LFDQueueFrameRandomCooldownFrame_OnEvent = function(self, event, unit, ...)
-            if event == "UNIT_AURA" and not unit then return end
-            originalFunc(self, event, unit, ...)
+    local originalFunc = LFDQueueFrameRandomCooldownFrame_OnEvent
+    local originalScript = LFDQueueFrameCooldownFrame:GetScript("OnEvent")
+    LFDQueueFrameRandomCooldownFrame_OnEvent = function(self, event, unit, ...)
+        if event == "UNIT_AURA" and not unit then
+            return
         end
-        if originalFunc == originalScript then
-            LFDQueueFrameCooldownFrame:SetScript("OnEvent", LFDQueueFrameRandomCooldownFrame_OnEvent)
-        else
-            LFDQueueFrameCooldownFrame:SetScript("OnEvent", function(self, event, unit, ...)
-                if event == "UNIT_AURA" and not unit then return end
-                originalScript(self, event, unit, ...)
-            end)
-        end
+        originalFunc(self, event, unit, ...)
     end
-
+    if originalFunc == originalScript then
+        LFDQueueFrameCooldownFrame:SetScript("OnEvent", LFDQueueFrameRandomCooldownFrame_OnEvent)
+    else
+        LFDQueueFrameCooldownFrame:SetScript("OnEvent", function(self, event, unit, ...)
+            if event == "UNIT_AURA" and not unit then
+                return
+            end
+            originalScript(self, event, unit, ...)
+        end)
+    end
+end
 
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
@@ -1531,7 +1513,6 @@ evolvedFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 evolvedFrame:RegisterEvent("GOSSIP_SHOW")
 evolvedFrame:RegisterEvent("UPDATE_BINDINGS")
 evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-evolvedFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         CustomCvar() -- Set our CVAR values
@@ -1550,25 +1531,42 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
             if GetCVar("nameplateShowFriends") == "0" then
                 SetCVar("nameplateShowFriends", 1)
             end
-            inArena = true
         else
             if GetCVar("nameplateShowFriends") == "1" then
                 SetCVar("nameplateShowFriends", 0)
             end
-            inArena = false
         end
         -- NAMEPLATE STUFF
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
-    elseif event == "NAME_PLATE_UNIT_REMOVED" then
-        local unit = ...
-        RemovePlate(unit)
     end
 end)
 
-
-
+-- Needed to fix castbar position
+local plateCastListener = CreateFrame("Frame")
+plateCastListener:RegisterEvent("UNIT_SPELLCAST_START")
+plateCastListener:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+plateCastListener:SetScript("OnEvent", function(self, event, ...)
+    local unit, castName = ...
+    if castName and string.match(unit, "nameplate%d") then
+        local plate = C_NamePlate.GetNamePlateForUnit(unit)
+        if not plate or not UnitIsPlayer(unit) or (UnitIsFriend("player", unit) == 1) then
+            return
+        end
+        local _, CastBar = plate:GetChildren()
+        local _, _, cbborder, cbshield, cbicon = plate:GetRegions()
+        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 24)
+        if cbshield:GetTexture() ~= cbborder:GetTexture() then
+            cbshield:SetTexture(cbborder:GetTexture())
+            cbshield:SetSize(cbborder:GetSize())
+            cbshield:SetTexCoord(1, 0, 0, 1)
+        end
+        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 24)
+        CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
+        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
+    end
+end)
 
 COMBAT_TEXT_RESIST = "RESIST XD"
 
@@ -1576,7 +1574,6 @@ COMBAT_TEXT_RESIST = "RESIST XD"
 ChatFrame1:AddMessage("EvolvePWPUI-TBC on 3.3.5a Client v1.0 Loaded successfully!", 0, 205, 255)
 ChatFrame1:AddMessage("Check for updates at:", 0, 205, 255)
 ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-335a-TBC", 0, 205, 255)
-
 
 
 -- trying to remove the cancer weather that is not part of the video settings as it used to be in 2.4.3: /console set weatherdensity 0 // /console WeatherDensity 0

@@ -1,0 +1,10 @@
+
+BigAurasDB = {
+	["profileKeys"] = {
+		["Uitest - Blackrock [PvP only]"] = "Default",
+	},
+	["profiles"] = {
+		["Default"] = {
+		},
+	},
+}

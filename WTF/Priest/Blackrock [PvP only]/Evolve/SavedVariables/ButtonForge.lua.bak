@@ -1,0 +1,68 @@
+
+ButtonForgeSave = {
+	["AdvancedMode"] = true,
+	["AddonName"] = "Button Forge",
+	["ConfigureMode"] = false,
+	["RightClickSelfCast"] = false,
+	["Bars"] = {
+		{
+			["ButtonsLocked"] = true,
+			["VDriver"] = "",
+			["Label"] = "",
+			["Order"] = 0,
+			["Rows"] = 2,
+			["Left"] = 15.26671700423406,
+			["Cols"] = 3,
+			["HVehicle"] = true,
+			["HSpec1"] = false,
+			["HBonusBar"] = true,
+			["GridAlwaysOn"] = false,
+			["BonusBar"] = false,
+			["HSpec2"] = false,
+			["Buttons"] = {
+				{
+					["MacroName"] = "DP",
+					["MacroBody"] = "/equip Riftmaker\n",
+					["Mode"] = "macro",
+					["MacroIndex"] = 39,
+				}, -- [1]
+				{
+					["MacroName"] = "SP",
+					["MacroBody"] = "/equip Gavel of Unearthed Secrets\n/equip Orb of the Soul-Eater\n/equip The Black Stalk\n",
+					["Mode"] = "macro",
+					["MacroIndex"] = 48,
+				}, -- [2]
+				{
+					["MacroName"] = "DMG",
+					["MacroBody"] = "/equip Gavel of Unearthed Secrets\n/equip Orb of the Soul-Eater\n/equip The Black Stalk\n",
+					["Mode"] = "macro",
+					["MacroIndex"] = 38,
+				}, -- [3]
+				{
+					["MacroBody"] = "/equip Hand of Eternity\n/equip Soul-Wand of the Aldor\n",
+					["Mode"] = "macro",
+					["MacroName"] = "MP5",
+					["MacroIndex"] = 41,
+				}, -- [4]
+				{
+					["MacroBody"] = "/equip Staff of Natural Fury",
+					["Mode"] = "macro",
+					["MacroName"] = "Spirit",
+					["MacroIndex"] = 49,
+				}, -- [5]
+				{
+					["MacroBody"] = "/equip Runesong Dagger\n/equip Windcaller's Orb\n/equip Soul-Wand of the Aldor\n",
+					["Mode"] = "macro",
+					["MacroName"] = "Heal",
+					["MacroIndex"] = 40,
+				}, -- [6]
+			},
+			["Scale"] = 0.8442584353323309,
+			["Top"] = 95.38530485424252,
+			["TooltipsOn"] = false,
+		}, -- [1]
+	},
+	["Version"] = 0.9,
+	["VersionMinor"] = 4,
+}
+BFSave = nil
