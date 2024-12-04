@@ -564,7 +564,7 @@ local function WAHK(button, ok)
     if not button then
         return
     end
-	--3.3.5a hackfix for First Aid usage (was interrupting the cast before)
+    --3.3.5a hackfix for First Aid usage (was interrupting the cast before)
     if button == "MultiBarBottomRightButton3" then
         return
     end
@@ -1023,7 +1023,6 @@ local ShowNameplatePetIds = {
     ["1863"] = true, -- Succubus
 }
 
-
 local function visibilityPlate(plate, bool)
     local HealthBar, CastBar = plate:GetChildren()
     local threat, hpborder, cbborder, cbshield, cbicon, overlay, oldname, level, bossicon, raidicon, elite = plate:GetRegions()
@@ -1066,40 +1065,25 @@ local function visibilityPlate(plate, bool)
     end
 end
 
-local function HideNameplate(nameplate)
-    if nameplate then
-        nameplate.wasHidden = true
+-- the rest of nameplate stuff
+local function HandleNewNameplate(nameplate, unit, name, hpborder)
+    if name and UnitCreatureType(unit) == "Totem" and not name:match("Tremor Totem") then
         visibilityPlate(nameplate, true)
-    end
-end
-
-local function HandleNewNameplate(nameplate, unit)
-    local name = UnitName(unit)
-
-    local _, hpborder = nameplate:GetRegions()
-
-    -- the rest of nameplate stuff
-    if name and name:match("Totem") and UnitCreatureType(unit) == "Totem" and not name:match("Tremor Totem") then
-        HideNameplate(nameplate)
     elseif name and (HideNameplateUnits[name]) then
-        HideNameplate(nameplate)
+        visibilityPlate(nameplate, true)
     elseif name and ShrinkPlates[name] then
-        HideNameplate(nameplate)
+        visibilityPlate(nameplate, true)
         if nameplate.newName then
             nameplate.newName:SetTextColor(1, 0, 0)
         end
     elseif name and name == "Tremor Totem" then
         hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
-    elseif UnitCreatureFamily(unit) == "Succubus" then
-        if nameplate.newName then
-            nameplate.newName:SetText("Succubus")
-        end
-    elseif UnitCreatureFamily(unit) == "Felhunter" then
-        if nameplate.newName then
+    elseif UnitCreatureFamily(unit) == "Succubus" and nameplate.newName then
+        nameplate.newName:SetText("Succubus")
+    elseif UnitCreatureFamily(unit) == "Felhunter" and nameplate.newName then
             nameplate.newName:SetText("Felhunter")
-        end
     elseif UnitPlayerControlled(unit) and not UnitIsPlayer(unit) then
-        HideNameplate(nameplate)
+        visibilityPlate(nameplate, true)
     end
 end
 
@@ -1108,26 +1092,20 @@ local COMBATLOG_FILTER_HOSTILE_PLAYERS = COMBATLOG_FILTER_HOSTILE_PLAYERS;
 local CombatLog_Object_IsA = CombatLog_Object_IsA
 
 local function PlateScript(...)
-    local _, action, _, _, sourceFlags, _, _, _, spellId  = ...
-
+    local _, action, _, _, sourceFlags, _, _, _, spellId = ...
     local isSourceEnemy = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_HOSTILE_PLAYERS)
     local _, instanceType = IsInInstance()
 
-    if action ~= "SPELL_CAST_SUCCESS" or spellId ~= 8143 then
-        return
-    end
-
-    if isSourceEnemy and instanceType == "arena" and spellId == 8143 and action == "SPELL_CAST_SUCCESS" then
+    if spellId == 8143 and action == "SPELL_CAST_SUCCESS" and isSourceEnemy and instanceType == "arena" then
         PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.wav", "master")
     end
-
 end
+
 local plateEventFrame = CreateFrame("Frame")
 plateEventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 plateEventFrame:SetScript("OnEvent", function(self, event, ...)
     PlateScript(...)
 end)
-
 
 -- Adding class icons on party members inside arena for more clarity where teammates are positioned
 local classmarkers = {
@@ -1146,7 +1124,7 @@ local classmarkers = {
 
 local function MovePlateTexture(texture, addOffset)
     if not addOffset then
-        addOffset = 0
+        addOffset = 20
     end
 
     for i = 1, texture:GetNumPoints() do
@@ -1166,10 +1144,10 @@ local function AddPlates(unit)
 
     -- Change border plate texture art
     if UnitIsUnit("target", unit) then
-                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
-                else
-                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
-	end
+        hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
+    else
+        hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
+    end
 
     -- Hide level and expand healthbar
     level:Hide()
@@ -1194,13 +1172,13 @@ local function AddPlates(unit)
     overlay:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
 
     -- Move plates visually up
-    MovePlateTexture(HealthBar, 20)
+    MovePlateTexture(HealthBar, 8)
     if not nameplate.hasMoved then
-        MovePlateTexture(hpborder, 20)
-        MovePlateTexture(oldname, 20)
+        MovePlateTexture(hpborder, 8)
+        MovePlateTexture(oldname, 8)
         nameplate.hasMoved = true
     end
-    cbborder:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 24)
+    cbborder:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 12)
 
     -- Set shield castbar like a regular castbar (TBC had no shield castbars, so begone cancer WOTLK ugly "feature"!)
     if cbshield:GetTexture() ~= cbborder:GetTexture() then
@@ -1208,7 +1186,7 @@ local function AddPlates(unit)
         cbshield:SetSize(cbborder:GetSize())
         cbshield:SetTexCoord(1, 0, 0, 1)
     end
-    cbshield:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 24)
+    cbshield:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 12)
     CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
     cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
 
@@ -1222,9 +1200,9 @@ local function AddPlates(unit)
         nameplate.newName = nameplate:CreateFontString(nil, "ARTWORK")
         nameplate.newName:SetFont("Fonts\\FRIZQT__.TTF", 14)
         nameplate.newName:SetJustifyH("CENTER")
-        nameplate.newName:SetWidth(160)
+        nameplate.newName:SetWidth(150)
         nameplate.newName:SetHeight(9)
-        nameplate.newName:SetAllPoints(oldname)
+        nameplate.newName:SetPoint("CENTER", oldname, 0, 0)
         nameplate.newName:SetShadowOffset(1, -1)
     end
 
@@ -1247,18 +1225,30 @@ local function AddPlates(unit)
     elseif not unitName and nameplate.newName then
         nameplate.newName:SetText("")
     end
-	
-    -- set unit
+
+    -- set some things..
     nameplate.unitToken = unit
 
     -- Prevent fading out nameplates
     if not np[nameplate] then
         np[nameplate] = true
 
-        nameplate:HookScript("OnUpdate", function()
-            nameplate:SetAlpha(1)
+        nameplate:HookScript("OnUpdate", function(self)
+            self:SetAlpha(1)
+
+            -- Custom castbar color
+            local _, cb = self:GetChildren()
+            if cb and cb:IsShown() then
+                if self.castbarColor then
+                    local r, g, b = unpack(self.castbarColor)
+                    cb:SetStatusBarColor(r, g, b)
+                else
+                    cb:SetStatusBarColor(1.0, 0.7, 0.0)
+                end
+            end
         end)
 
+        -- Highlight target plate
         nameplate:RegisterEvent("PLAYER_TARGET_CHANGED")
         nameplate:HookScript("OnEvent", function(self, event)
             if event == "PLAYER_TARGET_CHANGED" then
@@ -1272,7 +1262,7 @@ local function AddPlates(unit)
             end
         end)
     end
-	
+
     if UnitIsPlayer(unit) and UnitIsFriend("player", unit) and type == "arena" then
         if not nameplate.classTexture then
             nameplate.classTexture = nameplate:CreateTexture(nil, "OVERLAY")
@@ -1310,7 +1300,7 @@ local function AddPlates(unit)
         end
     end
 
-    HandleNewNameplate(nameplate, unit)
+    HandleNewNameplate(nameplate, unit, unitName, hpborder)
 end
 
 -- Since we disabled macro & keybind text above, there is no way to tell when target is too far to cast on, so adding this mechanic instead... (colouring action bar buttons that are out of range & out of mana to be casted...)
@@ -1358,7 +1348,6 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
         nt:Show()
     end
 end)
-
 
 -- Hide the cooldown bling on action bars (Detective Pyralis is back on the case!)
 hooksecurefunc("CooldownFrame_SetTimer", function(self, start, duration, enable)
@@ -1506,6 +1495,144 @@ do
     end
 end
 
+-- Plate castbar
+local spellColors = {
+	--Mage
+    ["Frostbolt"] = { r = 0, g = 0.67, b = 1 },
+	["Polymorph"] = { r = 1, g = 1, b = 1 },
+	["Blizzard"] = { r = 0, g = 0.67, b = 1 },
+	["Fireball"] = { r = 1, g = 0.16, b = 0 },
+	["Flamestrike"] = { r = 1, g = 0.16, b = 0 },
+	["Scorch"] = { r = 1, g = 0.16, b = 0 },
+	--Priest
+	["Mana Burn"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Mind Blast"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Mind Flay"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Vampiric Touch"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Flash Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Greater Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Binding Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Lesser Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Prayer of Healing"] = { r = 0.6, g = 1, b = 0 },
+	["Smite"] = { r = 1, g = 1, b = 0 },
+	["Holy Fire"] = { r = 1, g = 1, b = 0 },
+	--Warlock
+	["Shadow Bolt"] = { r = 0.5, g = 0.2, b = 0.8 },
+	["Fear"] = { r = 0.5, g = 0.2, b = 0.8 },
+	["Howl of Terror"] = { r = 0.5, g = 0.2, b = 0.8 },
+	["Incinerate"] = { r = 1, g = 0.16, b = 0 },
+	["Searing Pain"] = { r = 1, g = 0.16, b = 0 },
+	["Rain of Fire"] = { r = 1, g = 0.16, b = 0 },
+	["Immolate"] = { r = 1, g = 0.16, b = 0 },
+	["Hellfire"] = { r = 1, g = 0.16, b = 0 },
+	["Soul Fire"] = { r = 1, g = 0.16, b = 0 },
+	["Drain Mana"] = { r = 0, g = 0.67, b = 1 },
+	["Drain Life"] = { r = 0.6, g = 1, b = 0 },
+	--Druid
+	["Cyclone"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Entangling Roots"] = { r = 1, g = 0.5, b = 0 },
+	["Healing Touch"] = { r = 0.6, g = 1, b = 0 },
+	["Regrowth"] = { r = 0.6, g = 1, b = 0 },
+	["Tranquility"] = { r = 0.6, g = 1, b = 0 },
+	["Wrath"] = { r = 1, g = 1, b = 0 },
+	--Hunter
+	--Shaman
+	["Healing Wave"] = { r = 0.6, g = 1, b = 0 },
+	["Chain Heal"] = { r = 0.6, g = 1, b = 0 },
+	["Lesser Healing Wave"] = { r = 0.6, g = 1, b = 0 },
+	--Paladin
+	["Flash of Light"] = { r = 0.6, g = 1, b = 0 },
+	["Holy Light"] = { r = 0.6, g = 1, b = 0 },
+}
+
+local function getSpellColor(spellName)
+    local color = spellColors[spellName]
+    if color then
+        return color.r, color.g, color.b
+    else
+        return 1.0, 0.7, 0.0
+    end
+end
+
+hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
+    local unit = ...
+
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+        local name, _, text, notInterruptible
+
+        if event == "UNIT_SPELLCAST_START" then
+            name, _, text, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)
+        else
+            name, _, text, _, _, _, _, notInterruptible = UnitChannelInfo(unit)
+        end
+
+        if not name then
+            return
+        end
+
+        local r, g, b = getSpellColor(name)
+
+        if unit and string.match(unit, "nameplate%d") then
+            local plate = C_NamePlate.GetNamePlateForUnit(unit)
+            if not plate then
+                return
+            end
+
+            if UnitIsPlayer(unit) and (UnitIsEnemy("player", unit) == 1) then
+                local _, CastBar = plate:GetChildren()
+                local _, _, cbborder, cbshield, cbicon = plate:GetRegions()
+
+                if notInterruptible then
+                    cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 12)
+                end
+                cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 12)
+                CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
+                cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
+            end
+
+            plate.castbarColor = { r, g, b }
+        elseif self == TargetFrameSpellBar and unit == self.unit then
+            self.castColor = { r, g, b }
+        elseif self == FocusFrameSpellBar and unit == self.unit then
+            self.castColor = { r, g, b }
+        end
+    end
+end)
+
+-- Custom colored Target & Focus Castbar
+local interval = 0.1
+local lastUpdate = 0
+
+for _, v in pairs({ TargetFrameSpellBar, FocusFrameSpellBar }) do
+    if v then
+        v.Text = _G[v:GetName() .. "Text"]
+        v:HookScript("OnUpdate", function(self, elapsed)
+            lastUpdate = lastUpdate + elapsed
+            if lastUpdate >= interval then
+                lastUpdate = 0
+
+                local r, g, b
+
+                local castText = self.Text and self.Text:GetText()
+                if castText == INTERRUPTED or castText == FAILED then
+                    r, g, b = 1, 0, 0
+                    self.holdTime = 0 -- faster fade out
+                    return
+                else
+                    if self.castColor then
+                        r, g, b = unpack(self.castColor)
+                    else
+                        r, g, b = 1.0, 0.7, 0.0
+                    end
+                end
+
+                self:SetStatusBarColor(r, g, b)
+            end
+        end)
+    end
+end
+
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
 evolvedFrame:RegisterEvent("PLAYER_LOGIN")
@@ -1540,31 +1667,6 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unit = ...
         AddPlates(unit)
-    end
-end)
-
--- Needed to fix castbar position
-local plateCastListener = CreateFrame("Frame")
-plateCastListener:RegisterEvent("UNIT_SPELLCAST_START")
-plateCastListener:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
-plateCastListener:SetScript("OnEvent", function(self, event, ...)
-    local unit, castName = ...
-    if castName and string.match(unit, "nameplate%d") then
-        local plate = C_NamePlate.GetNamePlateForUnit(unit)
-        if not plate or not UnitIsPlayer(unit) or (UnitIsFriend("player", unit) == 1) then
-            return
-        end
-        local _, CastBar = plate:GetChildren()
-        local _, _, cbborder, cbshield, cbicon = plate:GetRegions()
-        cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 24)
-        if cbshield:GetTexture() ~= cbborder:GetTexture() then
-            cbshield:SetTexture(cbborder:GetTexture())
-            cbshield:SetSize(cbborder:GetSize())
-            cbshield:SetTexCoord(1, 0, 0, 1)
-        end
-        cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 24)
-        CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
-        cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
     end
 end)
 
