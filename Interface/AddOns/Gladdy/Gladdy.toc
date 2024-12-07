@@ -28,7 +28,6 @@ Modules\Classicon.lua
 Modules\Clicks.lua
 Modules\Diminishings.lua
 Modules\Highlight.lua
-Modules\TotemPlates.lua
 Modules\Trinket.lua
 Modules\Racial.lua
 Modules\Cooldowns.lua

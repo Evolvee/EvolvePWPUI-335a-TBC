@@ -953,7 +953,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         return
     end
 
-    if UnitIsPlayer(unit) then
+   -- if UnitIsPlayer(unit) then
+    if unit then
         local name = UnitName(unit)
         GameTooltipTextLeft1:SetFormattedText("%s", name)
 
@@ -962,11 +963,29 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             GameTooltipTextLeft2:SetFormattedText("")
         end
 
-        for i = 2, self:NumLines() do
-            local lines = _G["GameTooltipTextLeft" .. i]
-            if i > 2 then
-                if lines:GetText() == PVP_ENABLED then
-                    lines:SetText("")
+        for i = 1, self:NumLines() do
+            local line = _G["GameTooltipTextLeft" .. i]
+            if line then
+                local text = line:GetText()
+                if text then
+                    local newText = string.gsub(text, " %(Player%)", "")
+                    if i > 2 and newText == PVP_ENABLED then
+                        line:SetText("")
+                    else
+                        line:SetText(newText)
+                    end
+                end
+            end
+        end
+
+        -- Totems/Pets
+        if not UnitIsPlayer(unit) then
+            for i = 1, self:NumLines() do
+                local lines = _G["GameTooltipTextLeft" .. i]
+                if i > 1 then
+                    if lines then
+                        lines:SetText("")
+                    end
                 end
             end
         end
@@ -974,7 +993,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         -- Add class-coloured names on mouseover tooltips
         local _, class = UnitClass(unit)
         local color = class and CUSTOM_CLASS_COLORS[class]
-        if color then
+        if color and UnitIsPlayer(unit) then
             local text = GameTooltipTextLeft1:GetText()
             if text then
                 GameTooltipTextLeft1:SetFormattedText("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text:match("|cff\x\x\x\x\x\x(.+)|r") or text)
@@ -1042,9 +1061,12 @@ local function visibilityPlate(plate, bool)
         HealthBar:SetAlpha(0)
         CastBar:SetAlpha(0)
 
-        -- Pets show castbar that keep resetting on every cast
+        -- Hide friendly castbar
         cbborder:ClearAllPoints()
         cbborder:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
+        cbshield:ClearAllPoints()
+        cbshield:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
+
     else
         if plate.newName then
             plate.newName:Show()
@@ -1081,7 +1103,7 @@ local function HandleNewNameplate(nameplate, unit, name, hpborder)
     elseif UnitCreatureFamily(unit) == "Succubus" and nameplate.newName then
         nameplate.newName:SetText("Succubus")
     elseif UnitCreatureFamily(unit) == "Felhunter" and nameplate.newName then
-            nameplate.newName:SetText("Felhunter")
+        nameplate.newName:SetText("Felhunter")
     elseif UnitPlayerControlled(unit) and not UnitIsPlayer(unit) then
         visibilityPlate(nameplate, true)
     end
@@ -1130,6 +1152,66 @@ local function MovePlateTexture(texture, addOffset)
     for i = 1, texture:GetNumPoints() do
         local point, relativeTo, relativePoint, x, y = texture:GetPoint(i)
         texture:SetPoint(point, relativeTo, relativePoint, x, y + addOffset)
+    end
+end
+
+-- Plate castbar
+local spellColors = {
+    --Mage
+    ["Frostbolt"] = { r = 0, g = 0.67, b = 1 },
+    ["Polymorph"] = { r = 1, g = 1, b = 1 },
+    ["Blizzard"] = { r = 0, g = 0.67, b = 1 },
+    ["Fireball"] = { r = 1, g = 0.16, b = 0 },
+    ["Flamestrike"] = { r = 1, g = 0.16, b = 0 },
+    ["Scorch"] = { r = 1, g = 0.16, b = 0 },
+    --Priest
+    ["Mana Burn"] = { r = 0.4, g = 0.4, b = 0.4 },
+    ["Mind Blast"] = { r = 0.4, g = 0.4, b = 0.4 },
+    ["Mind Flay"] = { r = 0.4, g = 0.4, b = 0.4 },
+    ["Vampiric Touch"] = { r = 0.4, g = 0.4, b = 0.4 },
+    ["Flash Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Greater Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Binding Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Lesser Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Prayer of Healing"] = { r = 0.6, g = 1, b = 0 },
+    ["Smite"] = { r = 1, g = 1, b = 0 },
+    ["Holy Fire"] = { r = 1, g = 1, b = 0 },
+    --Warlock
+    ["Shadow Bolt"] = { r = 0.5, g = 0.2, b = 0.8 },
+    ["Fear"] = { r = 0.5, g = 0.2, b = 0.8 },
+    ["Howl of Terror"] = { r = 0.5, g = 0.2, b = 0.8 },
+    ["Incinerate"] = { r = 1, g = 0.16, b = 0 },
+    ["Searing Pain"] = { r = 1, g = 0.16, b = 0 },
+    ["Rain of Fire"] = { r = 1, g = 0.16, b = 0 },
+    ["Immolate"] = { r = 1, g = 0.16, b = 0 },
+    ["Hellfire"] = { r = 1, g = 0.16, b = 0 },
+    ["Soul Fire"] = { r = 1, g = 0.16, b = 0 },
+    ["Drain Mana"] = { r = 0, g = 0.67, b = 1 },
+    ["Drain Life"] = { r = 0.6, g = 1, b = 0 },
+    --Druid
+    ["Cyclone"] = { r = 0.4, g = 0.4, b = 0.4 },
+    ["Entangling Roots"] = { r = 1, g = 0.5, b = 0 },
+    ["Healing Touch"] = { r = 0.6, g = 1, b = 0 },
+    ["Regrowth"] = { r = 0.6, g = 1, b = 0 },
+    ["Tranquility"] = { r = 0.6, g = 1, b = 0 },
+    ["Wrath"] = { r = 1, g = 1, b = 0 },
+    --Hunter
+    --Shaman
+    ["Healing Wave"] = { r = 0.6, g = 1, b = 0 },
+    ["Chain Heal"] = { r = 0.6, g = 1, b = 0 },
+    ["Lesser Healing Wave"] = { r = 0.6, g = 1, b = 0 },
+    --Paladin
+    ["Flash of Light"] = { r = 0.6, g = 1, b = 0 },
+    ["Holy Light"] = { r = 0.6, g = 1, b = 0 },
+}
+
+local function getSpellColor(spellName)
+    local color = spellColors[spellName]
+    if color then
+        return color.r, color.g, color.b
+    else
+        return 1.0, 0.7, 0.0
     end
 end
 
@@ -1195,6 +1277,15 @@ local function AddPlates(unit)
     local _, type = IsInInstance()
     local unitName = UnitName(unit)
 
+    -- Change plate priority of visually displaying
+    if not InCombatLockdown() then
+        if UnitIsEnemy("player", unit) or UnitName(unit) == "Tremor Totem" then
+            nameplate:SetFrameStrata("TOOLTIP")
+        else
+            nameplate:SetFrameStrata("FULLSCREEN_DIALOG")
+        end
+    end
+
     -- Custom Class-coloured nameplate names
     if not nameplate.newName then
         nameplate.newName = nameplate:CreateFontString(nil, "ARTWORK")
@@ -1229,6 +1320,12 @@ local function AddPlates(unit)
     -- set some things..
     nameplate.unitToken = unit
 
+    if not nameplate.castText then
+        nameplate.castText = nameplate:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+        nameplate.castText:SetSize(185, 16)
+        nameplate.castText:SetPoint("CENTER", CastBar, "CENTER", 0, 0)
+    end
+
     -- Prevent fading out nameplates
     if not np[nameplate] then
         np[nameplate] = true
@@ -1238,13 +1335,27 @@ local function AddPlates(unit)
 
             -- Custom castbar color
             local _, cb = self:GetChildren()
-            if cb and cb:IsShown() then
-                if self.castbarColor then
-                    local r, g, b = unpack(self.castbarColor)
-                    cb:SetStatusBarColor(r, g, b)
+            if cb and (cb:IsShown() == 1) then
+                local name = UnitCastingInfo(self.unitToken) or UnitChannelInfo(self.unitToken)
+                local r, g, b = getSpellColor(name)
+                cb:SetStatusBarColor(r, g, b)
+                if name then
+                    if not self.castText:IsShown() then
+                        self.castText:Show()
+                    end
+                    self.castText:SetText(name)
                 else
-                    cb:SetStatusBarColor(1.0, 0.7, 0.0)
+                    if self.castText:IsShown() then
+                        self.castText:Hide()
+                    end
+                    self.castText:SetText("")
                 end
+            else
+                cb:SetStatusBarColor(1.0, 0.7, 0.0)
+                if self.castText:IsShown() then
+                    self.castText:Hide()
+                end
+                self.castText:SetText("")
             end
         end)
 
@@ -1495,66 +1606,6 @@ do
     end
 end
 
--- Plate castbar
-local spellColors = {
-	--Mage
-    ["Frostbolt"] = { r = 0, g = 0.67, b = 1 },
-	["Polymorph"] = { r = 1, g = 1, b = 1 },
-	["Blizzard"] = { r = 0, g = 0.67, b = 1 },
-	["Fireball"] = { r = 1, g = 0.16, b = 0 },
-	["Flamestrike"] = { r = 1, g = 0.16, b = 0 },
-	["Scorch"] = { r = 1, g = 0.16, b = 0 },
-	--Priest
-	["Mana Burn"] = { r = 0.4, g = 0.4, b = 0.4 },
-	["Mind Blast"] = { r = 0.4, g = 0.4, b = 0.4 },
-	["Mind Flay"] = { r = 0.4, g = 0.4, b = 0.4 },
-	["Vampiric Touch"] = { r = 0.4, g = 0.4, b = 0.4 },
-	["Flash Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Greater Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Binding Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Lesser Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Prayer of Healing"] = { r = 0.6, g = 1, b = 0 },
-	["Smite"] = { r = 1, g = 1, b = 0 },
-	["Holy Fire"] = { r = 1, g = 1, b = 0 },
-	--Warlock
-	["Shadow Bolt"] = { r = 0.5, g = 0.2, b = 0.8 },
-	["Fear"] = { r = 0.5, g = 0.2, b = 0.8 },
-	["Howl of Terror"] = { r = 0.5, g = 0.2, b = 0.8 },
-	["Incinerate"] = { r = 1, g = 0.16, b = 0 },
-	["Searing Pain"] = { r = 1, g = 0.16, b = 0 },
-	["Rain of Fire"] = { r = 1, g = 0.16, b = 0 },
-	["Immolate"] = { r = 1, g = 0.16, b = 0 },
-	["Hellfire"] = { r = 1, g = 0.16, b = 0 },
-	["Soul Fire"] = { r = 1, g = 0.16, b = 0 },
-	["Drain Mana"] = { r = 0, g = 0.67, b = 1 },
-	["Drain Life"] = { r = 0.6, g = 1, b = 0 },
-	--Druid
-	["Cyclone"] = { r = 0.4, g = 0.4, b = 0.4 },
-	["Entangling Roots"] = { r = 1, g = 0.5, b = 0 },
-	["Healing Touch"] = { r = 0.6, g = 1, b = 0 },
-	["Regrowth"] = { r = 0.6, g = 1, b = 0 },
-	["Tranquility"] = { r = 0.6, g = 1, b = 0 },
-	["Wrath"] = { r = 1, g = 1, b = 0 },
-	--Hunter
-	--Shaman
-	["Healing Wave"] = { r = 0.6, g = 1, b = 0 },
-	["Chain Heal"] = { r = 0.6, g = 1, b = 0 },
-	["Lesser Healing Wave"] = { r = 0.6, g = 1, b = 0 },
-	--Paladin
-	["Flash of Light"] = { r = 0.6, g = 1, b = 0 },
-	["Holy Light"] = { r = 0.6, g = 1, b = 0 },
-}
-
-local function getSpellColor(spellName)
-    local color = spellColors[spellName]
-    if color then
-        return color.r, color.g, color.b
-    else
-        return 1.0, 0.7, 0.0
-    end
-end
-
 hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
     local unit = ...
 
@@ -1579,6 +1630,7 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
                 return
             end
 
+            -- Fix position
             if UnitIsPlayer(unit) and (UnitIsEnemy("player", unit) == 1) then
                 local _, CastBar = plate:GetChildren()
                 local _, _, cbborder, cbshield, cbicon = plate:GetRegions()
@@ -1591,7 +1643,6 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
                 cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
             end
 
-            plate.castbarColor = { r, g, b }
         elseif self == TargetFrameSpellBar and unit == self.unit then
             self.castColor = { r, g, b }
         elseif self == FocusFrameSpellBar and unit == self.unit then
@@ -1601,34 +1652,26 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
 end)
 
 -- Custom colored Target & Focus Castbar
-local interval = 0.1
-local lastUpdate = 0
-
 for _, v in pairs({ TargetFrameSpellBar, FocusFrameSpellBar }) do
     if v then
         v.Text = _G[v:GetName() .. "Text"]
         v:HookScript("OnUpdate", function(self, elapsed)
-            lastUpdate = lastUpdate + elapsed
-            if lastUpdate >= interval then
-                lastUpdate = 0
+            local r, g, b
 
-                local r, g, b
-
-                local castText = self.Text and self.Text:GetText()
-                if castText == INTERRUPTED or castText == FAILED then
-                    r, g, b = 1, 0, 0
-                    self.holdTime = 0 -- faster fade out
-                    return
+            local castText = self.Text and self.Text:GetText()
+            if castText == INTERRUPTED or castText == FAILED then
+                r, g, b = 1, 0, 0
+                self.holdTime = 0 -- faster fade out
+                return
+            else
+                if self.castColor then
+                    r, g, b = unpack(self.castColor)
                 else
-                    if self.castColor then
-                        r, g, b = unpack(self.castColor)
-                    else
-                        r, g, b = 1.0, 0.7, 0.0
-                    end
+                    r, g, b = 1.0, 0.7, 0.0
                 end
-
-                self:SetStatusBarColor(r, g, b)
             end
+
+            self:SetStatusBarColor(r, g, b)
         end)
     end
 end
