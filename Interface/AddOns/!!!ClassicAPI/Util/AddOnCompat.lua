@@ -38,7 +38,7 @@ local function FindPreviousAddOn(AddOn)
 			end
 		end
 
-		Sort(DBAddOn, function (a, b) return Upper(a) < Upper(b) end)
+		Sort(DBAddOn, function(a, b) return Upper(a) < Upper(b) end)
 	end
 
 	for i=1,#DBAddOn do
@@ -58,26 +58,24 @@ local function Process(AddOn, Mode, ...)
 			if ( GetAddOnMetadata(AddOn, Meta) == Flag ) then
 				local PopupID = "CAPI_ADDONCOMPAT_"..AddOn
 				local URL = "https://gitlab.com/users/Tsoukie/projects"
-				local Width, Height = 540, 200
+				local Width, Height = 540, 250
 
 				StaticPopupDialogs[PopupID] = {
-					text = "ClassicAPI - Incompatible:\n\n|cffFFA500%s (%s)|r\n\nTo avoid issues please use version at:",
-					button1 = CLOSE,
+					text = "|cfffc4447ClassicAPI: Incompatible AddOn Found!|r\n\n[ |cffFFA500%s|r ]\n(|cffd3d3d3Author: %s|r)\n\nTo avoid issues please use an up-to-date version at:",
+					button1 = IGNORE,
 					timeout = 0,
 					whileDead = true,
-					hideOnEscape = false,
 					showAlert =  true,
 					hasEditBox = 1,
 					hasWideEditBox = 1,
-					OnShow = function (Self)
-						Self:SetSize(Width, Height)
-						Self.maxHeightSoFar = Height
-						Self.maxWidthSoFar = Width
+					OnUpdate = function(S)
+						S:SetSize(Width, Height)
 
-						local Edit = Self.wideEditBox
-						Edit:SetWidth(300)
-						Edit:SetText(URL)
-						Edit:SetScript("OnTextChanged", function(S) S:SetText(URL) end)
+						local E = S.wideEditBox
+						if ( E:GetText() ~= URL ) then
+							E:SetText(URL)
+							E:HighlightText(0)
+						end
 					end,
 				}
 

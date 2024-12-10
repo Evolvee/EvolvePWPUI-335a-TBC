@@ -14,30 +14,31 @@ local EVENT_ARCHIVE = {}
 
 local function EventHandler_Fire(Self, Listener, ...)
 	local Event = EVENT_ATLAS[Listener] or Listener
-
-	local Trigger = EventHandler[Event.."_TRIGGER"]
-	if ( Trigger and Trigger(nil, Listener, ...) == false ) then return end
-
 	local Registered = EVENT_OBJECT[Event]
-	local Shuffle = 1
+	if ( Registered ) then
+		local Trigger = EventHandler[Event.."_TRIGGER"]
+		if ( Trigger and Trigger(nil, Listener, ...) == false ) then return end
 
-	for i=1,#Registered do
-		local Obj = Registered[i]
+		local Shuffle = 1
 
-		if ( Obj ) then
-			local OnEvent = Obj:GetScript("OnEvent")
-			if ( OnEvent ) then
-				OnEvent(Obj, Event, ...)
-			end
+		for i=1,#Registered do
+			local Obj = Registered[i]
 
-			if ( i ~= Shuffle ) then
-				Registered[Shuffle] = Obj
+			if ( Obj ) then
+				local OnEvent = Obj:GetScript("OnEvent")
+				if ( OnEvent ) then
+					OnEvent(Obj, Event, ...)
+				end
+
+				if ( i ~= Shuffle ) then
+					Registered[Shuffle] = Obj
+					Registered[i] = nil
+				end
+
+				Shuffle = Shuffle + 1
+			else
 				Registered[i] = nil
 			end
-
-			Shuffle = Shuffle + 1
-		else
-			Registered[i] = nil
 		end
 	end
 end

@@ -3,6 +3,7 @@
 local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
+local GetTime, UnitCastingInfo, UnitChannelInfo = GetTime, UnitCastingInfo, UnitChannelInfo
 local np = {}
 
 --dark theme
@@ -1318,25 +1319,43 @@ local function AddPlates(unit)
     end
 
     -- set some things..
-    nameplate.unitToken = unit
+    nameplate.unit = unit
 
     if not nameplate.castText then
         nameplate.castText = nameplate:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
         nameplate.castText:SetSize(185, 16)
         nameplate.castText:SetPoint("CENTER", CastBar, "CENTER", 0, 0)
     end
+	
+    -- Plate spark
+    if not nameplate.barSpark then
+        nameplate.barSpark = nameplate:CreateTexture(nil, "OVERLAY")
+        nameplate.barSpark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+        nameplate.barSpark:SetSize(32, 32)
+        nameplate.barSpark:SetPoint("CENTER", CastBar, 0, 0)
+        nameplate.barSpark:SetBlendMode("ADD")
+    end
 
     -- Prevent fading out nameplates
     if not np[nameplate] then
         np[nameplate] = true
 
-        nameplate:HookScript("OnUpdate", function(self)
+        nameplate:HookScript("OnUpdate", function(self, elapsed)
             self:SetAlpha(1)
 
             -- Custom castbar color
             local _, cb = self:GetChildren()
             if cb and (cb:IsShown() == 1) then
-                local name = UnitCastingInfo(self.unitToken) or UnitChannelInfo(self.unitToken)
+                local name = UnitCastingInfo(self.unit)
+                local casting = nil
+
+                if name then
+                    casting = true
+                else
+                    name = UnitChannelInfo(self.unit)
+                    casting = false
+                end
+
                 local r, g, b = getSpellColor(name)
                 cb:SetStatusBarColor(r, g, b)
                 if name then
@@ -1350,12 +1369,32 @@ local function AddPlates(unit)
                     end
                     self.castText:SetText("")
                 end
+
+                local value = cb:GetValue()
+                local _, maxValue = cb:GetMinMaxValues()
+
+                if casting and self.barSpark and value and maxValue then
+                    value = value + elapsed
+                    if ( value >= maxValue ) then
+                        self.barSpark:Hide()
+                        return
+                    end
+
+                    local sparkPosition = (value / maxValue) * cb:GetWidth()
+                    self.barSpark:SetPoint("CENTER", cb, "LEFT", sparkPosition, 2)
+                    if not self.barSpark:IsShown() then
+                        self.barSpark:Show()
+                    end
+                end
             else
                 cb:SetStatusBarColor(1.0, 0.7, 0.0)
                 if self.castText:IsShown() then
                     self.castText:Hide()
                 end
                 self.castText:SetText("")
+                if self.barSpark:IsShown() then
+                    self.barSpark:Hide()
+                end
             end
         end)
 
@@ -1363,9 +1402,9 @@ local function AddPlates(unit)
         nameplate:RegisterEvent("PLAYER_TARGET_CHANGED")
         nameplate:HookScript("OnEvent", function(self, event)
             if event == "PLAYER_TARGET_CHANGED" then
-                if UnitIsUnit("target", nameplate.unitToken) then
+                if UnitIsUnit("target", nameplate.unit) then
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
-                elseif UnitName(nameplate.unitToken) == "Tremor Totem" then
+                elseif UnitName(nameplate.unit) == "Tremor Totem" then
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
                 else
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
@@ -1610,7 +1649,7 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
     local unit = ...
 
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
-        local name, _, text, notInterruptible
+        local name, _, text, notInterruptible, startTime, endTime
 
         if event == "UNIT_SPELLCAST_START" then
             name, _, text, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)

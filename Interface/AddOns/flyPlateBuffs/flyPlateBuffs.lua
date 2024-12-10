@@ -659,7 +659,6 @@ function fPB.UpdateAllNameplates(updateOptions)
 	for i, p in ipairs(C_NamePlate_GetNamePlates()) do
 		local unit = p.namePlateUnitToken
 		if unit then
-			print(unit)
 			UpdateUnitAuras(unit,updateOptions)
 		end
 	end
@@ -669,6 +668,7 @@ local UpdateAllNameplates = fPB.UpdateAllNameplates
 local function Nameplate_Added(...)
 	local nameplateID = ...
 	local frame = C_NamePlate_GetNamePlateForUnit(nameplateID)
+	if frame then frame.namePlateUnitToken = nameplateID end
 	if frame and frame.BuffFrame then
 		if db.notHideOnPersonalResource and UnitIsUnit(nameplateID,"player") then
 			frame.BuffFrame:SetAlpha(1)

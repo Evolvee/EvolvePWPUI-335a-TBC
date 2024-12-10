@@ -120,21 +120,21 @@ function Clicks:SetupAttribute(button, key, mod, action, spell)
     if button:GetName() == "GladdyButtonFrame1" then
         if key == "1" then
             attr = "macrotext1"
-            text = "/target arena1\n/focus arena2"
+            text = "/cleartarget\n/clearfocus\n/target arena1\n/focus [nodead] arena2"
             button.secure:SetAttribute("type1", "macro")
         elseif key == "2" then
             attr = "macrotext2"
-            text = "/focus arena1"
+            text = "/clearfocus\n/focus arena1"
             button.secure:SetAttribute("type2", "macro")
         end
     elseif button:GetName() == "GladdyButtonFrame2" then
         if key == "1" then
             attr = "macrotext1"
-            text = "/target arena2\n/focus arena1"
+            text = "/cleartarget\n/clearfocus\n/target arena2\n/focus [nodead] arena1"
             button.secure:SetAttribute("type1", "macro")
         elseif key == "2" then
             attr = "macrotext2"
-            text = "/focus arena2"
+            text = "/clearfocus\n/focus arena2"
             button.secure:SetAttribute("type2", "macro")
         end
     else

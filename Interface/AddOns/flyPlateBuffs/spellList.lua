@@ -22,7 +22,6 @@ local defaultSpells1 = {--Highest prio spells (distinguished via size by default
     4068, --Iron Grenade
     15753, --Linken's Boomerang Stun
     13237, --Goblin Mortar trinket
-    18798, --Freezing Band
     47476, --Strangulate
     47481, --Gnaw
     51209, --Hungering Cold
