@@ -1281,9 +1281,9 @@ local function AddPlates(unit)
     -- Change plate priority of visually displaying
     if not InCombatLockdown() then
         if UnitIsEnemy("player", unit) or UnitName(unit) == "Tremor Totem" then
-            nameplate:SetFrameStrata("TOOLTIP")
+            nameplate:SetFrameStrata("MEDIUM")
         else
-            nameplate:SetFrameStrata("FULLSCREEN_DIALOG")
+            nameplate:SetFrameStrata("LOW")
         end
     end
 
@@ -1381,7 +1381,7 @@ local function AddPlates(unit)
                     end
 
                     local sparkPosition = (value / maxValue) * cb:GetWidth()
-                    self.barSpark:SetPoint("CENTER", cb, "LEFT", sparkPosition, 2)
+                    self.barSpark:SetPoint("CENTER", cb, "LEFT", sparkPosition, -1)
                     if not self.barSpark:IsShown() then
                         self.barSpark:Show()
                     end
@@ -1649,7 +1649,7 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
     local unit = ...
 
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
-        local name, _, text, notInterruptible, startTime, endTime
+        local name, _, text, notInterruptible
 
         if event == "UNIT_SPELLCAST_START" then
             name, _, text, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)

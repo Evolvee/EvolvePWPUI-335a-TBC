@@ -5,12 +5,14 @@ flyPlateBuffsDB = {
 		["Evolve - Blackrock [PvP only]"] = "Default",
 		["Uitest - Blackrock [PvP only]"] = "Default",
 		["Uitestkek - Blackrock [PvP only]"] = "Default",
+		["Tabardsign - Blackrock [PvP only]"] = "Default",
+		["Tabardo - Blackrock [PvP only]"] = "Default",
 		["Evolvepwp - Blackrock [PvP only]"] = "Default",
 	},
 	["profiles"] = {
 		["Default"] = {
 			["xOffset"] = 35,
-			["yOffset"] = -28,
+			["yOffset"] = -40,
 			["plateAnchorPoint"] = "TOPRIGHT",
 			["durationPosition"] = 2,
 			["stackSize"] = 6,
