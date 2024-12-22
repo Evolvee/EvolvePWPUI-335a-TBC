@@ -123,6 +123,7 @@ local classmarkers = {
     ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Warlock",
 }
 
+-- Big Brain segment coming up, buckle up your seatbelts!
 local function determineClass(class1, class2)
     if class1 == nil and class2 == nil then -- Double stealth no icons
         class1, class2 = nil, nil
@@ -133,16 +134,57 @@ local function determineClass(class1, class2)
         if class2 == nil then
             class2 = "ROGUE"
         end
-    elseif (class1 == "PRIEST" and class2 == nil) or (class2 == "PRIEST" and class1 == nil) then -- DPR / DPM
+    elseif (class1 == "PRIEST" and class2 == nil) or (class2 == "PRIEST" and class1 == nil) then -- Priest/Rogue or Priest/Mage
         if class1 == nil then
-            if AuraUtil and AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") then
+            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
                 class1 = "MAGE"
             else
                 class1 = "ROGUE"
             end
         end
         if class2 == nil then
-            if AuraUtil and AuraUtil.FindAuraByName("Arcane Intellect", "arena1", "HELPFUL") then
+            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena1", "HELPFUL")) then
+                class2 = "MAGE"
+            else
+                class2 = "ROGUE"
+            end
+        end
+    elseif (class1 == "WARRIOR" and class2 == nil) or (class2 == "WARRIOR" and class1 == nil) then -- Warrior/Druid
+        if class1 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
+                class1 = "DRUID"
+            end
+        end
+        if class2 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena1", "HELPFUL")) then
+                class2 = "DRUID"
+            end
+        end
+    elseif (class1 == "WARLOCK" and class2 == nil) or (class2 == "WARLOCK" and class1 == nil) then -- Warlock/Rogue or Warlock/Druid
+        if class1 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
+                class1 = "DRUID"
+            else
+                class1 = "ROGUE"
+            end
+        end
+        if class2 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena1", "HELPFUL")) then
+                class2 = "DRUID"
+            else
+                class2 = "ROGUE"
+            end
+        end
+    elseif (class1 == "PALADIN" and class2 == nil) or (class2 == "PALADIN" and class1 == nil) then -- Paladin/Mage or Paladin/Rogue
+        if class1 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
+                class1 = "MAGE"
+            else
+                class1 = "ROGUE"
+            end
+        end
+        if class2 == nil then
+            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena1", "HELPFUL")) then
                 class2 = "MAGE"
             else
                 class2 = "ROGUE"
@@ -151,6 +193,7 @@ local function determineClass(class1, class2)
     end
     return class1, class2
 end
+
 
 function ACDFrame.Ticker()
     local self = ACDFrame
