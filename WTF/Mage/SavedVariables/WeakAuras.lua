@@ -79,7 +79,7 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Warrior",
-			["frameStrata"] = 1,
+			["frameStrata"] = 4,
 			["discrete_rotation"] = 0,
 			["animation"] = {
 				["start"] = {
@@ -106,16 +106,16 @@ WeakAurasSaved = {
 			["parent"] = "Circle Class Frames (TARGET)",
 			["alpha"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
+			["uid"] = "G(TBcTmVwJO",
+			["config"] = {
+			},
 			["color"] = {
 				1, -- [1]
 				0.9686274509803922, -- [2]
 				0.9725490196078431, -- [3]
 				1, -- [4]
 			},
-			["config"] = {
-			},
 			["width"] = 95,
-			["uid"] = "G(TBcTmVwJO",
 			["conditions"] = {
 			},
 			["information"] = {
@@ -263,10 +263,6 @@ WeakAurasSaved = {
 			["anchorFrameFrame"] = "TargetFrame",
 			["regionType"] = "texture",
 			["blendMode"] = "BLEND",
-			["discrete_rotation"] = 0,
-			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-FOCUSFRAME-LARGE-FLASH",
-			["authorOptions"] = {
-			},
 			["animation"] = {
 				["start"] = {
 					["easeStrength"] = 3,
@@ -287,23 +283,27 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
-			["desc"] = "IMMUNE target highlight texture... (Bubble, Block, Cloak)",
+			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-FOCUSFRAME-LARGE-FLASH",
+			["discrete_rotation"] = 0,
+			["xOffset"] = -11,
+			["authorOptions"] = {
+			},
 			["tocversion"] = 30300,
 			["id"] = "IMMUNE target visual",
-			["alpha"] = 1,
+			["width"] = 256,
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SELECTFRAME",
 			["uid"] = "25IZogHGlrc",
 			["config"] = {
 			},
 			["inverse"] = false,
-			["width"] = 256,
+			["alpha"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
 				["forceEvents"] = true,
 			},
-			["xOffset"] = -11,
+			["desc"] = "IMMUNE target highlight texture... (Bubble, Block, Cloak)",
 		},
 		["castbar player casttime"] = {
 			["outline"] = "OUTLINE",
@@ -857,18 +857,18 @@ WeakAurasSaved = {
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [PRIEST]",
 			["parent"] = "Circle Class Frames (TARGET)",
-			["frameStrata"] = 1,
+			["frameStrata"] = 4,
 			["width"] = 95,
+			["config"] = {
+			},
+			["uid"] = "QqN00qtyjy)",
 			["color"] = {
 				1, -- [1]
 				0.9568627450980392, -- [2]
 				0.9607843137254902, -- [3]
 				1, -- [4]
 			},
-			["uid"] = "QqN00qtyjy)",
 			["anchorFrameType"] = "SELECTFRAME",
-			["config"] = {
-			},
 			["conditions"] = {
 			},
 			["information"] = {
@@ -950,7 +950,7 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Warlock",
-			["frameStrata"] = 1,
+			["width"] = 95,
 			["animation"] = {
 				["start"] = {
 					["type"] = "none",
@@ -975,18 +975,18 @@ WeakAurasSaved = {
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [WARLOCK]",
 			["parent"] = "Circle Class Frames (TARGET)",
-			["alpha"] = 1,
+			["frameStrata"] = 4,
 			["anchorFrameType"] = "SELECTFRAME",
-			["uid"] = "B95Gb9Dolel",
+			["alpha"] = 1,
 			["config"] = {
 			},
+			["uid"] = "B95Gb9Dolel",
 			["color"] = {
 				0.9882352941176471, -- [1]
 				1, -- [2]
 				0.9803921568627451, -- [3]
 				1, -- [4]
 			},
-			["width"] = 95,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -1131,11 +1131,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "g40yJbaHWxU",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "g40yJbaHWxU",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -1246,23 +1246,23 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Druid",
-			["anchorFrameType"] = "SELECTFRAME",
-			["discrete_rotation"] = 0,
-			["parent"] = "Circle Class Frames (TARGET)",
-			["tocversion"] = 30300,
-			["id"] = "Circle Class Frame [DRUID]",
 			["alpha"] = 1,
-			["frameStrata"] = 1,
-			["width"] = 95,
-			["xOffset"] = 42,
-			["config"] = {
-			},
-			["uid"] = "XZST3pUQSTa",
 			["color"] = {
 				0.984313725490196, -- [1]
 				0.9725490196078431, -- [2]
 				1, -- [3]
 				1, -- [4]
+			},
+			["discrete_rotation"] = 0,
+			["tocversion"] = 30300,
+			["id"] = "Circle Class Frame [DRUID]",
+			["parent"] = "Circle Class Frames (TARGET)",
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 95,
+			["uid"] = "XZST3pUQSTa",
+			["xOffset"] = 42,
+			["config"] = {
 			},
 			["conditions"] = {
 			},
@@ -1363,14 +1363,18 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Mage",
-			["width"] = 95,
+			["alpha"] = 1,
+			["authorOptions"] = {
+			},
 			["discrete_rotation"] = 0,
-			["parent"] = "Circle Class Frames (TARGET)",
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [MAGE]",
-			["alpha"] = 1,
-			["frameStrata"] = 1,
+			["parent"] = "Circle Class Frames (TARGET)",
+			["frameStrata"] = 4,
+			["width"] = 95,
 			["anchorFrameType"] = "SELECTFRAME",
+			["config"] = {
+			},
 			["color"] = {
 				1, -- [1]
 				0.9568627450980392, -- [2]
@@ -1378,10 +1382,6 @@ WeakAurasSaved = {
 				1, -- [4]
 			},
 			["uid"] = "OTPG(0)Aye7",
-			["config"] = {
-			},
-			["authorOptions"] = {
-			},
 			["conditions"] = {
 			},
 			["information"] = {
@@ -1543,33 +1543,33 @@ WeakAurasSaved = {
 			["anchorFrameFrame"] = "FocusFrame",
 			["regionType"] = "texture",
 			["blendMode"] = "BLEND",
-			["selfPoint"] = "CENTER",
-			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-FOCUSFRAME-LARGE-FLASH",
-			["authorOptions"] = {
-			},
 			["desc"] = "IMMUNE focus highlight texture... (Cloak, Bubble, Block)",
-			["discrete_rotation"] = 0,
-			["tocversion"] = 30300,
-			["id"] = "IMMUNE focus visual",
-			["alpha"] = 1,
-			["frameStrata"] = 2,
-			["width"] = 256,
-			["uid"] = "9BBiT8OblIu",
-			["config"] = {
-			},
-			["inverse"] = false,
-			["anchorFrameType"] = "SELECTFRAME",
-			["conditions"] = {
-			},
-			["information"] = {
-				["forceEvents"] = true,
-			},
+			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-FOCUSFRAME-LARGE-FLASH",
+			["selfPoint"] = "CENTER",
 			["color"] = {
 				1, -- [1]
 				0.007843137254901961, -- [2]
 				0, -- [3]
 				1, -- [4]
 			},
+			["authorOptions"] = {
+			},
+			["tocversion"] = 30300,
+			["id"] = "IMMUNE focus visual",
+			["anchorFrameType"] = "SELECTFRAME",
+			["frameStrata"] = 2,
+			["width"] = 256,
+			["uid"] = "9BBiT8OblIu",
+			["config"] = {
+			},
+			["inverse"] = false,
+			["alpha"] = 1,
+			["conditions"] = {
+			},
+			["information"] = {
+				["forceEvents"] = true,
+			},
+			["discrete_rotation"] = 0,
 		},
 		["player"] = {
 			["controlledChildren"] = {
@@ -1683,20 +1683,20 @@ WeakAurasSaved = {
 			["semver"] = "1.0.13",
 			["tocversion"] = 30402,
 			["id"] = "player",
-			["xOffset"] = 132.2259608440456,
+			["selfPoint"] = "CENTER",
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
 			["authorOptions"] = {
 			},
+			["borderInset"] = 1,
 			["config"] = {
 			},
 			["uid"] = "1zJ9fal2OdA",
-			["borderInset"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["selfPoint"] = "CENTER",
+			["xOffset"] = 132.2259608440456,
 		},
 		["PointIsCaptured"] = {
 			["xOffset"] = 0,
@@ -1816,27 +1816,27 @@ WeakAurasSaved = {
 			["regionType"] = "texture",
 			["blendMode"] = "BLEND",
 			["discrete_rotation"] = 0,
-			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n\n",
-			["texture"] = "Interface\\ICONS\\Achievement_BG_DefendXtowers_AV",
 			["parent"] = "Battleground Widget",
+			["texture"] = "Interface\\ICONS\\Achievement_BG_DefendXtowers_AV",
 			["color"] = {
 				1, -- [1]
 				1, -- [2]
 				1, -- [3]
 				1, -- [4]
 			},
+			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n\n",
 			["semver"] = "2.0.0",
 			["tocversion"] = 30300,
 			["id"] = "PointIsCaptured",
-			["alpha"] = 1,
+			["anchorFrameType"] = "SCREEN",
 			["frameStrata"] = 1,
 			["width"] = 18,
-			["authorOptions"] = {
-			},
+			["alpha"] = 1,
 			["config"] = {
 			},
 			["uid"] = "pzKfttOqwyz",
-			["anchorFrameType"] = "SCREEN",
+			["authorOptions"] = {
+			},
 			["conditions"] = {
 			},
 			["information"] = {
@@ -1889,18 +1889,9 @@ WeakAurasSaved = {
 						["spellName"] = 31687,
 						["type"] = "spell",
 						["debuffType"] = "HELPFUL",
-						["useExactSpellId"] = false,
+						["subeventSuffix"] = "_CAST_START",
 						["useName"] = true,
 						["stacksOperator"] = "<=",
-						["match_countOperator"] = "<",
-						["use_spellCount"] = false,
-						["subeventPrefix"] = "SPELL",
-						["event"] = "Cooldown Progress (Spell)",
-						["unit"] = "player",
-						["realSpellName"] = "Summon Water Elemental",
-						["use_spellName"] = true,
-						["spellIds"] = {
-						},
 						["auraspellids"] = {
 							"11025", -- [1]
 							"10952", -- [2]
@@ -1919,8 +1910,17 @@ WeakAurasSaved = {
 							"1253", -- [15]
 							"1007", -- [16]
 						},
+						["use_spellCount"] = false,
+						["subeventPrefix"] = "SPELL",
+						["event"] = "Cooldown Progress (Spell)",
+						["unit"] = "player",
+						["realSpellName"] = "Summon Water Elemental",
+						["use_spellName"] = true,
+						["spellIds"] = {
+						},
+						["match_countOperator"] = "<",
 						["remOperator"] = "<=",
-						["subeventSuffix"] = "_CAST_START",
+						["useExactSpellId"] = false,
 						["use_track"] = true,
 						["useRem"] = true,
 					},
@@ -1974,7 +1974,7 @@ WeakAurasSaved = {
 				}, -- [2]
 			},
 			["height"] = 48,
-			["useAdjustededMin"] = false,
+			["internalVersion"] = 72,
 			["load"] = {
 				["ingroup"] = {
 				},
@@ -2022,11 +2022,12 @@ WeakAurasSaved = {
 					},
 				},
 			},
-			["alpha"] = 1,
+			["useCooldownModRate"] = true,
 			["useAdjustededMax"] = false,
-			["frameStrata"] = 1,
+			["selfPoint"] = "CENTER",
 			["source"] = "import",
-			["cooldownEdge"] = false,
+			["authorOptions"] = {
+			},
 			["cooldown"] = true,
 			["conditions"] = {
 				{
@@ -2054,16 +2055,13 @@ WeakAurasSaved = {
 					},
 				}, -- [2]
 			},
-			["progressSource"] = {
-				-1, -- [1]
-				"", -- [2]
-			},
+			["icon"] = true,
 			["anchorFrameFrame"] = "PlayerFrame",
 			["regionType"] = "icon",
 			["desaturate"] = true,
 			["config"] = {
 			},
-			["internalVersion"] = 72,
+			["useAdjustededMin"] = false,
 			["anchorFrameType"] = "SCREEN",
 			["zoom"] = 0,
 			["auto"] = true,
@@ -2071,38 +2069,35 @@ WeakAurasSaved = {
 			["semver"] = "1.0.5",
 			["tocversion"] = 11503,
 			["id"] = "Water Elemental Out of CD Visual",
-			["selfPoint"] = "CENTER",
-			["useCooldownModRate"] = true,
-			["width"] = 48,
-			["authorOptions"] = {
+			["progressSource"] = {
+				-1, -- [1]
+				"", -- [2]
 			},
+			["frameStrata"] = 1,
+			["width"] = 48,
+			["alpha"] = 1,
 			["uid"] = "IozEijyvK7l",
 			["inverse"] = false,
-			["xOffset"] = -568.8888778686523,
+			["cooldownEdge"] = false,
 			["displayIcon"] = "Interface\\Icons\\Spell_Frost_SummonWaterElemental_2",
 			["information"] = {
 				["forceEvents"] = true,
 				["ignoreOptionsEventErrors"] = true,
 			},
-			["icon"] = true,
+			["xOffset"] = -568.8888778686523,
 		},
 		["castbar player end"] = {
 			["wagoID"] = "Yjx7bHW6u",
 			["authorOptions"] = {
 			},
 			["preferToUpdate"] = true,
-			["anchorFrameType"] = "SCREEN",
+			["blendMode"] = "ADD",
 			["yOffset"] = 0.5,
-			["foregroundColor"] = {
-				1, -- [1]
-				1, -- [2]
-				1, -- [3]
-				0.40015864372253, -- [4]
-			},
+			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
 			["animationType"] = "loop",
 			["sameTexture"] = true,
-			["hideBackground"] = true,
+			["url"] = "",
 			["actions"] = {
 				["start"] = {
 				},
@@ -2111,33 +2106,10 @@ WeakAurasSaved = {
 				["init"] = {
 				},
 			},
-			["triggers"] = {
-				{
-					["trigger"] = {
-						["type"] = "custom",
-						["custom_type"] = "event",
-						["duration"] = "0.1",
-						["event"] = "Health",
-						["unit"] = "player",
-						["debuffType"] = "HELPFUL",
-						["custom"] = "function(event, unitId, _, spellId)\n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_START\" then\n        aura_env.isCasted = true\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_SUCCEEDED\" and aura_env.isCasted == true then\n        aura_env.isCasted = false\n        return true\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_INTERRUPTED\" then\n        aura_env.isCasted = false\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_FAILED\" then\n        aura_env.isCasted = false\n    end \nend",
-						["spellIds"] = {
-						},
-						["names"] = {
-						},
-						["events"] = "UNIT_SPELLCAST_START, UNIT_SPELLCAST_SUCCEEDED, UNIT_SPELLCAST_INTERRUPTED, UNIT_SPELLCAST_FAILED",
-						["subeventPrefix"] = "SPELL",
-						["subeventSuffix"] = "_CAST_START",
-						["custom_hide"] = "timed",
-					},
-					["untrigger"] = {
-					},
-				}, -- [1]
-				["disjunctive"] = "all",
-				["activeTriggerMode"] = -10,
-			},
+			["customForegroundRows"] = 8,
 			["frameRate"] = 60,
 			["internalVersion"] = 66,
+			["startPercent"] = 0,
 			["animation"] = {
 				["start"] = {
 					["easeStrength"] = 3,
@@ -2191,13 +2163,12 @@ WeakAurasSaved = {
 					["scalex"] = 1,
 				},
 			},
-			["selfPoint"] = "CENTER",
 			["customForegroundFileHeight"] = 256,
 			["customBackgroundRows"] = 16,
 			["customForegroundFileWidth"] = 1024,
-			["url"] = "",
-			["discrete_rotation"] = 0,
-			["customForegroundRows"] = 8,
+			["selfPoint"] = "CENTER",
+			["rotation"] = 0,
+			["hideBackground"] = true,
 			["version"] = 14,
 			["subRegions"] = {
 				{
@@ -2225,23 +2196,23 @@ WeakAurasSaved = {
 					},
 				},
 			},
-			["desaturateForeground"] = false,
+			["rotate"] = true,
 			["xOffset"] = 3.5,
 			["backgroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion",
-			["source"] = "import",
+			["customBackgroundColumns"] = 16,
 			["foregroundTexture"] = "Interface\\Addons\\TextureScript\\CastBar\\uicastingbarstandardflipbook.tga",
 			["backgroundPercent"] = 1,
-			["anchorPoint"] = "CENTER",
+			["parent"] = "player",
 			["mirror"] = false,
 			["config"] = {
 			},
 			["regionType"] = "stopmotion",
-			["rotation"] = 0,
+			["desaturateForeground"] = false,
 			["customForegroundFrames"] = 15,
-			["customForegroundFrameWidth"] = 424,
+			["anchorFrameType"] = "SCREEN",
 			["endPercent"] = 1,
 			["customForegroundColumns"] = 2,
-			["blendMode"] = "ADD",
+			["width"] = 207,
 			["tocversion"] = 30402,
 			["backgroundColor"] = {
 				0.5, -- [1]
@@ -2252,13 +2223,18 @@ WeakAurasSaved = {
 			["semver"] = "1.0.13",
 			["customBackgroundFrames"] = 0,
 			["id"] = "castbar player end",
-			["rotate"] = true,
+			["foregroundColor"] = {
+				1, -- [1]
+				1, -- [2]
+				1, -- [3]
+				0.40015864372253, -- [4]
+			},
 			["frameStrata"] = 3,
-			["width"] = 207,
-			["customBackgroundColumns"] = 16,
+			["customForegroundFrameWidth"] = 424,
+			["source"] = "import",
 			["uid"] = "bw88STZMPeK",
 			["inverse"] = false,
-			["startPercent"] = 0,
+			["discrete_rotation"] = 0,
 			["conditions"] = {
 				{
 					["check"] = {
@@ -2273,7 +2249,31 @@ WeakAurasSaved = {
 			},
 			["information"] = {
 			},
-			["parent"] = "player",
+			["triggers"] = {
+				{
+					["trigger"] = {
+						["type"] = "custom",
+						["custom_type"] = "event",
+						["duration"] = "0.1",
+						["event"] = "Health",
+						["unit"] = "player",
+						["debuffType"] = "HELPFUL",
+						["custom"] = "function(event, unitId, _, spellId)\n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_START\" then\n        aura_env.isCasted = true\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_SUCCEEDED\" and aura_env.isCasted == true then\n        aura_env.isCasted = false\n        return true\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_INTERRUPTED\" then\n        aura_env.isCasted = false\n    end \n    if unitId == \"player\" and event == \"UNIT_SPELLCAST_FAILED\" then\n        aura_env.isCasted = false\n    end \nend",
+						["spellIds"] = {
+						},
+						["names"] = {
+						},
+						["events"] = "UNIT_SPELLCAST_START, UNIT_SPELLCAST_SUCCEEDED, UNIT_SPELLCAST_INTERRUPTED, UNIT_SPELLCAST_FAILED",
+						["subeventPrefix"] = "SPELL",
+						["subeventSuffix"] = "_CAST_START",
+						["custom_hide"] = "timed",
+					},
+					["untrigger"] = {
+					},
+				}, -- [1]
+				["disjunctive"] = "all",
+				["activeTriggerMode"] = -10,
+			},
 		},
 		["castbar player back text"] = {
 			["wagoID"] = "Yjx7bHW6u",
@@ -2413,11 +2413,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "zefS2NrCRus",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "zefS2NrCRus",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -2568,23 +2568,23 @@ WeakAurasSaved = {
 					["width"] = 1,
 				}, -- [1]
 			},
-			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n",
-			["anchorFrameParent"] = false,
-			["texture"] = "Interface\\WorldStateFrame\\AllianceFlag",
 			["color"] = {
 				1, -- [1]
 				1, -- [2]
 				1, -- [3]
 				1, -- [4]
 			},
+			["anchorFrameParent"] = false,
+			["texture"] = "Interface\\WorldStateFrame\\AllianceFlag",
 			["selfPoint"] = "TOP",
+			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n",
 			["semver"] = "2.0.0",
 			["tocversion"] = 30300,
 			["id"] = "AllianceFlag",
-			["xOffset"] = 0,
+			["alpha"] = 1,
 			["frameStrata"] = 4,
 			["anchorFrameType"] = "SELECTFRAME",
-			["width"] = 50,
+			["xOffset"] = 0,
 			["uid"] = "0pfDqSK9IuM",
 			["config"] = {
 				["color"] = {
@@ -2594,7 +2594,7 @@ WeakAurasSaved = {
 					1, -- [4]
 				},
 			},
-			["alpha"] = 1,
+			["width"] = 50,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -2736,23 +2736,23 @@ WeakAurasSaved = {
 					["width"] = 1,
 				}, -- [1]
 			},
-			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n",
-			["anchorFrameParent"] = false,
-			["texture"] = "Interface\\WorldStateFrame\\HordeFlag",
 			["color"] = {
 				1, -- [1]
 				1, -- [2]
 				1, -- [3]
 				1, -- [4]
 			},
+			["anchorFrameParent"] = false,
+			["texture"] = "Interface\\WorldStateFrame\\HordeFlag",
 			["selfPoint"] = "TOP",
+			["desc"] = "Author: RomanSpector\nDiscord: https://discord.com/invite/Fm9kgfk\n",
 			["semver"] = "2.0.0",
 			["tocversion"] = 30300,
 			["id"] = "HordeFlag",
-			["xOffset"] = 0,
+			["alpha"] = 1,
 			["frameStrata"] = 4,
 			["anchorFrameType"] = "SELECTFRAME",
-			["width"] = 50,
+			["xOffset"] = 0,
 			["uid"] = "8x5(4W69qAm",
 			["config"] = {
 				["color"] = {
@@ -2762,7 +2762,7 @@ WeakAurasSaved = {
 					1, -- [4]
 				},
 			},
-			["alpha"] = 1,
+			["width"] = 50,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -2871,20 +2871,580 @@ WeakAurasSaved = {
 			["semver"] = "1.0.0",
 			["tocversion"] = 30300,
 			["id"] = "Water Elemental Cast Status",
-			["borderEdge"] = "Square Full White",
+			["selfPoint"] = "CENTER",
 			["frameStrata"] = 5,
 			["anchorFrameType"] = "SELECTFRAME",
 			["authorOptions"] = {
 			},
+			["uid"] = "(PUE5jHMPH6",
 			["config"] = {
 			},
 			["borderInset"] = 1,
-			["uid"] = "(PUE5jHMPH6",
 			["conditions"] = {
 			},
 			["information"] = {
 			},
+			["borderEdge"] = "Square Full White",
+		},
+		["Cheeta - Enhanced Stacking Nameplate - Core"] = {
+			["iconSource"] = -1,
+			["authorOptions"] = {
+				{
+					["type"] = "toggle",
+					["default"] = true,
+					["width"] = 1,
+					["name"] = "Tall boss nameplate fix",
+					["useDesc"] = true,
+					["key"] = "nameplatefix",
+					["desc"] = "Shows nameplates that would otherwise go over the top of the screen and would not be visible.",
+				}, -- [1]
+				{
+					["type"] = "toggle",
+					["default"] = true,
+					["width"] = 1,
+					["name"] = "Hide on LDW MC",
+					["useDesc"] = true,
+					["key"] = "HideLDW",
+					["desc"] = "If you are mind-controlled by Lady Deathwhisper , the nameplates are deactivated for a better overview",
+				}, -- [2]
+				{
+					["type"] = "toggle",
+					["default"] = false,
+					["width"] = 1,
+					["name"] = "AutoMouseOver (ElvUI)",
+					["useDesc"] = true,
+					["key"] = "AutoMouseOver",
+					["desc"] = "This option makes it so that whenever a nameplate appears, it is first automatically placed below the cursor so that addons such as ElvUI can assign the GUID. This does not work if the left mouse button is pressed at the same time, because no frames can be mouseovered. When the right mouse button is pressed, it is deactivated for a short moment.",
+				}, -- [3]
+				{
+					["type"] = "toggle",
+					["default"] = false,
+					["width"] = 1,
+					["name"] = "Freeze MouseOver",
+					["useDesc"] = true,
+					["key"] = "FreezeMouseover",
+					["desc"] = "Stops the MouseOver nampelate from moving for better selection",
+				}, -- [4]
+				{
+					["text"] = "|cffFF0000NOTE:|r Only use one of the MouseOver Features, otherwise Errors occur if a new nameplate appears while another nameplate is frozen.",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [5]
+				{
+					["subOptions"] = {
+						{
+							["type"] = "input",
+							["useDesc"] = false,
+							["width"] = 1,
+							["key"] = "IgnoreEnemy",
+							["name"] = "Exact and full Name",
+							["default"] = "New Entrie",
+							["length"] = 10,
+							["multiline"] = false,
+							["useLength"] = false,
+						}, -- [1]
+					},
+					["hideReorder"] = true,
+					["useDesc"] = false,
+					["nameSource"] = 1,
+					["desc"] = "",
+					["width"] = 1,
+					["useCollapse"] = false,
+					["collapse"] = false,
+					["key"] = "IgnoreNames",
+					["type"] = "group",
+					["limitType"] = "none",
+					["groupType"] = "array",
+					["name"] = "Ignore enemies with the following names:",
+					["size"] = 10,
+				}, -- [6]
+				{
+					["useName"] = true,
+					["type"] = "header",
+					["text"] = "Update Interval",
+					["noMerge"] = false,
+					["width"] = 1,
+				}, -- [7]
+				{
+					["text"] = "Sets the time interval at which the positions of the nameplates are updated. An increase can improve the performace, but the animation will be choppy (might increase speed because it will also be slower).",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [8]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [9]
+				{
+					["min"] = 0.01,
+					["type"] = "range",
+					["default"] = 0.01,
+					["key"] = "interval",
+					["softMax"] = 0.05,
+					["name"] = "",
+					["step"] = 0.01,
+					["width"] = 1.2,
+				}, -- [10]
+				{
+					["useName"] = true,
+					["type"] = "header",
+					["text"] = "y-Speed",
+					["noMerge"] = false,
+					["width"] = 1,
+				}, -- [11]
+				{
+					["text"] = "Modifies the speed at which the nameplates are moved vertically. If the update interval is increased, it might be better to increase the speed as well.",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [12]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [13]
+				{
+					["type"] = "range",
+					["useDesc"] = false,
+					["step"] = 0.1,
+					["width"] = 1.2,
+					["min"] = 0.1,
+					["key"] = "speed",
+					["softMax"] = 2,
+					["default"] = 0.7,
+					["name"] = "",
+					["desc"] = "Modifies the speed at which the nameplates are moved vertically.",
+				}, -- [14]
+				{
+					["text"] = "Fine Tuning:",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [15]
+				{
+					["type"] = "range",
+					["useDesc"] = false,
+					["max"] = 2,
+					["step"] = 0.1,
+					["width"] = 0.65,
+					["min"] = 0.1,
+					["key"] = "speedraise",
+					["default"] = 1,
+					["name"] = "Raise Speed",
+					["desc"] = "Modifies the speed at which the nameplates are moved vertically.",
+				}, -- [16]
+				{
+					["type"] = "range",
+					["useDesc"] = false,
+					["max"] = 2,
+					["step"] = 0.1,
+					["width"] = 0.65,
+					["min"] = 0.1,
+					["key"] = "speedlower",
+					["default"] = 1,
+					["name"] = "Lower Speed",
+					["desc"] = "Modifies the speed at which the nameplates are moved vertically.",
+				}, -- [17]
+				{
+					["type"] = "range",
+					["useDesc"] = false,
+					["max"] = 2,
+					["step"] = 0.1,
+					["width"] = 0.65,
+					["min"] = 0.1,
+					["key"] = "speedreset",
+					["default"] = 1,
+					["name"] = "Reset Speed",
+					["desc"] = "Modifies the speed at which the nameplates are moved vertically.",
+				}, -- [18]
+				{
+					["useName"] = true,
+					["type"] = "header",
+					["text"] = "Nameplate Position",
+					["noMerge"] = false,
+					["width"] = 1,
+				}, -- [19]
+				{
+					["text"] = "Changes to the default vertical position and top limit of the nameplates.",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [20]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [21]
+				{
+					["softMin"] = 0,
+					["type"] = "range",
+					["useDesc"] = false,
+					["step"] = 1,
+					["desc"] = "",
+					["name"] = "Origin Position (in px)",
+					["softMax"] = 100,
+					["default"] = 20,
+					["key"] = "originpos",
+					["width"] = 1.2,
+				}, -- [22]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [23]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [24]
+				{
+					["softMin"] = 0,
+					["type"] = "range",
+					["useDesc"] = false,
+					["step"] = 1,
+					["desc"] = "Modifies the speed at which the nameplates are moved vertically.",
+					["name"] = "Top Limit (in px)",
+					["softMax"] = 200,
+					["default"] = 30,
+					["key"] = "upperborder",
+					["width"] = 1.2,
+				}, -- [25]
+				{
+					["useName"] = true,
+					["type"] = "header",
+					["text"] = "Non-Overlap Space",
+					["noMerge"] = false,
+					["width"] = 1,
+				}, -- [26]
+				{
+					["text"] = "Defines the area that should not be overlapped by each nameplate.",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [27]
+				{
+					["type"] = "space",
+					["variableWidth"] = true,
+					["height"] = 1,
+					["useHeight"] = false,
+					["width"] = 0.4,
+				}, -- [28]
+				{
+					["type"] = "number",
+					["useDesc"] = true,
+					["max"] = 200,
+					["step"] = 1,
+					["width"] = 0.6,
+					["min"] = 0,
+					["key"] = "xspace",
+					["default"] = 130,
+					["name"] = "x-Space",
+					["desc"] = "y-height of the nameplate that should not overlap with others.",
+				}, -- [29]
+				{
+					["type"] = "number",
+					["useDesc"] = true,
+					["max"] = 100,
+					["step"] = 1,
+					["width"] = 0.6,
+					["min"] = 0,
+					["key"] = "yspace",
+					["default"] = 20,
+					["name"] = "y-Space",
+					["desc"] = "x-width of the nameplate that should not overlap with others.",
+				}, -- [30]
+				{
+					["useName"] = true,
+					["type"] = "header",
+					["text"] = "Clickable Size",
+					["noMerge"] = false,
+					["width"] = 1,
+				}, -- [31]
+				{
+					["text"] = "Change the enemy nameplate hitbox and non-clickability of friendly nameplates during combat. Unfortunately, this option has the problem that some UI elements are closed when new nameplates appear.",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [32]
+				{
+					["type"] = "toggle",
+					["default"] = true,
+					["width"] = 0.8,
+					["name"] = "Active",
+					["useDesc"] = false,
+					["key"] = "hitbox",
+					["desc"] = "",
+				}, -- [33]
+				{
+					["type"] = "number",
+					["useDesc"] = false,
+					["max"] = 300,
+					["step"] = 1,
+					["width"] = 0.6,
+					["min"] = 0,
+					["key"] = "width",
+					["default"] = 150,
+					["name"] = "Width",
+					["desc"] = "",
+				}, -- [34]
+				{
+					["type"] = "number",
+					["useDesc"] = false,
+					["max"] = 300,
+					["step"] = 1,
+					["width"] = 0.6,
+					["min"] = 0,
+					["key"] = "height",
+					["default"] = 20,
+					["name"] = "Height",
+					["desc"] = "",
+				}, -- [35]
+				{
+					["text"] = "Default Blizzard: 145x36",
+					["type"] = "description",
+					["fontSize"] = "medium",
+					["width"] = 2,
+				}, -- [36]
+			},
+			["displayText"] = "",
+			["yOffset"] = 0,
+			["anchorPoint"] = "CENTER",
+			["displayText_format_p_time_format"] = 0,
+			["url"] = "https://wago.io/AQdGXNEBH/5",
+			["icon"] = true,
+			["keepAspectRatio"] = false,
+			["wordWrap"] = "WordWrap",
+			["desaturate"] = false,
+			["rotation"] = 0,
+			["font"] = "Friz Quadrata TT",
+			["load"] = {
+				["talent2"] = {
+					["multi"] = {
+					},
+				},
+				["zoneId"] = "605",
+				["talent"] = {
+					["multi"] = {
+					},
+				},
+				["use_never"] = false,
+				["class"] = {
+					["single"] = "WARLOCK",
+					["multi"] = {
+					},
+				},
+				["ingroup"] = {
+					["multi"] = {
+					},
+				},
+				["use_zoneId"] = false,
+				["difficulty"] = {
+					["multi"] = {
+					},
+				},
+				["role"] = {
+					["multi"] = {
+					},
+				},
+				["talent3"] = {
+					["multi"] = {
+					},
+				},
+				["faction"] = {
+					["multi"] = {
+					},
+				},
+				["use_zone"] = false,
+				["spec"] = {
+					["multi"] = {
+					},
+				},
+				["zone"] = "Eiskronenzitadelle",
+				["size"] = {
+					["multi"] = {
+						["flexible"] = true,
+						["ten"] = true,
+						["twentyfive"] = true,
+						["fortyman"] = true,
+						["twenty"] = true,
+					},
+				},
+			},
+			["shadowXOffset"] = 1,
+			["regionType"] = "text",
+			["blendMode"] = "BLEND",
+			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\Square_Smooth_Border2",
+			["zoom"] = 0,
+			["auto"] = false,
+			["tocversion"] = 30300,
+			["alpha"] = 1,
+			["config"] = {
+				["yspace"] = 30,
+				["speedlower"] = 1,
+				["speed"] = 0.7,
+				["xspace"] = 150,
+				["speedreset"] = 1,
+				["interval"] = 0.01,
+				["AutoMouseOver"] = false,
+				["FreezeMouseover"] = false,
+				["width"] = 150,
+				["nameplatefix"] = false,
+				["originpos"] = 20,
+				["IgnoreNames"] = {
+				},
+				["hitbox"] = false,
+				["height"] = 20,
+				["HideLDW"] = false,
+				["upperborder"] = 30,
+				["speedraise"] = 1,
+			},
+			["fixedWidth"] = 200,
+			["outline"] = "OUTLINE",
+			["wagoID"] = "AQdGXNEBH",
+			["color"] = {
+				1, -- [1]
+				1, -- [2]
+				1, -- [3]
+				1, -- [4]
+			},
+			["shadowYOffset"] = -1,
+			["customTextUpdate"] = "event",
+			["automaticWidth"] = "Auto",
+			["triggers"] = {
+				{
+					["trigger"] = {
+						["type"] = "custom",
+						["custom_type"] = "status",
+						["event"] = "Health",
+						["unit"] = "player",
+						["subeventSuffix"] = "_CAST_START",
+						["spellIds"] = {
+						},
+						["names"] = {
+						},
+						["check"] = "update",
+						["subeventPrefix"] = "SPELL",
+						["custom"] = "function()\n    if not aura_env.last or aura_env.last < GetTime() - aura_env.config.interval then\n        aura_env.last = GetTime()\n        aura_env:UpdateStacking()\n        \n        if aura_env.config.AutoMouseOver then\n            for nameplate, _ in pairs(aura_env.MouseoverFrame) do\n                local isElvUI, Plate = aura_env.ElvUINamplate(nameplate)\n                if isElvUI and Plate.isTarget then \n                    aura_env:MoveNameplate(nameplate,false)\n                end\n            end \n        end\n    end\nend",
+						["debuffType"] = "HELPFUL",
+					},
+					["untrigger"] = {
+					},
+				}, -- [1]
+				{
+					["trigger"] = {
+						["type"] = "custom",
+						["custom_type"] = "event",
+						["debuffType"] = "HELPFUL",
+						["event"] = "Health",
+						["unit"] = "player",
+						["events"] = "NP_SHOW, NP_HIDE, PLAYER_REGEN_DISABLED, RESET_NAMEPLATES, CLEU:SPELL_AURA_APPLIED, UPDATE_MOUSEOVER_UNIT, AUTOMOUSEOVER_MOUSELOOK",
+						["custom"] = "function(event,...)\n    if event == \"NP_SHOW\" then\n        local nameplate = ...\n        if aura_env.config.hitbox and InCombatLockdown() then\n            aura_env:SetID(nameplate)\n            aura_env:ToggleHitboxFrame();aura_env:ToggleHitboxFrame()\n        end\n        if aura_env.config.AutoMouseOver then\n            aura_env:AutoMouseOver(nameplate)\n        end\n    elseif event ==\"NP_HIDE\" and aura_env.config.hitbox and InCombatLockdown() then\n        aura_env:ToggleHitboxFrame();aura_env:ToggleHitboxFrame()    \n    elseif event == \"PLAYER_REGEN_DISABLED\" and aura_env.config.hitbox then \n        aura_env:ToggleIDStartFrame();aura_env:ToggleIDStartFrame()\n        aura_env:ToggleHitboxFrame();aura_env:ToggleHitboxFrame()\n    elseif event == \"COMBAT_LOG_EVENT_UNFILTERED\" and aura_env.config.HideLDW then\n        -- LDW MC Fix, deactivate nameplates if under mc\n        local _, subEvent, _,_,_,_, destName, _,spellID = ...\n        if spellID == 71289 and destName == UnitName(\"player\") then\n            SetUIVisibility(false);\n            WeakAuras.timer:ScheduleTimer(WeakAuras.ScanEvents, 12.2, \"RESET_NAMEPLATES\")\n        end\n    elseif event == \"UPDATE_MOUSEOVER_UNIT\" and aura_env.config.AutoMouseOver then\n        for nameplate, _ in pairs(aura_env.MouseoverFrame) do\n            local isElvUI, Plate = aura_env.ElvUINamplate(nameplate)\n            if select(6,nameplate:GetRegions()):IsShown() \n            or (isElvUI and Plate.isTarget) then \n                aura_env:MoveNameplate(nameplate,false)\n            end\n        end\n    elseif event == \"RESET_NAMEPLATES\" then  \n        SetUIVisibility(true);\n    elseif event ==\"AUTOMOUSEOVER_MOUSELOOK\" then\n        if aura_env.MouseLook and IsMouseButtonDown(\"RightButton\") then\n            MouselookStart()    \n            aura_env.MouseLook = false\n        end\n    end\nend",
+						["spellIds"] = {
+						},
+						["names"] = {
+						},
+						["check"] = "event",
+						["subeventPrefix"] = "SPELL",
+						["subeventSuffix"] = "_CAST_START",
+						["custom_hide"] = "custom",
+					},
+					["untrigger"] = {
+					},
+				}, -- [2]
+				["disjunctive"] = "custom",
+				["customTriggerLogic"] = "\n\n",
+				["activeTriggerMode"] = -10,
+			},
+			["displayText_format_p_format"] = "timed",
+			["internalVersion"] = 52,
+			["animation"] = {
+				["start"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+				["main"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+				["finish"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+			},
+			["discrete_rotation"] = 0,
+			["version"] = 5,
+			["subRegions"] = {
+				{
+					["type"] = "subbackground",
+				}, -- [1]
+			},
+			["height"] = 50,
+			["rotate"] = true,
+			["fontSize"] = 12,
+			["source"] = "import",
+			["mirror"] = false,
+			["displayText_format_p_time_dynamic_threshold"] = 60,
+			["cooldown"] = false,
+			["xOffset"] = 0,
+			["actions"] = {
+				["start"] = {
+					["custom"] = "\n\n",
+					["do_custom"] = false,
+				},
+				["finish"] = {
+					["custom"] = "\n\n",
+					["do_custom"] = false,
+				},
+				["init"] = {
+					["custom"] = "-- Watch NamePlate Events\nWeakAuras.WatchNamePlates()\n\nlocal me = aura_env\nme.c = me.config\n\n--IgnoreEnemy by Name\naura_env.ignoreNames = {}\nfor i,_ in pairs(me.c.IgnoreNames) do\n    for _,nameString in pairs(me.c.IgnoreNames[i]) do\n        aura_env.ignoreNames[nameString] = true\n    end\nend\n\n--Ignore LK Valks without RaidIcon\nlocal L = GetLocale()\naura_env.LocalValkName = {\n    [\"enUS\"] = \"Val'kyr Shadowguard\",\n    [\"deDE\"] = \"Schattenwächterin der Val'kyr\",\n    [\"esES\"] = \"Guardia de las Sombras Val'kyr\",\n    [\"frFR\"] = \"Garde de l'ombre val'kyr\",\n}\n\nlocal NP = ElvUI and ElvUI[1]:GetModule(\"NamePlates\")\n-- Friendly Nameplates clickthrough out of combat\n--if NP then\n--    NP.db.clickThrough[\"friendly\"] = true\n--end\n\nme.c.AutoMouseOver = me.c.AutoMouseOver and NP -- Option was only tested with ElvUI\n\nlocal GetTime = GetTime\nlocal GetCVar, SetCVar = GetCVar, SetCVar\nlocal ToggleFrame = ToggleFrame\nlocal GetScreenWidth = GetScreenWidth\nlocal Weakauras = Weakauras\nlocal CreateFrame = CreateFrame\nlocal GetScreenWidth = GetScreenWidth\nlocal UIPanelWindows = UIPanelWindows\n\naura_env.last = GetTime()\n\n-- Set Blizzard Nameplate Mode to allow overlap \nif GetCVar(\"nameplateAllowOverlap\")==\"0\" then\n    SetCVar(\"nameplateAllowOverlap\", 1)\nend\n\nlocal ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()\nlocal ScreenHeight = 768\n\n-- Enlarging of WorldFrame, so that nameplates are displayed even if they have slightly left the screen \n-- or are very high up, as is the case with large bosses.\nWorldFrame:ClearAllPoints(); \nWorldFrame:SetWidth(ScreenWidth);\nif me.c.nameplatefix then\n    WorldFrame:SetHeight(ScreenHeight*5);\nelse\n    WorldFrame:SetHeight(ScreenHeight); \nend\nWorldFrame:SetPoint(\"BOTTOM\");\n\n\nfunction aura_env:GetUnitInfo(frame)\n    local r, g, b = frame:GetStatusBarColor()\n    if r < 0.01 then\n        if b < 0.01 and g > 0.99 then\n            return 5, \"FRIENDLY_NPC\"\n        elseif b > 0.99 and g < 0.01 then\n            return 5, \"FRIENDLY_PLAYER\"\n        end\n    elseif r > 0.99 then\n        if b < 0.01 and g > 0.99 then\n            return 4, \"ENEMY_NPC\"\n        elseif b < 0.01 and g < 0.01 then\n            return 2, \"ENEMY_NPC\"\n        end\n    elseif r > 0.5 and r < 0.6 then\n        if g > 0.5 and g < 0.6 and b > 0.5 and b < 0.6 then\n            return 1, \"ENEMY_NPC\"\n        end\n    end\n    return 3, \"ENEMY_PLAYER\"\nend\n\n\n\nlocal delta = me.c.speed * 5\n\nfunction aura_env:ResetPosition(oldposition)\n    local newposition = oldposition - exp(-10/oldposition)*delta*me.c.speedreset\n    return newposition\nend\n\nfunction aura_env:RaisePosition(min, oldposition)\n    local yspace = me.c.yspace\n    local newposition = oldposition + exp(-min/yspace)*delta*me.c.speedraise\n    return newposition\nend\n\nfunction aura_env:LowerPosition(min, oldposition)\n    local yspace = me.c.yspace\n    local newposition = oldposition - exp(-yspace/min)*delta*0.8*me.c.speedlower\n    return newposition\nend\n\n-- Main Function\n-- First, the coordinates of all enemy nameplates are saved in an array, non-visible nameplates are reset.\n-- It is then iterated through the nameplates and the minimum distance to the next nameplate is determined for each nameplate.\n-- If there is no other nameplate in the immediate vicinity of the original position, the position is reset (to prevent the nameplates from rising higher and higher)\n-- Depending on whether the position is to be reset or the nameplate is above or below the closest one\n-- different functions are used for a smooth movement.\nfunction aura_env.ElvUINamplate(nameplate)\n    local Plate = select(3, nameplate:GetChildren()) --ElvUI Plate\n    if Plate then\n        local PlateName = Plate:GetName()\n        if PlateName and strmatch(PlateName, '^ElvUI_NamePlate%d+$') then\n            return true, Plate\n        end\n    end\n    return false\nend\n\nfunction aura_env:IgnoreNameplate(nameplate)\n    local Health = select(1,nameplate:GetChildren())\n    local reaction\n    if Health then\n        reaction = aura_env:GetUnitInfo(Health)\n    end\n    if reaction and reaction ~= 5 then --nameplate from Enemy\n        local nameframe = select(7, nameplate:GetRegions())\n        local FSPAT = \"%s*\"..(gsub(gsub(_G.FOREIGN_SERVER_LABEL, \"^%s\", \"\"), \"[%*()]\", \"%%%1\"))..\"$\"\n        local name = gsub(nameframe:GetText() or \"\", FSPAT, \"\")\n        if aura_env.ignoreNames[name] then -- Ignore by Name\n            return true\n        end\n        if name == aura_env.LocalValkName[L] then --Ignore LK Valks without RaidIcon\n            local isElvUI, Plate = aura_env.ElvUINamplate(nameplate)\n            if isElvUI then\n                if not Plate.RaidIcon:IsShown() then\n                    return true\n                end\n            end\n        end\n        return false\n    end\n    return true\nend\n\naura_env.Plates = {}\nfunction aura_env:UpdateStacking()\n    local xspace = me.c.xspace\n    local yspace = me.c.yspace\n    \n    local numChildren = WorldFrame:GetNumChildren()\n    for i = 1, numChildren do\n        local nameplate = select(i,WorldFrame:GetChildren())\n        \n        if nameplate:IsShown() and nameplate:IsProtected() and not aura_env:IgnoreNameplate(nameplate) then\n            local x, y = select(4, nameplate:GetPoint(1))\n            \n            if not aura_env.Plates[nameplate] then\n                aura_env.Plates[nameplate]={xpos = 0, ypos = 0, position = 0}\n            end\n            \n            aura_env.Plates[nameplate].xpos = x\n            aura_env.Plates[nameplate].ypos = y\n        else\n            aura_env.Plates[nameplate] = nil\n            nameplate:SetClampRectInsets(0, 0, 0, 0)\n            nameplate:SetClampedToScreen(false)\n        end\n    end\n    for frame_1, nameplate_1 in pairs(aura_env.Plates) do\n        local width, height = frame_1:GetSize()\n        \n        if (aura_env.config.AutoMouseOver and aura_env.MouseoverFrame[frame_1]) then -- Ignore Frames for AutoMouseOver\n            -- reposition frames in case mouse has been moved\n            local x, y = GetCursorPosition()\n            \n            frame_1:SetClampedToScreen()\n            frame_1:SetClampRectInsets(-2*ScreenWidth, ScreenWidth - x - width/2, ScreenHeight - y - height/2, -2*ScreenHeight)\n            \n        elseif (aura_env.config.FreezeMouseover and select(6,frame_1:GetRegions()):IsShown()) then  --Freeze Mouseover Nameplate\n            local x,y =  frame_1:GetCenter() --This Coordinates are the \"real\" values for the center point\n            local newposition = y-nameplate_1.ypos - me.c.originpos + height/2\n            nameplate_1.position = newposition\n            nameplate_1.xpos = x\n            \n            frame_1:SetClampedToScreen()\n            frame_1:SetClampRectInsets(-2*ScreenWidth, ScreenWidth - x - width/2, ScreenHeight - y - height/2, -2*ScreenHeight)\n            \n        else\n            local min = 1000\n            local reset = true\n            for frame_2, nameplate_2 in pairs(aura_env.Plates) do\n                if frame_1 ~= frame_2 then\n                    local xdiff = nameplate_1.xpos - nameplate_2.xpos\n                    local ydiff = nameplate_1.ypos + nameplate_1.position - nameplate_2.ypos - nameplate_2.position\n                    local ydiff_origin = nameplate_1.ypos - nameplate_2.ypos - nameplate_2.position\n                    \n                    if abs(xdiff) < xspace then --only consider nameplates in xspace\n                        if ydiff >= 0 and abs(ydiff) < min then --find minimal distance from other nameplate_2 below nameplate_1 \n                            min = abs(ydiff)\n                        end\n                        if abs(ydiff_origin) < yspace + 2*delta then\n                            reset = false  -- no reset if nameplate near origin position\n                        end\n                    end\n                end\n            end\n            \n            local oldposition = nameplate_1.position\n            local newposition = oldposition\n            if oldposition >= 2*delta and reset then\n                newposition = aura_env:ResetPosition(oldposition)\n            elseif  min < yspace then\n                newposition = aura_env:RaisePosition(min,oldposition)\n            elseif (oldposition >= 2*delta and min > yspace + delta*2) then\n                newposition = aura_env:LowerPosition(min,oldposition)\n            end\n            \n            nameplate_1.position = newposition\n            \n            frame_1:SetClampedToScreen()\n            frame_1:SetClampRectInsets(-10, 10, me.c.upperborder, - nameplate_1.ypos - newposition - me.c.originpos + height)\n        end\n    end\nend\n\naura_env.MouseoverFrame = {}\n-- Auto Mouseover: After a new nameplate appears, it is automatically placed under the mouse cursor so that nameplate addons can assign the GUID. \nfunction aura_env:MoveNameplate(nameplate, move)\n    local _ , Plate = aura_env.ElvUINamplate(nameplate)\n    if move then\n        Plate:Hide()\n        local x, y = GetCursorPosition()\n        nameplate:SetClampedToScreen()\n        nameplate:SetClampRectInsets(-2*ScreenWidth, ScreenWidth-x-me.c.width/2, ScreenHeight-y-me.c.height/2, -2*ScreenHeight)\n        aura_env.MouseoverFrame[nameplate] = true\n    else\n        Plate:Show()\n        nameplate:SetClampRectInsets(0, 0, 0, 0)\n        nameplate:SetClampedToScreen()\n        aura_env.MouseoverFrame[nameplate] = nil\n    end\nend\n\nfunction aura_env:AutoMouseOver(nameplate)\n    if IsMouseButtonDown(\"LeftButton\") then return end\n    local Health = select(1,nameplate:GetChildren())\n    local reaction\n    if Health then\n        reaction, _ = aura_env:GetUnitInfo(Health)\n    end\n    if reaction and reaction ~= 5 then --nameplate from Enemy\n        -- When the right mouse button is pressed (in MouseLook), \n        -- it must be released for a short period of time so that the cursor can capture the nameplate.\n        if IsMouselooking() or aura_env.MouseLook then \n            if aura_env.MouseLook then\n                WeakAuras.timer:CancelTimer(aura_env.timer)\n            end\n            aura_env.MouseLook = true\n            MouselookStop() \n            aura_env.timer=WeakAuras.timer:ScheduleTimer(WeakAuras.ScanEvents, 0.05, \"AUTOMOUSEOVER_MOUSELOOK\")\n        end\n        aura_env:MoveNameplate(nameplate,true)\n    end\nend\n\n\nlocal TriggerFrames = {}\n-- Change Nameplate Hitbox during Combat\nif not aura_env.h then\n    local h = CreateFrame(\"Frame\", \"SetHitboxFrame\", UIParent, \"SecureHandlerShowHideTemplate\") \n    h:SetFrameRef(\"WorldFrame\", WorldFrame)\n    \n    -- Change Hitbox of Enemy Nameplates based Config height/width\n    -- Nameplates that are already displayed can be found in the Plates array. \n    -- Firstly, the array is cleared of plates that are no longer visible.\n    --Since this part only works in combat, all already visible nameplates must be transferred at the start. \n    -- It is assumed that the hitbox is changed correctly via e.g. ElvUI out of combat.\n    -- Worlframe is assigned a different ID depending on last shown frame is an enemy or friendly nameplate.\n    -- Friendly nameplates (ID = 1) are made click-through\n    SecureHandlerWrapScript(h, \"OnShow\", h,[[\n        local WorldFrame = self:GetFrameRef(\"WorldFrame\");\n        local height = self:GetAttribute(\"height\")\n        local width = self:GetAttribute(\"width\")\n        Plates = Plates or table.new()\n        for plate, shown in pairs(Plates) do\n            if shown and not plate:IsShown() then\n                Plates[plate] = nil\n            end\n        end\n        for i, nameplate in pairs(newtable(WorldFrame:GetChildren())) do\n            if nameplate:IsShown() and nameplate:IsProtected() and not Plates[nameplate] then\n                Plates[nameplate] = true\n                if WorldFrame:GetID() == 1 then\n                    nameplate:SetWidth(1)\n                    nameplate:SetHeight(1)\n                elseif WorldFrame:GetID() == 0 then\n                    nameplate:SetWidth(width)\n                    nameplate:SetHeight(height)\n                end\n            end\n        end\n        ]])\n    aura_env.h = h \n    TriggerFrames[\"SetHitboxFrame\"] = h\nend\naura_env.h:SetAttribute(\"height\", aura_env.c.height)\naura_env.h:SetAttribute(\"width\", aura_env.c.width)\n\n-- Toggle Function\nfunction aura_env:ToggleHitboxFrame()\n    ToggleFrame(aura_env.h);\nend\n\n-- Worlframe switch ID depending on last shown frame is an enemy or friendly nameplate.\n-- ID == 0 for last Frame is Enemy Nameplate\n-- ID == 2 for last Frame is Friendly Nameplate\nfunction aura_env:SetID(nameplate)\n    local Health = nameplate:GetChildren()\n    local reaction, _ = aura_env:GetUnitInfo(Health)\n    \n    -- Worlframe switch ID depending on last shown frame is an enemy or friendly nameplate.\n    -- ID == 0 for last Frame is Enemy Nameplate\n    -- ID == 2 for last Frame is Friendly Nameplate\n    \n    local ID = WorldFrame:GetID() \n    if reaction == 5 and (ID == 0 or ID == 5) then \n        --lastFrame is Friendly but WorldFrame ID for Enemy\n        aura_env:ToggleIDFriendlyFrame();aura_env:ToggleIDFriendlyFrame()  \n    elseif reaction ~= 5 and (ID == 1 or ID == 5) then\n        --lastFrame is Enemy but WorldFrame ID for Friendly\n        aura_env:ToggleIDEnemyFrame();aura_env:ToggleIDEnemyFrame()\n    end\nend\n\nif not aura_env.v then\n    local v = CreateFrame(\"Frame\", \"WorldFrameSetIDStartFrame\", UIParent, \"SecureHandlerShowHideTemplate\") \n    v:SetFrameRef(\"WorldFrame\", WorldFrame)\n    SecureHandlerWrapScript(v, \"OnShow\", v,[[\n        local WorldFrame = self:GetFrameRef(\"WorldFrame\");\n        WorldFrame:SetID(5)\n        ]])\n    aura_env.v = v\n    TriggerFrames[\"WorldFrameSetIDStartFrame\"] = v\nend\n\n-- Toggle Function\nfunction aura_env:ToggleIDStartFrame()\n    ToggleFrame(aura_env.v);\nend\n\nif not aura_env.w then\n    local w = CreateFrame(\"Frame\", \"WorldFrameSetIDFriendlyFrame\", UIParent, \"SecureHandlerShowHideTemplate\") \n    w:SetFrameRef(\"WorldFrame\", WorldFrame)\n    SecureHandlerWrapScript(w, \"OnShow\", w,[[\n        local WorldFrame = self:GetFrameRef(\"WorldFrame\");\n        WorldFrame:SetID(1)\n        ]])\n    aura_env.w = w \n    TriggerFrames[\"WorldFrameSetIDFriendlyFrame\"] = w\nend\n\n-- Toggle Function\nfunction aura_env:ToggleIDFriendlyFrame()\n    ToggleFrame(aura_env.w);\nend\n\nif not aura_env.x then\n    local x = CreateFrame(\"Frame\", \"WorldFrameSetIDEnemyFrame\", UIParent, \"SecureHandlerShowHideTemplate\") \n    x:SetFrameRef(\"WorldFrame\", WorldFrame)\n    SecureHandlerWrapScript(x, \"OnShow\", x,[[\n        local WorldFrame = self:GetFrameRef(\"WorldFrame\");\n        WorldFrame:SetID(0)\n        ]])\n    aura_env.x = x\n    TriggerFrames[\"WorldFrameSetIDEnemyFrame\"] = x\nend\n\n-- Toggle Function\nfunction aura_env:ToggleIDEnemyFrame()\n    ToggleFrame(aura_env.x);\nend\n\n-- Add frames to the global table for frames controlled by the ToggleFrame API\nfor name, frame in pairs(TriggerFrames) do\n    if not UIPanelWindows[name] or true then   \n        UIPanelWindows[name] = { area = \"left\",    pushable = 8,    whileDead = 1, };\n        frame:SetAttribute(\"UIPanelLayout-defined\", true);\n        for attribute, value in pairs(UIPanelWindows[name]) do\n            frame:SetAttribute(\"UIPanelLayout-\"..attribute, value);\n        end\n        frame:SetAttribute(\"UIPanelLayout-enabled\", true);\n    end\nend",
+					["do_custom"] = true,
+				},
+			},
+			["displayIcon"] = "Interface\\Icons\\Spell_ChargePositive",
+			["displayText_format_p_time_precision"] = 1,
+			["cooldownTextEnabled"] = true,
+			["cooldownEdge"] = false,
+			["semver"] = "1.0.4",
+			["justify"] = "LEFT",
+			["width"] = 50,
+			["id"] = "Cheeta - Enhanced Stacking Nameplate - Core",
+			["desc"] = "Author - Cheeta\n____________________________________\nProblems/Questions/Improvements:\nDiscord: cheeta.exe",
+			["frameStrata"] = 1,
+			["anchorFrameType"] = "SCREEN",
+			["uid"] = "S0u2X)hQ4gi",
 			["selfPoint"] = "CENTER",
+			["inverse"] = false,
+			["parent"] = "Cheeta - Enhanced Stacking Nameplate",
+			["shadowColor"] = {
+				0, -- [1]
+				0, -- [2]
+				0, -- [3]
+				1, -- [4]
+			},
+			["conditions"] = {
+			},
+			["information"] = {
+				["ignoreOptionsEventErrors"] = true,
+			},
+			["preferToUpdate"] = false,
 		},
 		["Battleground Widget"] = {
 			["controlledChildren"] = {
@@ -2977,6 +3537,17 @@ WeakAurasSaved = {
 			["groupIcon"] = "Interface\\Icons\\FactionChange",
 			["frameStrata"] = 4,
 			["anchorFrameType"] = "SCREEN",
+			["borderEdge"] = "Square Full White",
+			["borderInset"] = 1,
+			["config"] = {
+			},
+			["xOffset"] = 0,
+			["conditions"] = {
+			},
+			["information"] = {
+				["ignoreOptionsEventErrors"] = true,
+				["groupOffset"] = true,
+			},
 			["animation"] = {
 				["start"] = {
 					["type"] = "none",
@@ -2997,17 +3568,6 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
-			["config"] = {
-			},
-			["borderEdge"] = "Square Full White",
-			["borderInset"] = 1,
-			["conditions"] = {
-			},
-			["information"] = {
-				["ignoreOptionsEventErrors"] = true,
-				["groupOffset"] = true,
-			},
-			["xOffset"] = 0,
 		},
 		["Circle Class Frame [WARLOCK] 2"] = {
 			["color"] = {
@@ -3088,20 +3648,20 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Warlock",
-			["anchorFrameType"] = "SELECTFRAME",
-			["rotation"] = 0,
-			["parent"] = "Circle Class Frames (FOCUS)",
-			["tocversion"] = 30300,
-			["id"] = "Circle Class Frame [WARLOCK] 2",
 			["alpha"] = 1,
-			["frameStrata"] = 1,
-			["width"] = 95,
-			["xOffset"] = 42,
-			["uid"] = "g(5LpFJW(uF",
-			["config"] = {
-			},
 			["authorOptions"] = {
 			},
+			["rotation"] = 0,
+			["tocversion"] = 30300,
+			["id"] = "Circle Class Frame [WARLOCK] 2",
+			["parent"] = "Circle Class Frames (FOCUS)",
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 95,
+			["config"] = {
+			},
+			["xOffset"] = 42,
+			["uid"] = "g(5LpFJW(uF",
 			["conditions"] = {
 			},
 			["information"] = {
@@ -3136,8 +3696,7 @@ WeakAurasSaved = {
 			["yOffset"] = 5.57,
 			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
-			["authorOptions"] = {
-			},
+			["auraRotation"] = 0,
 			["sameTexture"] = true,
 			["backgroundColor"] = {
 				0.5, -- [1]
@@ -3175,8 +3734,6 @@ WeakAurasSaved = {
 				-1, -- [1]
 				"", -- [2]
 			},
-			["selfPoint"] = "CENTER",
-			["backgroundOffset"] = 2,
 			["animation"] = {
 				["start"] = {
 					["easeStrength"] = 3,
@@ -3197,41 +3754,22 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
+			["backgroundOffset"] = 2,
+			["adjustedMax"] = "",
 			["conditions"] = {
 			},
 			["desc"] = "Sacred Cancer FOCUS indicator",
 			["rotation"] = 0,
 			["font"] = "Friz Quadrata TT",
-			["desaturateForeground"] = false,
+			["authorOptions"] = {
+			},
 			["subRegions"] = {
 				{
 					["type"] = "subbackground",
 				}, -- [1]
 			},
 			["height"] = 66,
-			["adjustedMax"] = "",
-			["crop_y"] = 0.41,
-			["actions"] = {
-				["start"] = {
-				},
-				["finish"] = {
-				},
-				["init"] = {
-				},
-			},
-			["useAdjustededMax"] = false,
-			["fontSize"] = 12,
-			["source"] = "import",
-			["startAngle"] = 0,
-			["auraRotation"] = 0,
-			["config"] = {
-			},
-			["mirror"] = false,
-			["anchorFrameFrame"] = "FocusFrame",
-			["regionType"] = "progresstexture",
-			["anchorFrameType"] = "SELECTFRAME",
-			["blendMode"] = "BLEND",
-			["alpha"] = 1,
+			["desaturateForeground"] = false,
 			["load"] = {
 				["use_never"] = true,
 				["talent"] = {
@@ -3254,6 +3792,25 @@ WeakAurasSaved = {
 					},
 				},
 			},
+			["crop_y"] = 0.41,
+			["useAdjustededMax"] = false,
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["source"] = "import",
+			["startAngle"] = 0,
+			["uid"] = "MPxEDWLvDPS",
+			["fontSize"] = 12,
+			["mirror"] = false,
+			["anchorFrameFrame"] = "FocusFrame",
+			["regionType"] = "progresstexture",
+			["anchorFrameType"] = "SELECTFRAME",
+			["blendMode"] = "BLEND",
+			["alpha"] = 1,
+			["foregroundColor"] = {
+				0.9764706492424011, -- [1]
+				1, -- [2]
+				0.9921569228172302, -- [3]
+				1, -- [4]
+			},
 			["slantMode"] = "INSIDE",
 			["compress"] = false,
 			["smoothProgress"] = false,
@@ -3261,17 +3818,20 @@ WeakAurasSaved = {
 			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
 			["tocversion"] = 40400,
 			["id"] = "Sacred Cancer (Focus)",
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-Sacred Cancer",
 			["frameStrata"] = 1,
 			["width"] = 66,
-			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-Sacred Cancer",
-			["uid"] = "MPxEDWLvDPS",
+			["selfPoint"] = "CENTER",
+			["config"] = {
+			},
 			["inverse"] = false,
-			["foregroundColor"] = {
-				0.9764706492424011, -- [1]
-				1, -- [2]
-				0.9921569228172302, -- [3]
-				1, -- [4]
+			["actions"] = {
+				["start"] = {
+				},
+				["finish"] = {
+				},
+				["init"] = {
+				},
 			},
 			["orientation"] = "ANTICLOCKWISE",
 			["crop_x"] = 0.41,
@@ -3359,7 +3919,7 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Hunter",
-			["frameStrata"] = 1,
+			["frameStrata"] = 4,
 			["discrete_rotation"] = 0,
 			["animation"] = {
 				["start"] = {
@@ -3386,12 +3946,12 @@ WeakAurasSaved = {
 			["parent"] = "Circle Class Frames (TARGET)",
 			["alpha"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
-			["authorOptions"] = {
-			},
+			["uid"] = "79KS2lhfE1D",
 			["config"] = {
 			},
+			["authorOptions"] = {
+			},
 			["width"] = 95,
-			["uid"] = "79KS2lhfE1D",
 			["conditions"] = {
 			},
 			["information"] = {
@@ -3501,20 +4061,20 @@ WeakAurasSaved = {
 			["semver"] = "1.0.13",
 			["tocversion"] = 30402,
 			["id"] = "castbar player group",
-			["xOffset"] = 0,
+			["selfPoint"] = "CENTER",
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
 			["authorOptions"] = {
 			},
+			["borderInset"] = 1,
 			["config"] = {
 			},
 			["uid"] = "YYMmKKbAc)X",
-			["borderInset"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["selfPoint"] = "CENTER",
+			["xOffset"] = 0,
 		},
 		["castbar player border end"] = {
 			["wagoID"] = "Yjx7bHW6u",
@@ -3683,11 +4243,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "KVBJ)A1)JWx",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "KVBJ)A1)JWx",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -3815,9 +4375,6 @@ WeakAurasSaved = {
 			["id"] = "castbars",
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
-			["uid"] = "YF0FOOXWfhs",
-			["config"] = {
-			},
 			["animation"] = {
 				["start"] = {
 					["easeStrength"] = 3,
@@ -3838,12 +4395,15 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
+			["borderInset"] = 1,
+			["config"] = {
+			},
 			["xOffset"] = -156.176836886381,
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["borderInset"] = 1,
+			["uid"] = "YF0FOOXWfhs",
 		},
 		["castbar player border"] = {
 			["wagoID"] = "Yjx7bHW6u",
@@ -3983,11 +4543,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = ")vcUsoDp8Ii",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = ")vcUsoDp8Ii",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -4324,20 +4884,20 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Rogue",
-			["width"] = 95,
+			["frameStrata"] = 4,
+			["xOffset"] = 42,
 			["discrete_rotation"] = 0,
-			["selfPoint"] = "CENTER",
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [ROGUE] 2",
-			["frameStrata"] = 1,
+			["selfPoint"] = "CENTER",
 			["alpha"] = 1,
+			["width"] = 95,
 			["anchorFrameType"] = "SELECTFRAME",
-			["uid"] = "u(LrEvkDJ3l",
 			["config"] = {
 			},
+			["uid"] = "u(LrEvkDJ3l",
 			["authorOptions"] = {
 			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -4358,20 +4918,13 @@ WeakAurasSaved = {
 			["yOffset"] = 0.57,
 			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
-			["foregroundColor"] = {
-				1, -- [1]
-				1, -- [2]
-				1, -- [3]
-				1, -- [4]
-			},
+			["startAngle"] = 0,
 			["sameTexture"] = true,
-			["actions"] = {
-				["start"] = {
-				},
-				["init"] = {
-				},
-				["finish"] = {
-				},
+			["backgroundColor"] = {
+				0.5, -- [1]
+				0.5, -- [2]
+				0.5, -- [3]
+				0.5, -- [4]
 			},
 			["triggers"] = {
 				{
@@ -4403,8 +4956,6 @@ WeakAurasSaved = {
 				-1, -- [1]
 				"", -- [2]
 			},
-			["selfPoint"] = "CENTER",
-			["slanted"] = false,
 			["animation"] = {
 				["start"] = {
 					["type"] = "none",
@@ -4425,23 +4976,46 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
+			["slanted"] = false,
+			["selfPoint"] = "CENTER",
 			["crop_x"] = 0.41,
 			["desc"] = "Shield CD on Party2 indicator...",
 			["rotation"] = 0,
 			["font"] = "Friz Quadrata TT",
-			["backgroundColor"] = {
-				0.5, -- [1]
-				0.5, -- [2]
-				0.5, -- [3]
-				0.5, -- [4]
-			},
+			["desaturateForeground"] = false,
 			["subRegions"] = {
 				{
 					["type"] = "subbackground",
 				}, -- [1]
 			},
 			["height"] = 43,
-			["desaturateForeground"] = false,
+			["actions"] = {
+				["start"] = {
+				},
+				["init"] = {
+				},
+				["finish"] = {
+				},
+			},
+			["crop_y"] = 0.41,
+			["foregroundColor"] = {
+				1, -- [1]
+				1, -- [2]
+				1, -- [3]
+				1, -- [4]
+			},
+			["useAdjustededMax"] = false,
+			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
+			["source"] = "import",
+			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Shield",
+			["auraRotation"] = 0,
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["smoothProgress"] = false,
+			["useAdjustededMin"] = false,
+			["regionType"] = "progresstexture",
+			["anchorFrameType"] = "SELECTFRAME",
+			["blendMode"] = "BLEND",
+			["alpha"] = 1,
 			["load"] = {
 				["use_never"] = true,
 				["talent"] = {
@@ -4464,21 +5038,6 @@ WeakAurasSaved = {
 					},
 				},
 			},
-			["crop_y"] = 0.41,
-			["useAdjustededMax"] = false,
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
-			["source"] = "import",
-			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Shield",
-			["auraRotation"] = 0,
-			["startAngle"] = 0,
-			["smoothProgress"] = false,
-			["useAdjustededMin"] = false,
-			["regionType"] = "progresstexture",
-			["anchorFrameType"] = "SELECTFRAME",
-			["blendMode"] = "BLEND",
-			["alpha"] = 1,
-			["config"] = {
-			},
 			["slantMode"] = "INSIDE",
 			["compress"] = false,
 			["mirror"] = false,
@@ -4486,11 +5045,12 @@ WeakAurasSaved = {
 			["adjustedMax"] = "",
 			["tocversion"] = 40400,
 			["id"] = "PW: Shield (P2)",
-			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
+			["fontSize"] = 12,
 			["frameStrata"] = 1,
 			["width"] = 43,
-			["fontSize"] = 12,
 			["uid"] = "zDMEhE)lXyO",
+			["config"] = {
+			},
 			["inverse"] = false,
 			["authorOptions"] = {
 			},
@@ -4760,6 +5320,124 @@ WeakAurasSaved = {
 			},
 			["compress"] = false,
 		},
+		["Cheeta - Enhanced Stacking Nameplate"] = {
+			["controlledChildren"] = {
+				"Cheeta - Enhanced Stacking Nameplate - Core", -- [1]
+			},
+			["borderBackdrop"] = "Blizzard Tooltip",
+			["wagoID"] = "AQdGXNEBH",
+			["authorOptions"] = {
+			},
+			["preferToUpdate"] = false,
+			["yOffset"] = 0,
+			["anchorPoint"] = "BOTTOM",
+			["borderColor"] = {
+				0, -- [1]
+				0, -- [2]
+				0, -- [3]
+				1, -- [4]
+			},
+			["url"] = "https://wago.io/AQdGXNEBH/5",
+			["actions"] = {
+				["start"] = {
+				},
+				["finish"] = {
+				},
+				["init"] = {
+				},
+			},
+			["triggers"] = {
+				{
+					["trigger"] = {
+						["debuffType"] = "HELPFUL",
+						["type"] = "aura2",
+						["spellIds"] = {
+						},
+						["subeventSuffix"] = "_CAST_START",
+						["subeventPrefix"] = "SPELL",
+						["unit"] = "player",
+						["event"] = "Health",
+						["names"] = {
+						},
+					},
+					["untrigger"] = {
+					},
+				}, -- [1]
+			},
+			["internalVersion"] = 52,
+			["animation"] = {
+				["start"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+				["main"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+				["finish"] = {
+					["easeStrength"] = 3,
+					["type"] = "none",
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
+				},
+			},
+			["desc"] = "Author - Cheeta\n____________________________________\nProblems/Questions/Improvements:\nDiscord: cheeta.exe",
+			["version"] = 5,
+			["subRegions"] = {
+			},
+			["load"] = {
+				["size"] = {
+					["multi"] = {
+					},
+				},
+				["spec"] = {
+					["multi"] = {
+					},
+				},
+				["class"] = {
+					["multi"] = {
+					},
+				},
+				["talent"] = {
+					["multi"] = {
+					},
+				},
+			},
+			["backdropColor"] = {
+				1, -- [1]
+				1, -- [2]
+				1, -- [3]
+				0.5, -- [4]
+			},
+			["source"] = "import",
+			["scale"] = 1,
+			["border"] = false,
+			["borderEdge"] = "Square Full White",
+			["regionType"] = "group",
+			["borderSize"] = 2,
+			["anchorFrameParent"] = false,
+			["borderOffset"] = 4,
+			["semver"] = "1.0.4",
+			["tocversion"] = 30300,
+			["id"] = "Cheeta - Enhanced Stacking Nameplate",
+			["config"] = {
+			},
+			["frameStrata"] = 1,
+			["anchorFrameType"] = "SCREEN",
+			["groupIcon"] = "Interface\\Icons\\Spell_ChargePositive",
+			["uid"] = "LT6FgeYfq3B",
+			["borderInset"] = 1,
+			["selfPoint"] = "CENTER",
+			["conditions"] = {
+			},
+			["information"] = {
+			},
+			["xOffset"] = 0,
+		},
 		["Mount Combat Desaturation (MAGE)"] = {
 			["parent"] = "Desaturation (MAGE)",
 			["preferToUpdate"] = false,
@@ -4854,17 +5532,18 @@ WeakAurasSaved = {
 			["mirror"] = false,
 			["regionType"] = "texture",
 			["blendMode"] = "BLEND",
-			["discrete_rotation"] = 0,
-			["texture"] = "Interface\\Addons\\TextureScript\\Swipe",
-			["desaturate"] = false,
 			["authorOptions"] = {
 			},
-			["xOffset"] = 65.71110781788559,
+			["texture"] = "Interface\\Addons\\TextureScript\\Swipe",
+			["discrete_rotation"] = 0,
+			["selfPoint"] = "CENTER",
+			["desaturate"] = false,
 			["tocversion"] = 30300,
 			["id"] = "Mount Combat Desaturation (MAGE)",
-			["frameStrata"] = 6,
+			["width"] = 36,
 			["alpha"] = 1,
 			["anchorFrameType"] = "SCREEN",
+			["frameStrata"] = 6,
 			["uid"] = "gaJTYMBCYy0",
 			["config"] = {
 			},
@@ -4874,12 +5553,11 @@ WeakAurasSaved = {
 				0, -- [3]
 				0.6400000154972076, -- [4]
 			},
-			["width"] = 36,
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["selfPoint"] = "CENTER",
+			["xOffset"] = 65.71110781788559,
 		},
 		["castbar player interrupt"] = {
 			["wagoID"] = "Yjx7bHW6u",
@@ -5038,11 +5716,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "1kvdC2gSI0J",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "1kvdC2gSI0J",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -5153,14 +5831,17 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Druid",
-			["width"] = 95,
+			["frameStrata"] = 4,
+			["xOffset"] = 42,
 			["selfPoint"] = "CENTER",
-			["parent"] = "Circle Class Frames (FOCUS)",
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [DRUID] 2",
-			["frameStrata"] = 1,
+			["parent"] = "Circle Class Frames (FOCUS)",
 			["alpha"] = 1,
+			["width"] = 95,
 			["anchorFrameType"] = "SELECTFRAME",
+			["config"] = {
+			},
 			["color"] = {
 				0.984313725490196, -- [1]
 				0.9725490196078431, -- [2]
@@ -5168,9 +5849,6 @@ WeakAurasSaved = {
 				1, -- [4]
 			},
 			["uid"] = "qMfPEvSCtq7",
-			["config"] = {
-			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -5582,9 +6260,16 @@ WeakAurasSaved = {
 			["yOffset"] = 0.57,
 			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["anchorFrameFrame"] = "PartyMemberFrame2",
 			["sameTexture"] = true,
-			["desaturateForeground"] = false,
+			["actions"] = {
+				["start"] = {
+				},
+				["init"] = {
+				},
+				["finish"] = {
+				},
+			},
 			["triggers"] = {
 				{
 					["trigger"] = {
@@ -5638,54 +6323,19 @@ WeakAurasSaved = {
 				},
 			},
 			["slanted"] = false,
-			["adjustedMax"] = "",
+			["desaturateForeground"] = false,
 			["crop_x"] = 0.41,
 			["desc"] = "FF Indicator (P2)",
 			["rotation"] = 0,
 			["font"] = "Friz Quadrata TT",
-			["selfPoint"] = "CENTER",
+			["xOffset"] = -39,
 			["subRegions"] = {
 				{
 					["type"] = "subbackground",
 				}, -- [1]
 			},
 			["height"] = 39,
-			["backgroundColor"] = {
-				0.501960813999176, -- [1]
-				0.501960813999176, -- [2]
-				0.501960813999176, -- [3]
-				0, -- [4]
-			},
-			["crop_y"] = 0.41,
-			["xOffset"] = -39,
-			["useAdjustededMax"] = false,
-			["fontSize"] = 12,
-			["source"] = "import",
-			["startAngle"] = 0,
-			["auraRotation"] = 0,
-			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
-			["mirror"] = false,
-			["anchorFrameFrame"] = "PartyMemberFrame2",
-			["regionType"] = "progresstexture",
-			["width"] = 39,
-			["blendMode"] = "BLEND",
-			["frameStrata"] = 1,
-			["useAdjustededMin"] = false,
-			["slantMode"] = "INSIDE",
-			["tocversion"] = 40400,
-			["smoothProgress"] = false,
-			["foregroundColor"] = {
-				0, -- [1]
-				0.8588235294117647, -- [2]
-				1, -- [3]
-				1, -- [4]
-			},
-			["uid"] = "Hq7AGNLkKNn",
-			["compress"] = false,
-			["id"] = "FF Indicator (P2)",
-			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Renew",
-			["alpha"] = 1,
-			["anchorFrameType"] = "SELECTFRAME",
+			["adjustedMax"] = "",
 			["load"] = {
 				["use_never"] = true,
 				["talent"] = {
@@ -5708,17 +6358,45 @@ WeakAurasSaved = {
 					},
 				},
 			},
+			["crop_y"] = 0.41,
+			["useAdjustededMax"] = false,
+			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
+			["source"] = "import",
+			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Renew",
+			["auraRotation"] = 0,
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["mirror"] = false,
+			["useAdjustededMin"] = false,
+			["regionType"] = "progresstexture",
+			["width"] = 39,
+			["blendMode"] = "BLEND",
+			["frameStrata"] = 1,
+			["startAngle"] = 0,
+			["slantMode"] = "INSIDE",
+			["tocversion"] = 40400,
+			["smoothProgress"] = false,
+			["foregroundColor"] = {
+				0, -- [1]
+				0.8588235294117647, -- [2]
+				1, -- [3]
+				1, -- [4]
+			},
+			["uid"] = "Hq7AGNLkKNn",
+			["compress"] = false,
+			["id"] = "FF Indicator (P2)",
+			["backgroundColor"] = {
+				0.501960813999176, -- [1]
+				0.501960813999176, -- [2]
+				0.501960813999176, -- [3]
+				0, -- [4]
+			},
+			["alpha"] = 1,
+			["anchorFrameType"] = "SELECTFRAME",
+			["fontSize"] = 12,
 			["config"] = {
 			},
 			["inverse"] = false,
-			["actions"] = {
-				["start"] = {
-				},
-				["init"] = {
-				},
-				["finish"] = {
-				},
-			},
+			["selfPoint"] = "CENTER",
 			["orientation"] = "ANTICLOCKWISE",
 			["conditions"] = {
 			},
@@ -6069,24 +6747,24 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Mage",
-			["anchorFrameType"] = "SELECTFRAME",
-			["selfPoint"] = "CENTER",
-			["parent"] = "Circle Class Frames (FOCUS)",
-			["tocversion"] = 30300,
-			["id"] = "Circle Class Frame [MAGE] 2",
-			["frameStrata"] = 1,
-			["alpha"] = 1,
-			["width"] = 95,
-			["authorOptions"] = {
-			},
-			["config"] = {
-			},
-			["uid"] = "r71p543s)oE",
+			["frameStrata"] = 4,
 			["color"] = {
 				1, -- [1]
 				0.9568627450980392, -- [2]
 				0.9607843137254902, -- [3]
 				1, -- [4]
+			},
+			["selfPoint"] = "CENTER",
+			["tocversion"] = 30300,
+			["id"] = "Circle Class Frame [MAGE] 2",
+			["parent"] = "Circle Class Frames (FOCUS)",
+			["alpha"] = 1,
+			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 95,
+			["uid"] = "r71p543s)oE",
+			["authorOptions"] = {
+			},
+			["config"] = {
 			},
 			["conditions"] = {
 			},
@@ -6181,10 +6859,18 @@ WeakAurasSaved = {
 			["borderOffset"] = 4,
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frames (FOCUS)",
-			["config"] = {
-			},
+			["borderInset"] = 1,
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
+			["yOffset"] = 0,
+			["config"] = {
+			},
+			["xOffset"] = 0,
+			["uid"] = "9Lcfb1CqjxZ",
+			["conditions"] = {
+			},
+			["information"] = {
+			},
 			["animation"] = {
 				["start"] = {
 					["easeStrength"] = 3,
@@ -6205,14 +6891,6 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
-			["uid"] = "9Lcfb1CqjxZ",
-			["xOffset"] = 0,
-			["borderInset"] = 1,
-			["conditions"] = {
-			},
-			["information"] = {
-			},
-			["yOffset"] = 0,
 		},
 		["Stealth Effect TOP"] = {
 			["wagoID"] = "wdib4Sz3Z",
@@ -6324,7 +7002,7 @@ WeakAurasSaved = {
 			["mirror"] = false,
 			["regionType"] = "texture",
 			["blendMode"] = "ADD",
-			["anchorFrameType"] = "SCREEN",
+			["alpha"] = 1,
 			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\6TJ_Polluted_mist_Stormy",
 			["color"] = {
 				0, -- [1]
@@ -6338,13 +7016,13 @@ WeakAurasSaved = {
 			["id"] = "Stealth Effect TOP",
 			["parent"] = "Invis additional visual",
 			["frameStrata"] = 2,
+			["anchorFrameType"] = "SCREEN",
 			["width"] = 1960,
+			["uid"] = "f8VXnRZI0Jd",
 			["config"] = {
 			},
-			["uid"] = "f8VXnRZI0Jd",
 			["authorOptions"] = {
 			},
-			["alpha"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -6368,15 +7046,32 @@ WeakAurasSaved = {
 				1, -- [4]
 			},
 			["desaturateBackground"] = false,
-			["mirror"] = false,
-			["sameTexture"] = true,
-			["actions"] = {
+			["animation"] = {
 				["start"] = {
+					["type"] = "none",
+					["easeStrength"] = 3,
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
 				},
-				["init"] = {
+				["main"] = {
+					["type"] = "none",
+					["easeStrength"] = 3,
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
 				},
 				["finish"] = {
+					["type"] = "none",
+					["easeStrength"] = 3,
+					["duration_type"] = "seconds",
+					["easeType"] = "none",
 				},
+			},
+			["sameTexture"] = true,
+			["backgroundColor"] = {
+				0.5, -- [1]
+				0.5, -- [2]
+				0.5, -- [3]
+				0.5, -- [4]
 			},
 			["triggers"] = {
 				{
@@ -6410,43 +7105,19 @@ WeakAurasSaved = {
 			},
 			["selfPoint"] = "CENTER",
 			["slanted"] = false,
-			["animation"] = {
-				["start"] = {
-					["type"] = "none",
-					["easeStrength"] = 3,
-					["duration_type"] = "seconds",
-					["easeType"] = "none",
-				},
-				["main"] = {
-					["type"] = "none",
-					["easeStrength"] = 3,
-					["duration_type"] = "seconds",
-					["easeType"] = "none",
-				},
-				["finish"] = {
-					["type"] = "none",
-					["easeStrength"] = 3,
-					["duration_type"] = "seconds",
-					["easeType"] = "none",
-				},
-			},
+			["desaturateForeground"] = false,
 			["crop_x"] = 0.41,
 			["desc"] = "Sacred Cancer TARGET indicator",
 			["rotation"] = 0,
 			["font"] = "Friz Quadrata TT",
-			["backgroundColor"] = {
-				0.5, -- [1]
-				0.5, -- [2]
-				0.5, -- [3]
-				0.5, -- [4]
-			},
+			["xOffset"] = 41,
 			["subRegions"] = {
 				{
 					["type"] = "subbackground",
 				}, -- [1]
 			},
 			["height"] = 66,
-			["xOffset"] = 41,
+			["anchorPoint"] = "CENTER",
 			["load"] = {
 				["use_never"] = true,
 				["talent"] = {
@@ -6469,20 +7140,20 @@ WeakAurasSaved = {
 					},
 				},
 			},
-			["anchorPoint"] = "CENTER",
+			["adjustedMax"] = "",
 			["useAdjustededMax"] = false,
 			["fontSize"] = 12,
 			["source"] = "import",
-			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-Sacred Cancer",
+			["startAngle"] = 0,
 			["auraRotation"] = 0,
-			["adjustedMax"] = "",
-			["smoothProgress"] = false,
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["mirror"] = false,
 			["anchorFrameFrame"] = "TargetFrame",
 			["regionType"] = "progresstexture",
 			["width"] = 66,
 			["blendMode"] = "BLEND",
 			["alpha"] = 1,
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+			["smoothProgress"] = false,
 			["slantMode"] = "INSIDE",
 			["compress"] = false,
 			["useAdjustededMin"] = false,
@@ -6490,14 +7161,21 @@ WeakAurasSaved = {
 			["crop_y"] = 0.41,
 			["tocversion"] = 40400,
 			["id"] = "Sacred Cancer (Target)",
-			["uid"] = "MLpFgYvQ9v0",
+			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-Sacred Cancer",
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
-			["startAngle"] = 0,
+			["uid"] = "MLpFgYvQ9v0",
 			["config"] = {
 			},
 			["inverse"] = false,
-			["desaturateForeground"] = false,
+			["actions"] = {
+				["start"] = {
+				},
+				["init"] = {
+				},
+				["finish"] = {
+				},
+			},
 			["orientation"] = "ANTICLOCKWISE",
 			["conditions"] = {
 			},
@@ -6540,6 +7218,12 @@ WeakAurasSaved = {
 						["useName"] = true,
 						["use_showlossofcontrol"] = false,
 						["match_count"] = "1",
+						["match_countOperator"] = "<",
+						["use_remaining"] = false,
+						["spellName"] = 12472,
+						["useExactSpellId"] = false,
+						["type"] = "spell",
+						["stacksOperator"] = "<=",
 						["auraspellids"] = {
 							"11025", -- [1]
 							"10952", -- [2]
@@ -6558,12 +7242,6 @@ WeakAurasSaved = {
 							"1253", -- [15]
 							"1007", -- [16]
 						},
-						["use_remaining"] = false,
-						["spellName"] = 12472,
-						["subeventSuffix"] = "_CAST_START",
-						["type"] = "spell",
-						["stacksOperator"] = "<=",
-						["match_countOperator"] = "<",
 						["use_spellCount"] = false,
 						["use_genericShowOn"] = true,
 						["event"] = "Cooldown Progress (Spell)",
@@ -6572,7 +7250,7 @@ WeakAurasSaved = {
 						["use_spellName"] = true,
 						["spellIds"] = {
 						},
-						["useExactSpellId"] = false,
+						["subeventSuffix"] = "_CAST_START",
 						["remOperator"] = "<=",
 						["debuffType"] = "HELPFUL",
 						["use_track"] = true,
@@ -6608,7 +7286,7 @@ WeakAurasSaved = {
 				}, -- [2]
 			},
 			["height"] = 48,
-			["useAdjustededMin"] = false,
+			["useCooldownModRate"] = true,
 			["load"] = {
 				["ingroup"] = {
 				},
@@ -6656,9 +7334,9 @@ WeakAurasSaved = {
 					},
 				},
 			},
-			["frameStrata"] = 1,
+			["alpha"] = 1,
 			["useAdjustededMax"] = false,
-			["desaturate"] = false,
+			["xOffset"] = -568.8888778686523,
 			["source"] = "import",
 			["actions"] = {
 				["start"] = {
@@ -6696,12 +7374,30 @@ WeakAurasSaved = {
 					},
 				}, -- [2]
 			},
-			["xOffset"] = -568.8888778686523,
+			["authorOptions"] = {
+			},
 			["anchorFrameFrame"] = "PlayerFrame",
 			["regionType"] = "icon",
-			["internalVersion"] = 72,
+			["progressSource"] = {
+				-1, -- [1]
+				"", -- [2]
+			},
 			["config"] = {
 			},
+			["internalVersion"] = 72,
+			["anchorFrameType"] = "SCREEN",
+			["zoom"] = 0,
+			["auto"] = true,
+			["cooldownTextDisabled"] = false,
+			["semver"] = "1.0.5",
+			["tocversion"] = 11503,
+			["id"] = "VEINS CD Visual",
+			["desaturate"] = false,
+			["frameStrata"] = 1,
+			["width"] = 48,
+			["useAdjustededMin"] = false,
+			["uid"] = "XXR9pwY2kqX",
+			["inverse"] = false,
 			["animation"] = {
 				["start"] = {
 					["type"] = "preset",
@@ -6723,24 +7419,6 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
-			["anchorFrameType"] = "SCREEN",
-			["zoom"] = 0,
-			["auto"] = true,
-			["cooldownTextDisabled"] = false,
-			["semver"] = "1.0.5",
-			["tocversion"] = 11503,
-			["id"] = "VEINS CD Visual",
-			["progressSource"] = {
-				-1, -- [1]
-				"", -- [2]
-			},
-			["useCooldownModRate"] = true,
-			["width"] = 48,
-			["authorOptions"] = {
-			},
-			["uid"] = "XXR9pwY2kqX",
-			["inverse"] = false,
-			["alpha"] = 1,
 			["displayIcon"] = 135932,
 			["information"] = {
 				["forceEvents"] = true,
@@ -6842,32 +7520,32 @@ WeakAurasSaved = {
 			["mirror"] = false,
 			["regionType"] = "texture",
 			["blendMode"] = "BLEND",
+			["xOffset"] = 233.7111078178856,
+			["texture"] = "Interface\\Addons\\TextureScript\\Swipe",
 			["authorOptions"] = {
 			},
-			["texture"] = "Interface\\Addons\\TextureScript\\Swipe",
+			["discrete_rotation"] = 0,
 			["desc"] = "because 3.3.5a client is fucking dogshit and cant do it on its own",
-			["xOffset"] = 233.7111078178856,
-			["selfPoint"] = "CENTER",
 			["tocversion"] = 30300,
 			["id"] = "Water Combat Desaturation (MAGE)",
-			["anchorFrameType"] = "SCREEN",
+			["alpha"] = 1,
 			["frameStrata"] = 6,
 			["width"] = 36,
+			["anchorFrameType"] = "SCREEN",
+			["config"] = {
+			},
+			["uid"] = "Bqo)mk1GQIV",
 			["color"] = {
 				0, -- [1]
 				0, -- [2]
 				0, -- [3]
 				0.6400000154972076, -- [4]
 			},
-			["config"] = {
-			},
-			["uid"] = "Bqo)mk1GQIV",
-			["alpha"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["discrete_rotation"] = 0,
+			["selfPoint"] = "CENTER",
 		},
 		["PW: Shield (P1)"] = {
 			["user_y"] = 0,
@@ -6878,9 +7556,16 @@ WeakAurasSaved = {
 			["yOffset"] = 0.57,
 			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
-			["selfPoint"] = "CENTER",
+			["startAngle"] = 0,
 			["sameTexture"] = true,
-			["desaturateForeground"] = false,
+			["actions"] = {
+				["start"] = {
+				},
+				["finish"] = {
+				},
+				["init"] = {
+				},
+			},
 			["triggers"] = {
 				{
 					["trigger"] = {
@@ -6932,14 +7617,7 @@ WeakAurasSaved = {
 				},
 			},
 			["backgroundOffset"] = 2,
-			["actions"] = {
-				["start"] = {
-				},
-				["finish"] = {
-				},
-				["init"] = {
-				},
-			},
+			["selfPoint"] = "CENTER",
 			["conditions"] = {
 			},
 			["desc"] = "Shield CD on Party1 indicator...",
@@ -6957,28 +7635,28 @@ WeakAurasSaved = {
 				}, -- [1]
 			},
 			["height"] = 43,
+			["desaturateForeground"] = false,
+			["crop_y"] = 0.41,
 			["authorOptions"] = {
 			},
-			["crop_y"] = 0.41,
-			["foregroundColor"] = {
-				1, -- [1]
-				1, -- [2]
-				1, -- [3]
-				1, -- [4]
-			},
 			["useAdjustededMax"] = false,
-			["fontSize"] = 12,
+			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
 			["source"] = "import",
 			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Shield",
 			["auraRotation"] = 0,
-			["startAngle"] = 0,
+			["fontSize"] = 12,
 			["mirror"] = false,
 			["anchorFrameFrame"] = "PartyMemberFrame1",
 			["regionType"] = "progresstexture",
 			["width"] = 43,
 			["blendMode"] = "BLEND",
 			["frameStrata"] = 1,
-			["uid"] = "nD2epxy)96V",
+			["foregroundColor"] = {
+				1, -- [1]
+				1, -- [2]
+				1, -- [3]
+				1, -- [4]
+			},
 			["slantMode"] = "INSIDE",
 			["compress"] = false,
 			["useAdjustededMin"] = false,
@@ -7007,12 +7685,12 @@ WeakAurasSaved = {
 			},
 			["tocversion"] = 40400,
 			["id"] = "PW: Shield (P1)",
-			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
 			["alpha"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
 			["config"] = {
 			},
+			["uid"] = "nD2epxy)96V",
 			["inverse"] = false,
 			["adjustedMax"] = "",
 			["orientation"] = "ANTICLOCKWISE",
@@ -7116,23 +7794,23 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Shaman",
-			["anchorFrameType"] = "SELECTFRAME",
-			["discrete_rotation"] = 0,
-			["parent"] = "Circle Class Frames (TARGET)",
-			["tocversion"] = 30300,
-			["id"] = "Circle Class Frame [SHAMAN]",
 			["alpha"] = 1,
-			["frameStrata"] = 1,
-			["width"] = 95,
-			["xOffset"] = 42,
-			["config"] = {
-			},
-			["uid"] = "h)25fvrrLar",
 			["color"] = {
 				1, -- [1]
 				0.9882352941176471, -- [2]
 				0.9568627450980392, -- [3]
 				1, -- [4]
+			},
+			["discrete_rotation"] = 0,
+			["tocversion"] = 30300,
+			["id"] = "Circle Class Frame [SHAMAN]",
+			["parent"] = "Circle Class Frames (TARGET)",
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 95,
+			["uid"] = "h)25fvrrLar",
+			["xOffset"] = 42,
+			["config"] = {
 			},
 			["conditions"] = {
 			},
@@ -7180,21 +7858,6 @@ WeakAurasSaved = {
 						["debuffType"] = "HELPFUL",
 						["use_remaining"] = false,
 						["spellName"] = 31687,
-						["useExactSpellId"] = false,
-						["useName"] = true,
-						["stacksOperator"] = "<=",
-						["match_countOperator"] = "<",
-						["use_spellCount"] = false,
-						["matchesShowOn"] = "showOnMissing",
-						["event"] = "Cooldown Progress (Spell)",
-						["names"] = {
-						},
-						["realSpellName"] = "Summon Water Elemental",
-						["use_spellName"] = true,
-						["spellIds"] = {
-						},
-						["subeventSuffix"] = "_CAST_START",
-						["remOperator"] = "<=",
 						["auraspellids"] = {
 							"11025", -- [1]
 							"10952", -- [2]
@@ -7213,6 +7876,21 @@ WeakAurasSaved = {
 							"1253", -- [15]
 							"1007", -- [16]
 						},
+						["useName"] = true,
+						["stacksOperator"] = "<=",
+						["subeventSuffix"] = "_CAST_START",
+						["use_spellCount"] = false,
+						["matchesShowOn"] = "showOnMissing",
+						["event"] = "Cooldown Progress (Spell)",
+						["names"] = {
+						},
+						["realSpellName"] = "Summon Water Elemental",
+						["use_spellName"] = true,
+						["spellIds"] = {
+						},
+						["match_countOperator"] = "<",
+						["remOperator"] = "<=",
+						["useExactSpellId"] = false,
 						["use_track"] = true,
 						["useRem"] = true,
 					},
@@ -7246,7 +7924,10 @@ WeakAurasSaved = {
 				}, -- [2]
 			},
 			["height"] = 48,
-			["useAdjustededMin"] = false,
+			["progressSource"] = {
+				-1, -- [1]
+				"", -- [2]
+			},
 			["load"] = {
 				["ingroup"] = {
 				},
@@ -7294,17 +7975,17 @@ WeakAurasSaved = {
 				},
 				["zoneIds"] = "",
 			},
-			["alpha"] = 1,
+			["useCooldownModRate"] = true,
 			["useAdjustededMax"] = false,
-			["frameStrata"] = 1,
+			["xOffset"] = -568.8888778686523,
 			["source"] = "import",
-			["internalVersion"] = 72,
+			["cooldownEdge"] = false,
 			["information"] = {
 				["forceEvents"] = true,
 				["ignoreOptionsEventErrors"] = true,
 			},
 			["displayIcon"] = "Interface\\Icons\\Spell_Frost_SummonWaterElemental_2",
-			["icon"] = true,
+			["desaturate"] = false,
 			["anchorFrameFrame"] = "PlayerFrame",
 			["regionType"] = "icon",
 			["animation"] = {
@@ -7329,10 +8010,7 @@ WeakAurasSaved = {
 				},
 			},
 			["uid"] = "6vnX6bzrDkY",
-			["progressSource"] = {
-				-1, -- [1]
-				"", -- [2]
-			},
+			["useAdjustededMin"] = false,
 			["width"] = 48,
 			["cooldownTextDisabled"] = false,
 			["semver"] = "1.0.5",
@@ -7340,19 +8018,14 @@ WeakAurasSaved = {
 			["auto"] = true,
 			["tocversion"] = 11503,
 			["id"] = "Water Elemental CD Visual",
-			["xOffset"] = -568.8888778686523,
-			["useCooldownModRate"] = true,
+			["icon"] = true,
+			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
-			["cooldownEdge"] = false,
+			["alpha"] = 1,
 			["config"] = {
 			},
 			["inverse"] = false,
-			["color"] = {
-				0.984313725490196, -- [1]
-				0.9725490196078431, -- [2]
-				1, -- [3]
-				1, -- [4]
-			},
+			["internalVersion"] = 72,
 			["conditions"] = {
 				{
 					["check"] = {
@@ -7380,7 +8053,12 @@ WeakAurasSaved = {
 				}, -- [2]
 			},
 			["cooldown"] = true,
-			["desaturate"] = false,
+			["color"] = {
+				0.984313725490196, -- [1]
+				0.9725490196078431, -- [2]
+				1, -- [3]
+				1, -- [4]
+			},
 		},
 		["Desaturation (MAGE)"] = {
 			["controlledChildren"] = {
@@ -7388,8 +8066,7 @@ WeakAurasSaved = {
 				"Mount Combat Desaturation (MAGE)", -- [2]
 			},
 			["borderBackdrop"] = "Blizzard Tooltip",
-			["authorOptions"] = {
-			},
+			["xOffset"] = 0,
 			["preferToUpdate"] = false,
 			["yOffset"] = 0,
 			["anchorPoint"] = "CENTER",
@@ -7483,16 +8160,17 @@ WeakAurasSaved = {
 			["id"] = "Desaturation (MAGE)",
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
+			["selfPoint"] = "CENTER",
 			["uid"] = "kMkzZjAlyDc",
 			["config"] = {
 			},
-			["borderInset"] = 1,
-			["xOffset"] = 0,
+			["authorOptions"] = {
+			},
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["selfPoint"] = "CENTER",
+			["borderInset"] = 1,
 		},
 		["FF Indicator (P1)"] = {
 			["user_y"] = 0,
@@ -7504,8 +8182,7 @@ WeakAurasSaved = {
 			["yOffset"] = 0.57,
 			["anchorPoint"] = "CENTER",
 			["desaturateBackground"] = false,
-			["config"] = {
-			},
+			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
 			["sameTexture"] = true,
 			["actions"] = {
 				["start"] = {
@@ -7606,18 +8283,18 @@ WeakAurasSaved = {
 			},
 			["crop_y"] = 0.41,
 			["useAdjustededMax"] = false,
-			["backgroundTexture"] = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
-			["source"] = "import",
-			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Renew",
-			["auraRotation"] = 0,
 			["textureWrapMode"] = "CLAMPTOBLACKADDITIVE",
-			["mirror"] = false,
+			["source"] = "import",
+			["startAngle"] = 0,
+			["auraRotation"] = 0,
+			["fontSize"] = 12,
+			["smoothProgress"] = false,
 			["anchorFrameFrame"] = "PartyMemberFrame1",
 			["regionType"] = "progresstexture",
 			["width"] = 39,
 			["blendMode"] = "BLEND",
 			["alpha"] = 1,
-			["fontSize"] = 12,
+			["foregroundTexture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\UI-PartyFlash-Highlight_Renew",
 			["slantMode"] = "INSIDE",
 			["tocversion"] = 40400,
 			["useAdjustededMin"] = false,
@@ -7630,10 +8307,11 @@ WeakAurasSaved = {
 			},
 			["compress"] = false,
 			["id"] = "FF Indicator (P1)",
-			["smoothProgress"] = false,
+			["mirror"] = false,
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
-			["startAngle"] = 0,
+			["config"] = {
+			},
 			["uid"] = "qNFOL)6H20f",
 			["inverse"] = false,
 			["backgroundColor"] = {
@@ -7742,24 +8420,24 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Warrior",
-			["anchorFrameType"] = "SELECTFRAME",
+			["alpha"] = 1,
+			["xOffset"] = 42,
 			["selfPoint"] = "CENTER",
-			["discrete_rotation"] = 0,
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [WARRIOR] 2",
-			["alpha"] = 1,
-			["frameStrata"] = 1,
+			["discrete_rotation"] = 0,
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
 			["width"] = 95,
+			["uid"] = "qQyU9Qhpyxa",
 			["config"] = {
 			},
-			["uid"] = "qQyU9Qhpyxa",
 			["color"] = {
 				1, -- [1]
 				0.9686274509803922, -- [2]
 				0.9725490196078431, -- [3]
 				1, -- [4]
 			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -7914,26 +8592,26 @@ WeakAurasSaved = {
 			["anchorFrameFrame"] = "PetFrame",
 			["regionType"] = "icon",
 			["useTooltip"] = false,
+			["icon"] = true,
+			["cooldown"] = false,
+			["displayIcon"] = "Interface\\Icons\\Spell_Frost_SummonWaterElemental_2",
+			["zoom"] = 0.2099999934434891,
 			["color"] = {
 				1, -- [1]
 				1, -- [2]
 				1, -- [3]
 				0, -- [4]
 			},
-			["cooldown"] = false,
-			["displayIcon"] = "Interface\\Icons\\Spell_Frost_SummonWaterElemental_2",
-			["zoom"] = 0.2099999934434891,
-			["xOffset"] = 72,
 			["alpha"] = 1,
 			["id"] = "Water Elemental Duration",
 			["config"] = {
 			},
 			["frameStrata"] = 1,
-			["width"] = 30,
 			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 30,
 			["uid"] = "lkGdLzT6(7M",
 			["inverse"] = false,
-			["icon"] = true,
+			["xOffset"] = 72,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -8282,24 +8960,24 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Hunter",
-			["anchorFrameType"] = "SELECTFRAME",
-			["selfPoint"] = "CENTER",
-			["discrete_rotation"] = 0,
-			["tocversion"] = 30300,
-			["id"] = "Circle Class Frame [HUNTER] 2",
 			["alpha"] = 1,
-			["frameStrata"] = 1,
-			["width"] = 95,
-			["config"] = {
-			},
-			["uid"] = "TI5L9PmeJeh",
-			["authorOptions"] = {
-			},
 			["color"] = {
 				0.5882352941176471, -- [1]
 				1, -- [2]
 				0.6352941176470588, -- [3]
 				1, -- [4]
+			},
+			["selfPoint"] = "CENTER",
+			["tocversion"] = 30300,
+			["id"] = "Circle Class Frame [HUNTER] 2",
+			["discrete_rotation"] = 0,
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
+			["width"] = 95,
+			["uid"] = "TI5L9PmeJeh",
+			["config"] = {
+			},
+			["authorOptions"] = {
 			},
 			["conditions"] = {
 			},
@@ -8414,13 +9092,13 @@ WeakAurasSaved = {
 			["id"] = "Invis additional visual",
 			["authorOptions"] = {
 			},
-			["frameStrata"] = 2,
-			["anchorFrameType"] = "SCREEN",
 			["alpha"] = 1,
-			["config"] = {
-			},
+			["anchorFrameType"] = "SCREEN",
 			["yOffset"] = -94.66684711779584,
 			["uid"] = "vQTq0ZuVxji",
+			["config"] = {
+			},
+			["frameStrata"] = 2,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -9345,20 +10023,20 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Paladin",
-			["anchorFrameType"] = "SELECTFRAME",
+			["alpha"] = 1,
+			["xOffset"] = 42,
 			["selfPoint"] = "CENTER",
-			["discrete_rotation"] = 0,
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [PALADIN] 2",
-			["alpha"] = 1,
-			["frameStrata"] = 1,
+			["discrete_rotation"] = 0,
+			["frameStrata"] = 4,
+			["anchorFrameType"] = "SELECTFRAME",
 			["width"] = 95,
+			["uid"] = "hZI1fzlp1If",
 			["config"] = {
 			},
-			["uid"] = "hZI1fzlp1If",
 			["authorOptions"] = {
 			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -9674,11 +10352,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "qDblFlZiAD5",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "qDblFlZiAD5",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -10137,11 +10815,11 @@ WeakAurasSaved = {
 			},
 			["frameStrata"] = 2,
 			["anchorFrameType"] = "SCREEN",
-			["width"] = 355,
-			["uid"] = "iN4BrN2CQJ6",
-			["parent"] = "player",
 			["config"] = {
 			},
+			["uid"] = "iN4BrN2CQJ6",
+			["width"] = 355,
+			["parent"] = "player",
 			["conditions"] = {
 				{
 					["check"] = {
@@ -10252,14 +10930,17 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Shaman",
-			["width"] = 95,
+			["frameStrata"] = 4,
+			["xOffset"] = 42,
 			["selfPoint"] = "CENTER",
-			["parent"] = "Circle Class Frames (FOCUS)",
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [SHAMAN] 2",
-			["frameStrata"] = 1,
+			["parent"] = "Circle Class Frames (FOCUS)",
 			["alpha"] = 1,
+			["width"] = 95,
 			["anchorFrameType"] = "SELECTFRAME",
+			["config"] = {
+			},
 			["color"] = {
 				1, -- [1]
 				0.9882352941176471, -- [2]
@@ -10267,9 +10948,6 @@ WeakAurasSaved = {
 				1, -- [4]
 			},
 			["uid"] = "C3fWdU(hE3k",
-			["config"] = {
-			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -10407,7 +11085,7 @@ WeakAurasSaved = {
 			["mirror"] = false,
 			["regionType"] = "texture",
 			["blendMode"] = "ADD",
-			["anchorFrameType"] = "SCREEN",
+			["alpha"] = 1,
 			["texture"] = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\6TJ_Polluted_mist_Stormy",
 			["color"] = {
 				1, -- [1]
@@ -10421,13 +11099,13 @@ WeakAurasSaved = {
 			["id"] = "Stealth Effect BOTTOM",
 			["parent"] = "Invis additional visual",
 			["frameStrata"] = 2,
+			["anchorFrameType"] = "SCREEN",
 			["width"] = 1960,
+			["uid"] = "kBbzhHWQpyL",
 			["config"] = {
 			},
-			["uid"] = "kBbzhHWQpyL",
 			["authorOptions"] = {
 			},
-			["alpha"] = 1,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -10511,7 +11189,7 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Paladin",
-			["frameStrata"] = 1,
+			["frameStrata"] = 4,
 			["discrete_rotation"] = 0,
 			["animation"] = {
 				["start"] = {
@@ -10538,16 +11216,16 @@ WeakAurasSaved = {
 			["parent"] = "Circle Class Frames (TARGET)",
 			["alpha"] = 1,
 			["anchorFrameType"] = "SELECTFRAME",
+			["uid"] = "rIoSAeOj6u0",
+			["config"] = {
+			},
 			["color"] = {
 				1, -- [1]
 				0.9254901960784314, -- [2]
 				0.9607843137254902, -- [3]
 				1, -- [4]
 			},
-			["config"] = {
-			},
 			["width"] = 95,
-			["uid"] = "rIoSAeOj6u0",
 			["conditions"] = {
 			},
 			["information"] = {
@@ -10654,18 +11332,18 @@ WeakAurasSaved = {
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [ROGUE]",
 			["parent"] = "Circle Class Frames (TARGET)",
-			["frameStrata"] = 1,
+			["frameStrata"] = 4,
 			["width"] = 95,
+			["config"] = {
+			},
+			["uid"] = "0CRscaaoT(h",
 			["color"] = {
 				1, -- [1]
 				0.8823529411764706, -- [2]
 				0, -- [3]
 				1, -- [4]
 			},
-			["uid"] = "0CRscaaoT(h",
 			["anchorFrameType"] = "SELECTFRAME",
-			["config"] = {
-			},
 			["conditions"] = {
 			},
 			["information"] = {
@@ -10765,24 +11443,24 @@ WeakAurasSaved = {
 			["blendMode"] = "ADD",
 			["anchorFrameParent"] = true,
 			["texture"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Priest",
-			["width"] = 95,
+			["frameStrata"] = 4,
+			["xOffset"] = 42,
 			["discrete_rotation"] = 0,
-			["selfPoint"] = "CENTER",
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frame [PRIEST] 2",
-			["frameStrata"] = 1,
+			["selfPoint"] = "CENTER",
 			["alpha"] = 1,
+			["width"] = 95,
 			["anchorFrameType"] = "SELECTFRAME",
-			["uid"] = "xIPPOvJrN1V",
 			["config"] = {
 			},
+			["uid"] = "xIPPOvJrN1V",
 			["color"] = {
 				1, -- [1]
 				0.9568627450980392, -- [2]
 				0.9607843137254902, -- [3]
 				1, -- [4]
 			},
-			["xOffset"] = 42,
 			["conditions"] = {
 			},
 			["information"] = {
@@ -10876,12 +11554,12 @@ WeakAurasSaved = {
 			["borderOffset"] = 4,
 			["tocversion"] = 30300,
 			["id"] = "Circle Class Frames (TARGET)",
-			["borderInset"] = 1,
+			["config"] = {
+			},
 			["frameStrata"] = 1,
 			["anchorFrameType"] = "SCREEN",
-			["authorOptions"] = {
-			},
-			["uid"] = "qZaXlWpR3as",
+			["groupIcon"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Mage",
+			["borderInset"] = 1,
 			["animation"] = {
 				["start"] = {
 					["type"] = "none",
@@ -10902,13 +11580,13 @@ WeakAurasSaved = {
 					["easeType"] = "none",
 				},
 			},
-			["config"] = {
-			},
+			["uid"] = "qZaXlWpR3as",
 			["conditions"] = {
 			},
 			["information"] = {
 			},
-			["groupIcon"] = "Interface\\Addons\\TextureScript\\ClassCircleFrame\\Mage",
+			["authorOptions"] = {
+			},
 		},
 		["castbar player spark"] = {
 			["user_y"] = 0,
@@ -11506,10 +12184,10 @@ WeakAurasSaved = {
 	["registered"] = {
 	},
 	["frame"] = {
-		["xOffset"] = -288.6688184483605,
-		["width"] = 830.0000244826317,
+		["xOffset"] = -359.7802728938082,
+		["width"] = 830.0001645396982,
 		["height"] = 665.0000550517277,
-		["yOffset"] = -28.97780704143736,
+		["yOffset"] = -54.57764772652433,
 	},
 	["editor_theme"] = "Monokai",
 }

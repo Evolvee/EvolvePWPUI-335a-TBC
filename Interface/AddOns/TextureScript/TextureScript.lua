@@ -1255,13 +1255,13 @@ local function AddPlates(unit)
     overlay:SetPoint("CENTER", UIParent, "CENTER", 10000, 10000)
 
     -- Move plates visually up
-    MovePlateTexture(HealthBar, 8)
+    MovePlateTexture(HealthBar, 0) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
     if not nameplate.hasMoved then
-        MovePlateTexture(hpborder, 8)
-        MovePlateTexture(oldname, 8)
+        MovePlateTexture(hpborder, 0) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
+        MovePlateTexture(oldname, 0) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
         nameplate.hasMoved = true
     end
-    cbborder:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 12)
+    cbborder:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 4) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
 
     -- Set shield castbar like a regular castbar (TBC had no shield castbars, so begone cancer WOTLK ugly "feature"!)
     if cbshield:GetTexture() ~= cbborder:GetTexture() then
@@ -1269,7 +1269,7 @@ local function AddPlates(unit)
         cbshield:SetSize(cbborder:GetSize())
         cbshield:SetTexCoord(1, 0, 0, 1)
     end
-    cbshield:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 12)
+    cbshield:SetPoint("CENTER", nameplate, "CENTER", 0, -19.581398151124 + 4) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
     CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
     cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
 
@@ -1675,9 +1675,9 @@ hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
                 local _, _, cbborder, cbshield, cbicon = plate:GetRegions()
 
                 if notInterruptible then
-                    cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 12)
+                    cbshield:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 4) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
                 end
-                cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 12)
+                cbborder:SetPoint("CENTER", plate, "CENTER", 0, -19.581398151124 + 4) -- testing Cheeta WA to move up nameplates, so reducing the value by the previous "8" for now
                 CastBar:SetPoint("BOTTOMRIGHT", cbborder, "BOTTOMRIGHT", -4.85, 4.9)
                 cbicon:SetPoint("CENTER", cbborder, "BOTTOMLEFT", 14.41, 11.12)
             end
