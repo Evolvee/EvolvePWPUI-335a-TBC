@@ -51,11 +51,26 @@ function ACDFrame:Initialize()
     self.ACDNumTwo:SetHeight(128)
     self.ACDNumTwo:SetPoint("LEFT", self.ACDNumFrame, "LEFT", -10, 0)
 
-local ACDNumThree = ACDNumFrame:CreateTexture("ACDNumThree", "OVERLAY")
+    local ACDNumThree = ACDNumFrame:CreateTexture("ACDNumThree", "OVERLAY")
     self.ACDNumThree = ACDNumThree
     self.ACDNumThree:SetWidth(128)
     self.ACDNumThree:SetHeight(128)
     self.ACDNumThree:SetPoint("RIGHT", self.ACDNumFrame, "RIGHT", 10, 0)
+
+    -- Animation
+    ACDNumFrame.anim = ACDNumFrame:CreateAnimationGroup()
+
+    local anim = ACDNumFrame.anim:CreateAnimation("Alpha")
+    anim:SetOrder(1)
+    anim:SetDuration(0)
+    anim:SetChange(-1)
+    anim:SetStartDelay(0.1)
+
+    local anim2 = ACDNumFrame.anim:CreateAnimation("Alpha")
+    anim2:SetOrder(1)
+    anim2:SetDuration(0.25)
+    anim2:SetChange(1)
+    anim2:SetStartDelay(0.1)
 
     if Gladdy.db.countdown then
         self:RegisterMessage("JOINED_ARENA")
@@ -101,6 +116,9 @@ function ACDFrame:HideAll()
     self.ACDNumOne:Hide()
     self.ACDNumTwo:Hide()
     self.ACDNumThree:Hide()
+    if self.ACDNumFrame.anim then
+        self.ACDNumFrame.anim:Stop()
+    end
 end
 
 function ACDFrame:CreateTicker(countdown)
@@ -125,16 +143,19 @@ local classmarkers = {
 
 -- Big Brain segment coming up, buckle up your seatbelts!
 local function determineClass(class1, class2)
-    if class1 == nil and class2 == nil then -- Double stealth no icons
+    if (class1 == nil and class2 == nil) or (Gladdy.curBracket and Gladdy.curBracket > 2) then
+        -- Check for Double stealth (no icons) and disable 3v3 for now
         class1, class2 = nil, nil
-    elseif (class1 == "MAGE" and class2 == nil) or (class2 == "MAGE" and class1 == nil) then -- Rogue/Mage
+    elseif (class1 == "MAGE" and class2 == nil) or (class2 == "MAGE" and class1 == nil) then
+        -- Rogue/Mage
         if class1 == nil then
             class1 = "ROGUE"
         end
         if class2 == nil then
             class2 = "ROGUE"
         end
-    elseif (class1 == "PRIEST" and class2 == nil) or (class2 == "PRIEST" and class1 == nil) then -- Priest/Rogue or Priest/Mage
+    elseif (class1 == "PRIEST" and class2 == nil) or (class2 == "PRIEST" and class1 == nil) then
+        -- Priest/Rogue or Priest/Mage
         if class1 == nil then
             if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
                 class1 = "MAGE"
@@ -149,7 +170,8 @@ local function determineClass(class1, class2)
                 class2 = "ROGUE"
             end
         end
-    elseif (class1 == "WARRIOR" and class2 == nil) or (class2 == "WARRIOR" and class1 == nil) then -- Warrior/Druid
+    elseif (class1 == "WARRIOR" and class2 == nil) or (class2 == "WARRIOR" and class1 == nil) then
+        -- Warrior/Druid
         if class1 == nil then
             if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
                 class1 = "DRUID"
@@ -160,7 +182,8 @@ local function determineClass(class1, class2)
                 class2 = "DRUID"
             end
         end
-    elseif (class1 == "WARLOCK" and class2 == nil) or (class2 == "WARLOCK" and class1 == nil) then -- Warlock/Rogue or Warlock/Druid
+    elseif (class1 == "WARLOCK" and class2 == nil) or (class2 == "WARLOCK" and class1 == nil) then
+        -- Warlock/Rogue or Warlock/Druid
         if class1 == nil then
             if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
                 class1 = "DRUID"
@@ -175,7 +198,8 @@ local function determineClass(class1, class2)
                 class2 = "ROGUE"
             end
         end
-    elseif (class1 == "PALADIN" and class2 == nil) or (class2 == "PALADIN" and class1 == nil) then -- Paladin/Mage or Paladin/Rogue
+    elseif (class1 == "PALADIN" and class2 == nil) or (class2 == "PALADIN" and class1 == nil) then
+        -- Paladin/Mage or Paladin/Rogue
         if class1 == nil then
             if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
                 class1 = "MAGE"
@@ -193,7 +217,6 @@ local function determineClass(class1, class2)
     end
     return class1, class2
 end
-
 
 function ACDFrame.Ticker()
     local self = ACDFrame
@@ -231,6 +254,14 @@ function ACDFrame.Ticker()
             --self.ACDNumOne:SetTexture("Interface\\Addons\\TextureScript\\Gladdy\\BlizzardEmployees\\" .. randomTexture)
             local class1, class2 = determineClass(select(2, UnitClass("arena1")), select(2, UnitClass("arena2")))
 
+            self.ACDNumOne:Hide()
+
+            -- testing
+            if not class1 and not class2 then
+                class1 = "PRIEST"
+                class2 = "ROGUE"
+            end
+
             if class1 then
                 self.ACDNumTwo:SetTexture(classmarkers[class1])
                 self.ACDNumTwo:Show()
@@ -241,7 +272,11 @@ function ACDFrame.Ticker()
                 self.ACDNumThree:Show()
             end
 
-            self.ACDNumOne:Hide()
+            -- Animate
+            if (class1 or class2) and self.ACDNumFrame.anim then
+                self.ACDNumFrame.anim:Play()
+            end
+
             self.ACDNumOnes:Hide()
             self.ACDNumTens:Hide()
             self.ACDNumFrame:SetScale(1.0)
