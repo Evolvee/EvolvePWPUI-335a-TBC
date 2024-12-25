@@ -31,46 +31,19 @@ function ACDFrame:Initialize()
     self.ACDNumTens = ACDNumTens
     self.ACDNumTens:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumTens:SetHeight(Gladdy.db.arenaCountdownSize)
-    self.ACDNumTens:SetPoint("CENTER", self.ACDNumFrame, "CENTER", -(Gladdy.db.arenaCountdownSize / 8 + Gladdy.db.arenaCountdownSize / 8 / 2), 0)
+    self.ACDNumTens:SetPoint("CENTER", self.ACDNumFrame, "CENTER", -(Gladdy.db.arenaCountdownSize/8 + Gladdy.db.arenaCountdownSize/8/2), 0)
 
     local ACDNumOnes = ACDNumFrame:CreateTexture("ACDNumOnes", "OVERLAY")
     self.ACDNumOnes = ACDNumOnes
     self.ACDNumOnes:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumOnes:SetHeight(Gladdy.db.arenaCountdownSize)
-    self.ACDNumOnes:SetPoint("CENTER", self.ACDNumFrame, "CENTER", (Gladdy.db.arenaCountdownSize / 8 + Gladdy.db.arenaCountdownSize / 8 / 2), 0)
+    self.ACDNumOnes:SetPoint("CENTER", self.ACDNumFrame, "CENTER", (Gladdy.db.arenaCountdownSize/8 + Gladdy.db.arenaCountdownSize/8/2), 0)
 
     local ACDNumOne = ACDNumFrame:CreateTexture("ACDNumOne", "OVERLAY")
     self.ACDNumOne = ACDNumOne
     self.ACDNumOne:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumOne:SetHeight(Gladdy.db.arenaCountdownSize)
     self.ACDNumOne:SetPoint("CENTER", self.ACDNumFrame, "CENTER", 0, 0)
-
-    local ACDNumTwo = ACDNumFrame:CreateTexture("ACDNumTwo", "OVERLAY")
-    self.ACDNumTwo = ACDNumTwo
-    self.ACDNumTwo:SetWidth(128)
-    self.ACDNumTwo:SetHeight(128)
-    self.ACDNumTwo:SetPoint("LEFT", self.ACDNumFrame, "LEFT", -10, 0)
-
-    local ACDNumThree = ACDNumFrame:CreateTexture("ACDNumThree", "OVERLAY")
-    self.ACDNumThree = ACDNumThree
-    self.ACDNumThree:SetWidth(128)
-    self.ACDNumThree:SetHeight(128)
-    self.ACDNumThree:SetPoint("RIGHT", self.ACDNumFrame, "RIGHT", 10, 0)
-
-    -- Animation
-    ACDNumFrame.anim = ACDNumFrame:CreateAnimationGroup()
-
-    local anim = ACDNumFrame.anim:CreateAnimation("Alpha")
-    anim:SetOrder(1)
-    anim:SetDuration(0)
-    anim:SetChange(-1)
-    anim:SetStartDelay(0.1)
-
-    local anim2 = ACDNumFrame.anim:CreateAnimation("Alpha")
-    anim2:SetOrder(1)
-    anim2:SetDuration(0.25)
-    anim2:SetChange(1)
-    anim2:SetStartDelay(0.1)
 
     if Gladdy.db.countdown then
         self:RegisterMessage("JOINED_ARENA")
@@ -98,11 +71,11 @@ function ACDFrame:UpdateFrameOnce()
 
     self.ACDNumTens:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumTens:SetHeight(Gladdy.db.arenaCountdownSize)
-    self.ACDNumTens:SetPoint("CENTER", self.ACDNumFrame, "CENTER", -(Gladdy.db.arenaCountdownSize / 8 + Gladdy.db.arenaCountdownSize / 8 / 2), 0)
+    self.ACDNumTens:SetPoint("CENTER", self.ACDNumFrame, "CENTER", -(Gladdy.db.arenaCountdownSize/8 + Gladdy.db.arenaCountdownSize/8/2), 0)
 
     self.ACDNumOnes:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumOnes:SetHeight(Gladdy.db.arenaCountdownSize)
-    self.ACDNumOnes:SetPoint("CENTER", self.ACDNumFrame, "CENTER", (Gladdy.db.arenaCountdownSize / 8 + Gladdy.db.arenaCountdownSize / 8 / 2), 0)
+    self.ACDNumOnes:SetPoint("CENTER", self.ACDNumFrame, "CENTER", (Gladdy.db.arenaCountdownSize/8 + Gladdy.db.arenaCountdownSize/8/2), 0)
 
     self.ACDNumOne:SetWidth(Gladdy.db.arenaCountdownSize)
     self.ACDNumOne:SetHeight(Gladdy.db.arenaCountdownSize)
@@ -114,11 +87,6 @@ function ACDFrame:HideAll()
     self.ACDNumTens:Hide()
     self.ACDNumOnes:Hide()
     self.ACDNumOne:Hide()
-    self.ACDNumTwo:Hide()
-    self.ACDNumThree:Hide()
-    if self.ACDNumFrame.anim then
-        self.ACDNumFrame.anim:Stop()
-    end
 end
 
 function ACDFrame:CreateTicker(countdown)
@@ -127,95 +95,6 @@ function ACDFrame:CreateTicker(countdown)
         self.ticker:Cancel()
     end
     self.ticker = C_Timer.NewTicker(1, ACDFrame.Ticker) -- .98?
-end
-
-local classmarkers = {
-    ["ROGUE"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Rogue",
-    ["PRIEST"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Priest",
-    ["WARRIOR"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Warrior",
-    ["PALADIN"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Paladin",
-    ["HUNTER"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Hunter",
-    ["DRUID"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Druid",
-    ["MAGE"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Mage",
-    ["SHAMAN"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Shaman",
-    ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\Gladdy\\ClassIconsUpscaled\\Warlock",
-}
-
--- Big Brain segment coming up, buckle up your seatbelts!
-local function determineClass(class1, class2)
-    if (class1 == nil and class2 == nil) or (Gladdy.curBracket and Gladdy.curBracket > 2) then
-        -- Check for Double stealth (no icons) and disable 3v3 for now
-        class1, class2 = nil, nil
-    elseif (class1 == "MAGE" and class2 == nil) or (class2 == "MAGE" and class1 == nil) then
-        -- Rogue/Mage
-        if class1 == nil then
-            class1 = "ROGUE"
-        end
-        if class2 == nil then
-            class2 = "ROGUE"
-        end
-    elseif (class1 == "PRIEST" and class2 == nil) or (class2 == "PRIEST" and class1 == nil) then
-        -- Priest/Rogue or Priest/Mage
-        if class1 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
-                class1 = "MAGE"
-            else
-                class1 = "ROGUE"
-            end
-        end
-        if class2 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena1", "HELPFUL")) then
-                class2 = "MAGE"
-            else
-                class2 = "ROGUE"
-            end
-        end
-    elseif (class1 == "WARRIOR" and class2 == nil) or (class2 == "WARRIOR" and class1 == nil) then
-        -- Warrior/Druid
-        if class1 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
-                class1 = "DRUID"
-            end
-        end
-        if class2 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena1", "HELPFUL")) then
-                class2 = "DRUID"
-            end
-        end
-    elseif (class1 == "WARLOCK" and class2 == nil) or (class2 == "WARLOCK" and class1 == nil) then
-        -- Warlock/Rogue or Warlock/Druid
-        if class1 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena2", "HELPFUL")) then
-                class1 = "DRUID"
-            else
-                class1 = "ROGUE"
-            end
-        end
-        if class2 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Mark of the Wild", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Gift of the Wild", "arena1", "HELPFUL")) then
-                class2 = "DRUID"
-            else
-                class2 = "ROGUE"
-            end
-        end
-    elseif (class1 == "PALADIN" and class2 == nil) or (class2 == "PALADIN" and class1 == nil) then
-        -- Paladin/Mage or Paladin/Rogue
-        if class1 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena2", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena2", "HELPFUL")) then
-                class1 = "MAGE"
-            else
-                class1 = "ROGUE"
-            end
-        end
-        if class2 == nil then
-            if AuraUtil and (AuraUtil.FindAuraByName("Arcane Intellect", "arena1", "HELPFUL") or AuraUtil.FindAuraByName("Arcane Brilliance", "arena1", "HELPFUL")) then
-                class2 = "MAGE"
-            else
-                class2 = "ROGUE"
-            end
-        end
-    end
-    return class1, class2
 end
 
 function ACDFrame.Ticker()
@@ -227,72 +106,26 @@ function ACDFrame.Ticker()
             local ones = self.countdown % 10
             local tens = (self.countdown / 10) % 10
             self.ACDNumOne:Hide()
-            self.ACDNumTwo:Hide()
-            self.ACDNumThree:Hide()
             self.ACDNumTens:Show()
             self.ACDNumOnes:Show()
 
             self.ACDNumTens:SetTexture(self.texturePath .. tens)
             self.ACDNumOnes:SetTexture(self.texturePath .. ones)
             self.ACDNumFrame:SetScale(0.7)
-        elseif (self.countdown and self.countdown < 10 and self.countdown > 0) then
-            -- Display has 1 digit for numbers 1-9
-            local path = self.countdown
+        elseif (self.countdown and self.countdown < 10 and self.countdown > -1) then
+            -- Display has 1 digit
+            local path = self.countdown <= 0 and self.faction or self.countdown
             self.ACDNumOne:Show()
             self.ACDNumOne:SetTexture(self.texturePath .. path)
             self.ACDNumOnes:Hide()
             self.ACDNumTens:Hide()
             self.ACDNumFrame:SetScale(1.0)
-
-            -- Play sound for single digits (1 to 9)
-            PlaySoundFile("Interface\\Addons\\TextureScript\\Gladdy\\Countdown.ogg")
-
-        elseif (self.countdown and self.countdown == 0) then
-            -- Display for countdown 0
-            -- Display a random blue-haired Blizzard clASSic WoW employee of the year
-            --local randomTexture = math.random(1, 10) -- Generate a random number between 1 and 10
-            --self.ACDNumOne:SetTexture("Interface\\Addons\\TextureScript\\Gladdy\\BlizzardEmployees\\" .. randomTexture)
-            local class1, class2 = determineClass(select(2, UnitClass("arena1")), select(2, UnitClass("arena2")))
-
-            self.ACDNumOne:Hide()
-
-            -- testing
-            if not class1 and not class2 then
-                class1 = "PRIEST"
-                class2 = "ROGUE"
-            end
-
-            if class1 then
-                self.ACDNumTwo:SetTexture(classmarkers[class1])
-                self.ACDNumTwo:Show()
-            end
-
-            if class2 then
-                self.ACDNumThree:SetTexture(classmarkers[class2])
-                self.ACDNumThree:Show()
-            end
-
-            -- Animate
-            if (class1 or class2) and self.ACDNumFrame.anim then
-                self.ACDNumFrame.anim:Play()
-            end
-
-            self.ACDNumOnes:Hide()
-            self.ACDNumTens:Hide()
-            self.ACDNumFrame:SetScale(1.0)
-
-            -- Play a different sound when countdown reaches 0
-            PlaySoundFile("Interface\\Addons\\TextureScript\\Gladdy\\Finish.ogg")
-
         else
-            -- Hide everything when countdown is below 0
             ACDFrame:HideAll()
             if (self.countdown) then
                 ACDFrame:Reset()
             end
         end
-
-        -- Decrement the countdown after handling display and sounds
         self.countdown = self.countdown and self.countdown - 1
     else
         ACDFrame:HideAll()
@@ -330,7 +163,7 @@ function ACDFrame:UNIT_SPEC()
 end
 
 function ACDFrame:CHAT_MSG_BG_SYSTEM_NEUTRAL(msg)
-    for k, v in pairs(self.locale) do
+    for k,v in pairs(self.locale) do
         if str_find(msg, v) then
             if self.countdown and self.countdown == 0 then
                 return
@@ -341,7 +174,7 @@ function ACDFrame:CHAT_MSG_BG_SYSTEM_NEUTRAL(msg)
 end
 
 function ACDFrame:TestOnce()
-    self:CreateTicker(2)
+    self:CreateTicker(30)
 end
 
 function ACDFrame:GetOptions()
@@ -366,9 +199,7 @@ function ACDFrame:GetOptions()
             max = 512,
             step = 16,
             width = "full",
-            disabled = function()
-                return not Gladdy.db.countdown
-            end,
+            disabled = function() return not Gladdy.db.countdown end,
         }),
         headerAuraLevel = {
             type = "header",
@@ -381,9 +212,7 @@ function ACDFrame:GetOptions()
             order = 6,
             values = Gladdy.frameStrata,
             sorting = Gladdy.frameStrataSorting,
-            disabled = function()
-                return not Gladdy.db.countdown
-            end,
+            disabled = function() return not Gladdy.db.countdown end,
         }),
         arenaCountdownFrameLevel = Gladdy:option({
             type = "range",
@@ -393,9 +222,7 @@ function ACDFrame:GetOptions()
             step = 1,
             order = 7,
             width = "full",
-            disabled = function()
-                return not Gladdy.db.countdown
-            end,
+            disabled = function() return not Gladdy.db.countdown end,
         }),
     }
 end

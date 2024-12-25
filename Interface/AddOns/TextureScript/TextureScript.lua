@@ -1715,6 +1715,22 @@ for _, v in pairs({ TargetFrameSpellBar, FocusFrameSpellBar }) do
     end
 end
 
+-- Removing the "The Arena has begun!" boss-emote message in middle of screen
+local frame = CreateFrame("Frame")
+local function UpdateRaidBossEmoteFrame()
+    local inInstance, instanceType = IsInInstance()
+    if inInstance and instanceType == "arena" then
+        RaidBossEmoteFrame:UnregisterEvent("CHAT_MSG_RAID_BOSS_EMOTE")
+    else
+        RaidBossEmoteFrame:RegisterEvent("CHAT_MSG_RAID_BOSS_EMOTE")
+    end
+end
+frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+frame:SetScript("OnEvent", UpdateRaidBossEmoteFrame)
+-- Initial check in case the player reloads while already in the arena
+UpdateRaidBossEmoteFrame()
+
+
 local evolvedFrame = CreateFrame("Frame")
 evolvedFrame:RegisterEvent("ADDON_LOADED")
 evolvedFrame:RegisterEvent("PLAYER_LOGIN")
@@ -1751,6 +1767,7 @@ evolvedFrame:SetScript("OnEvent", function(self, event, ...)
         AddPlates(unit)
     end
 end)
+
 
 COMBAT_TEXT_RESIST = "RESIST XD"
 

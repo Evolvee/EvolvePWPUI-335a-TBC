@@ -1,0 +1,4 @@
+## Interface: 30300
+## Title: ArenaEnemyClass
+## RequiredDeps: !!!ClassicAPI
+core.lua
