@@ -1648,10 +1648,10 @@ end
 hooksecurefunc("CastingBarFrame_OnEvent", function(self, event, ...)
     local unit = ...
 
-    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_DELAYED" then
         local name, _, text, notInterruptible
 
-        if event == "UNIT_SPELLCAST_START" then
+        if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_DELAYED" then
             name, _, text, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)
         else
             name, _, text, _, _, _, _, notInterruptible = UnitChannelInfo(unit)

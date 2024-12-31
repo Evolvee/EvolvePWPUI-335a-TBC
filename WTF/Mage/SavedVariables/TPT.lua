@@ -10,12 +10,6 @@ TPTDB = {
 	["World"] = 1,
 	["OffX"] = -12,
 	["Attach"] = 1,
-	["Trinket"] = 1,
-	["Hidden"] = 1,
-	["V"] = 2,
-	["Position"] = {
-	},
-	["Arena"] = 1,
 	["Spells"] = {
 		["HUNTER"] = {
 			{
@@ -603,4 +597,10 @@ TPTDB = {
 			}, -- [13]
 		},
 	},
+	["Hidden"] = 1,
+	["V"] = 2,
+	["Position"] = {
+	},
+	["Arena"] = 1,
+	["Trinket"] = 1,
 }

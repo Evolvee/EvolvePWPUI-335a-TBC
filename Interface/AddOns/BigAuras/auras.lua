@@ -31,7 +31,8 @@ BigAurasCategories = {
 }
 BigAurasSpells.spells = {
     --totalImmunity
-        [642] = {category = "totalImmunity",priority = 1},
+        [642] = {category = "totalImmunity",priority = 1}, -- Divine Shield r1
+			[1020] = {parent = 642}, -- Divine Shield r2
         [45438] = {category = "totalImmunity",priority = 1},
 
 
