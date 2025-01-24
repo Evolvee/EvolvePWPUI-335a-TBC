@@ -92,10 +92,15 @@ f:SetScript("OnEvent", function(_, event, ...)
         local guid = UnitGUID(...)
         local nameplate = C_NamePlate.GetNamePlateForUnit(...)
 
-        if nameplate and guid and tonumber((guid):sub(-10, -7), 16) == 5913 then
-            activeNameplates[guid] = nameplate
-            if timestamp[guid] then
+        if nameplate then
+            if guid and (tonumber((guid):sub(-10, -7), 16) == 5913) and timestamp[guid] then
+                activeNameplates[guid] = nameplate
                 UpdateAnchor(nameplate, timestamp[guid])
+            else
+                HidePulse(nameplate)
+                if guid and activeNameplates[guid] then
+                    activeNameplates[guid] = nil 
+                end
             end
         end
     elseif event == "NAME_PLATE_UNIT_REMOVED" then
