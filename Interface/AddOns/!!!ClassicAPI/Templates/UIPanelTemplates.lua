@@ -239,26 +239,43 @@ function MagicButton_OnLoad(self)
 end
 
 -- ButtonFrameTemplate code
+local ButtonFrameTemplate_HideButtonBar_UIPatch = ButtonFrameTemplate_HideButtonBar
+local ButtonFrameTemplate_ShowButtonBar_UIPatch = ButtonFrameTemplate_ShowButtonBar
+
 function ButtonFrameTemplate_HideButtonBar(self)
-	if self.bottomInset then 
-		self.bottomInset:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_OFFSET);
+	local name = self:GetName()
+	local BtnCornerLeft = _G[name .. "BtnCornerLeft"]
+
+	if ( ButtonFrameTemplate_HideButtonBar_UIPatch and not BtnCornerLeft ) then
+		ButtonFrameTemplate_HideButtonBar_UIPatch(self) -- UI Patch Compat
 	else
-		_G[self:GetName() .. "Inset"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_OFFSET);
+		if self.bottomInset then 
+			self.bottomInset:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_OFFSET);
+		else
+			_G[name .. "Inset"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_OFFSET);
+		end
+		BtnCornerLeft:Hide();
+		_G[name .. "BtnCornerRight"]:Hide();
+		_G[name .. "ButtonBottomBorder"]:Hide();
 	end
-	_G[self:GetName() .. "BtnCornerLeft"]:Hide();
-	_G[self:GetName() .. "BtnCornerRight"]:Hide();
-	_G[self:GetName() .. "ButtonBottomBorder"]:Hide();
 end
 
 function ButtonFrameTemplate_ShowButtonBar(self)
-	if self.topInset then 
-		self.topInset:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_BUTTON_OFFSET);
+	local name = self:GetName()
+	local BtnCornerLeft = _G[name .. "BtnCornerLeft"]
+
+	if ( ButtonFrameTemplate_ShowButtonBar_UIPatch and not BtnCornerLeft ) then
+		ButtonFrameTemplate_ShowButtonBar_UIPatch(self) -- UI Patch Compat
 	else
-		_G[self:GetName() .. "Inset"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_BUTTON_OFFSET);
+		if self.topInset then 
+			self.topInset:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_BUTTON_OFFSET);
+		else
+			_G[name .. "Inset"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", PANEL_INSET_RIGHT_OFFSET, PANEL_INSET_BOTTOM_BUTTON_OFFSET);
+		end
+		BtnCornerLeft:Show();
+		_G[name .. "BtnCornerRight"]:Show();
+		_G[name .. "ButtonBottomBorder"]:Show();
 	end
-	_G[self:GetName() .. "BtnCornerLeft"]:Show();
-	_G[self:GetName() .. "BtnCornerRight"]:Show();
-	_G[self:GetName() .. "ButtonBottomBorder"]:Show();
 end
 
 function ButtonFrameTemplate_HideAttic(self)

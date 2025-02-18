@@ -1,7 +1,4 @@
-if ( ColorMixin or CreateColor ) then return end
-
-ColorMixin = {}
-ColorMixin.___CAPI = 1
+ColorMixin = ColorMixin or {}
 
 function CreateColor(r, g, b, a)
     local color = CreateFromMixins(ColorMixin)
@@ -61,4 +58,10 @@ end
 
 function WrapTextInColorCode(text, colorHexString)
     return ("|c%s%s|r"):format(colorHexString, text)
+end
+
+if ( CharacterFrame_Collapse and not ColorMixin.WrapTextInColorTableCode ) then -- UI Patch Compat
+	function ColorMixin:WrapTextInColorTableCode(text)
+	    return WrapTextInColorCode(text, self:GenerateHexColor())
+	end
 end

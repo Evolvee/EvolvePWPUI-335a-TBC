@@ -1101,6 +1101,8 @@ local function HandleNewNameplate(nameplate, unit, name, hpborder)
         end
     elseif name and name == "Tremor Totem" then
         hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
+	elseif name and name == "Ebon Gargoyle" then
+        hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-GARGOYLE")
     elseif UnitCreatureFamily(unit) == "Succubus" and nameplate.newName then
         nameplate.newName:SetText("Succubus")
     elseif UnitCreatureFamily(unit) == "Felhunter" and nameplate.newName then
@@ -1122,6 +1124,28 @@ local function PlateScript(...)
     if spellId == 8143 and action == "SPELL_CAST_SUCCESS" and isSourceEnemy and instanceType == "arena" then
         PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.wav", "master")
     end
+-- getting rid of the Vampiric Embrace spam WOTLK shit (WOTLK ONLY)
+	if WOW_PROJECT_ID_RCE == (WOW_PROJECT_WRATH_CLASSIC or 11) then
+	if action == "SPELL_PERIODIC_HEAL" then
+            if spellId == 15290 then
+                COMBAT_TEXT_TYPE_INFO.PERIODIC_HEAL.show = nil
+            else
+                COMBAT_TEXT_TYPE_INFO.PERIODIC_HEAL.show = 1
+               
+            end
+            return
+        end
+        if action == "SPELL_HEAL" then
+            if spellId == 48300 or spellId == 75999 then
+                COMBAT_TEXT_TYPE_INFO.HEAL.show = nil
+				COMBAT_TEXT_TYPE_INFO.HEAL_CRIT.show = nil
+            else
+                COMBAT_TEXT_TYPE_INFO.HEAL.show = 1
+				COMBAT_TEXT_TYPE_INFO.HEAL_CRIT.show = 1
+            end
+            return
+        end
+	end
 end
 
 local plateEventFrame = CreateFrame("Frame")
@@ -1141,6 +1165,7 @@ local classmarkers = {
     ["MAGE"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Mage",
     ["SHAMAN"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Shaman",
     ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Warlock",
+	["DEATHKNIGHT"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\DeathKnight",
     ["Shadowfiend"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Fiend",
     ["Elemental"] = "Interface\\AddOns\\TextureScript\\PartyIcons\\Elemental",
 }
@@ -1160,7 +1185,10 @@ end
 local spellColors = {
     --Mage
     ["Frostbolt"] = { r = 0, g = 0.67, b = 1 },
+	["Frostfire Bolt"] = { r = 0, g = 0.67, b = 1 },
     ["Polymorph"] = { r = 1, g = 1, b = 1 },
+	["Arcane Blast"] = { r = 1, g = 1, b = 1 },
+	["Arcane Missiles"] = { r = 1, g = 1, b = 1 },
     ["Blizzard"] = { r = 0, g = 0.67, b = 1 },
     ["Fireball"] = { r = 1, g = 0.16, b = 0 },
     ["Flamestrike"] = { r = 1, g = 0.16, b = 0 },
@@ -1169,6 +1197,8 @@ local spellColors = {
     ["Mana Burn"] = { r = 0.4, g = 0.4, b = 0.4 },
     ["Mind Blast"] = { r = 0.4, g = 0.4, b = 0.4 },
     ["Mind Flay"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Mind Sear"] = { r = 0.4, g = 0.4, b = 0.4 },
+	["Mind Control"] = { r = 0.4, g = 0.4, b = 0.4 },
     ["Vampiric Touch"] = { r = 0.4, g = 0.4, b = 0.4 },
     ["Flash Heal"] = { r = 0.6, g = 1, b = 0 },
     ["Greater Heal"] = { r = 0.6, g = 1, b = 0 },
@@ -1176,8 +1206,10 @@ local spellColors = {
     ["Heal"] = { r = 0.6, g = 1, b = 0 },
     ["Lesser Heal"] = { r = 0.6, g = 1, b = 0 },
     ["Prayer of Healing"] = { r = 0.6, g = 1, b = 0 },
+	["Divine Hymn"] = { r = 0.6, g = 1, b = 0 },
     ["Smite"] = { r = 1, g = 1, b = 0 },
     ["Holy Fire"] = { r = 1, g = 1, b = 0 },
+	["Hymn of Hope"] = { r = 0, g = 0.67, b = 1 },
     --Warlock
     ["Shadow Bolt"] = { r = 0.5, g = 0.2, b = 0.8 },
     ["Fear"] = { r = 0.5, g = 0.2, b = 0.8 },
@@ -1190,21 +1222,26 @@ local spellColors = {
     ["Soul Fire"] = { r = 1, g = 0.16, b = 0 },
     ["Drain Mana"] = { r = 0, g = 0.67, b = 1 },
     ["Drain Life"] = { r = 0.6, g = 1, b = 0 },
+	["Drain Soul"] = { r = 0.4, g = 0.4, b = 0.4 },
     --Druid
     ["Cyclone"] = { r = 0.4, g = 0.4, b = 0.4 },
     ["Entangling Roots"] = { r = 1, g = 0.5, b = 0 },
     ["Healing Touch"] = { r = 0.6, g = 1, b = 0 },
     ["Regrowth"] = { r = 0.6, g = 1, b = 0 },
+	["Nourish"] = { r = 0.6, g = 1, b = 0 },
     ["Tranquility"] = { r = 0.6, g = 1, b = 0 },
     ["Wrath"] = { r = 1, g = 1, b = 0 },
+	["Hurricane"] = { r = 0.4, g = 0.4, b = 0.4 },
     --Hunter
     --Shaman
     ["Healing Wave"] = { r = 0.6, g = 1, b = 0 },
     ["Chain Heal"] = { r = 0.6, g = 1, b = 0 },
     ["Lesser Healing Wave"] = { r = 0.6, g = 1, b = 0 },
+	["Lava Burst"] = { r = 1, g = 0.16, b = 0 },
     --Paladin
     ["Flash of Light"] = { r = 0.6, g = 1, b = 0 },
     ["Holy Light"] = { r = 0.6, g = 1, b = 0 },
+	--Death Knight
 }
 
 local function getSpellColor(spellName)
@@ -1406,6 +1443,8 @@ local function AddPlates(unit)
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-Target-Highlight")
                 elseif UnitName(nameplate.unit) == "Tremor Totem" then
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-TREMOR")
+				elseif UnitName(nameplate.unit) == "Ebon Gargoyle" then
+                    hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border-GARGOYLE")
                 else
                     hpborder:SetTexture("Interface\\Addons\\TextureScript\\Nameplate-Border")
                 end
@@ -1780,3 +1819,15 @@ ChatFrame1:AddMessage("https://github.com/Evolvee/EvolvePWPUI-335a-TBC", 0, 205,
 -- trying to remove the cancer weather that is not part of the video settings as it used to be in 2.4.3: /console set weatherdensity 0 // /console WeatherDensity 0
 
 -- Disable the ability to scroll chat with mouse wheel (fucks binds with the mouse-wheel-up/down): /console chatMouseScroll 0
+
+
+-- WOTLK ONLY:
+-- removing the stance bar (shadowform)
+if WOW_PROJECT_ID_RCE == (WOW_PROJECT_WRATH_CLASSIC or 11) then
+    ShapeshiftBarFrame:SetAlpha(0)
+    if RegisterStateDriver then
+        RegisterStateDriver(ShapeshiftBarFrame, "visibility", "hide")
+    else
+        ShapeshiftBarFrame:Hide()
+    end
+end

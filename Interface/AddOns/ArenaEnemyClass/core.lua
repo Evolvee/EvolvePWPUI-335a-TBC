@@ -8,6 +8,7 @@ local classmarkers = {
     ["MAGE"] = "Interface\\AddOns\\TextureScript\\ClassIconsUpscaled\\Mage",
     ["SHAMAN"] = "Interface\\AddOns\\TextureScript\\ClassIconsUpscaled\\Shaman",
     ["WARLOCK"] = "Interface\\AddOns\\TextureScript\\ClassIconsUpscaled\\Warlock",
+	["DEATHKNIGHT"] = "Interface\\AddOns\\TextureScript\\ClassIconsUpscaled\\DeathKnight",
 	["UNKNOWN"] = "Interface\\AddOns\\TextureScript\\ClassIconsUpscaled\\Unknown",
 }
 

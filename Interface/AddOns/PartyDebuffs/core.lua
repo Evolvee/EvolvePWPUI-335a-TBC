@@ -7,7 +7,9 @@ local xPos, yPos = 45, 6
 local _G = getfenv(0)
 local mod, UnitDebuff, DebuffTypeColor = _G.mod, _G.UnitDebuff, _G.DebuffTypeColor
 
-local blacklist = {
+local blacklist
+if WOW_PROJECT_ID_RCE == (WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5) then
+blacklist = {
     [GetSpellInfo(6788)] = true, -- Weakened Soul
     [GetSpellInfo(99)] = true, -- Demoralizing Roar
 	[GetSpellInfo(1160)] = true, -- Demoralizing Shout
@@ -20,6 +22,28 @@ local blacklist = {
     [GetSpellInfo(29836)] = true, -- Blood Frenzy
 	[GetSpellInfo(33191)] = true, -- Misery
 }
+elseif WOW_PROJECT_ID_RCE == (WOW_PROJECT_WRATH_CLASSIC or 11) then
+blacklist = {
+	[GetSpellInfo(1543)] = true, -- Flare
+    [GetSpellInfo(6788)] = true, -- Weakened Soul
+    [GetSpellInfo(48560)] = true, -- Demoralizing Roar
+    [GetSpellInfo(57723)] = true, -- Exhaustion
+    [GetSpellInfo(48660)] = true, -- Hemorrhage
+    [GetSpellInfo(48564)] = true, -- Mangle (Bear)
+    [GetSpellInfo(48566)] = true, -- Mangle (Cat)
+    [GetSpellInfo(33193)] = true, -- Misery
+    [GetSpellInfo(57724)] = true, -- Sated
+    [GetSpellInfo(57722)] = true, -- Totem of Wrath
+    [GetSpellInfo(46857)] = true, -- Trauma
+    [GetSpellInfo(26013)] = true, -- Deserter
+    [GetSpellInfo(29859)] = true, -- Blood Frenzy
+    [GetSpellInfo(8647)] = true, -- Expose Armor
+    [GetSpellInfo(47502)] = true, -- Thunder Clap
+    [GetSpellInfo(47437)] = true, -- Demoralizing Shout
+    [GetSpellInfo(29859)] = true, -- Blood Frenzy
+    [GetSpellInfo(49231)] = true, -- Earth Shock
+}
+end
 
 local function UpdateDebuffs(frame, unit)
     local numAuraRows = 0

@@ -1,42 +1,25 @@
 if ( C_NewItems ) then return end
-C_NewItems = CreateFrame("Frame")
 
-local SplitUI
-local CursorHasItem = CursorHasItem
-local GetContainerItemID = GetContainerItemID
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemInfo = GetContainerItemInfo
+local GetContainerItemID = GetContainerItemID
+local CursorHasItem = CursorHasItem
+local GetTime = GetTime
+local Type = type
 
---[[
+local C_NewItems = CreateFrame("Frame")
 
-	C_NewItems Helper
-	-----
-	Information:
-		An item is considered "new" if it goes to an empty slot, or
-		a stack is increased.
-
-	Known Issue(s):
-		Rapidly stacking/sorting items may cause it to consider an
-		item new. I have rewritten this about 100 times. Used
-		differnt methods. Events related to items are wonky, sadly.
-		The best solution is to call RemoveNewItem while sorting, or
-		ClearAll after.
-
-]]
-
-local INVENTORY, MOVE_ITEM_COUNT, MOVE_ITEM_CONTAINER, MOVE_ITEM_SLOT, MOVE_ITEM_TYPE
+local INVENTORY, STACK_UI
 local MIN, MAX = 0, 4
 
 local function GetSlotInfo(ContainerIndex, SlotIndex)
-	if ( INVENTORY ) then
-		local Container = INVENTORY[ContainerIndex]
-		return (Container and SlotIndex) and Container[SlotIndex]
-	end
+	local Container = INVENTORY[ContainerIndex]
+	return (Container and SlotIndex) and Container[SlotIndex]
 end
 
-local function ContainerUpdate(ContainerIndex, Remove)
+local function Bag(Event, ContainerIndex)
 	if ( ContainerIndex >= MIN and ContainerIndex <= MAX ) then
-		if ( Remove ) then
+		if ( Event == "BAG_CLOSED" ) then
 			INVENTORY[ContainerIndex] = false
 		else
 			local Size = GetContainerNumSlots(ContainerIndex)
@@ -47,7 +30,7 @@ local function ContainerUpdate(ContainerIndex, Remove)
 				Container = {}
 				INVENTORY[ContainerIndex] = Container
 				Start = 1
-			elseif ( Size ~= Container.Size ) then
+			elseif ( Size ~= Container.Size or not Container[Size] ) then
 				if ( Size > Container.Size ) then
 					Start = Container.Size
 				else
@@ -57,8 +40,9 @@ local function ContainerUpdate(ContainerIndex, Remove)
 			end
 
 			if ( Start ) then
+				local Time = GetTime()
 				for i=Start,(End or Size) do
-					Container[i] = (Start == 1 or End) and {} or nil -- 40 bytes down the drain!
+					Container[i] = (Start == 1 or End) and {[3] = Time} or nil
 				end
 			end
 
@@ -69,124 +53,120 @@ local function ContainerUpdate(ContainerIndex, Remove)
 	end
 end
 
-local function SlotUpdate(ContainerIndex, Supress)
+local function Query(Event, ContainerIndex)
 	local Container = INVENTORY[ContainerIndex]
 
-	if ( not Supress ) then
-		Supress = not Container
-		Container = ContainerUpdate(ContainerIndex)
+	if ( Event ) then
+		Container = Bag(Event, ContainerIndex)
 	end
 
 	if ( Container ) then
+		local Time = Event and GetTime()
+
 		for SlotIndex=1, Container.Size do
-			local Slot, ID, Stack, Locked, New, _ = Container[SlotIndex], GetContainerItemID(ContainerIndex, SlotIndex)
+			local Slot = Container[SlotIndex]
 
-			if ( Slot.Stack and Slot.Stack == -1 ) then
-				Stack = 0
-			elseif ( ID ) then
-				_, Stack, Locked = GetContainerItemInfo(ContainerIndex, SlotIndex)
-				New = ( not Supress and not Locked and (not Slot.Stack or (Slot.Stack > 0 and (Slot.New == ID or Stack > Slot.Stack))) ) and ID or nil
-			elseif ( Slot.Stack and Slot.Stack == -2 ) then
-				Stack = Slot.Stack -- Await ID
-			end
+			if ( Slot ) then
+				if ( Event ) then
+					local _, StackCurrent = GetContainerItemInfo(ContainerIndex, SlotIndex)
+					local Stack = Slot[1]
 
-			Slot.New = New
-			Slot.Stack = Locked and 0 or Stack
-		end
-	end
-end
+					if ( StackCurrent ~= Stack ) then
+						local Buffer = Slot[3]
 
-local function MoveClear(ContainerIndex, SlotIndex)
-	if ( ContainerIndex == true or (ContainerIndex == MOVE_ITEM_CONTAINER and SlotIndex == MOVE_ITEM_SLOT) ) then
-		MOVE_ITEM_COUNT = nil
-		MOVE_ITEM_CONTAINER = nil
-		MOVE_ITEM_SLOT = nil
-		MOVE_ITEM_TYPE = nil
-		SplitUI.split = nil
-	end
-end
+						if ( Buffer and (Time - Buffer) > .5 ) then -- Latency?
+							Buffer = nil
+							Slot[3] = nil
+						end
 
-local function MoveSet(ContainerIndex, SlotIndex, Stack)
-	if ( Stack or (SplitUI.split and not MOVE_ITEM_SLOT) ) then
-		MOVE_ITEM_COUNT = Stack or SplitUI.split
-		MOVE_ITEM_CONTAINER = ContainerIndex
-		MOVE_ITEM_SLOT = SlotIndex
-		MOVE_ITEM_TYPE = (SplitUI.split) and true
-	end
-end
+						if ( Event == "CONSTRUCT" or Buffer or (StackCurrent or -1) < (Stack or 0) ) then
+							if ( not (Buffer and Stack == 9998 and not StackCurrent) ) then
+								Slot[1] = StackCurrent
+								Slot[2] = nil
 
-local function MoveInfo()
-	return MOVE_ITEM_COUNT, MOVE_ITEM_CONTAINER, MOVE_ITEM_SLOT, MOVE_ITEM_TYPE
-end
+								if ( not StackCurrent and Slot == STACK_UI.split ) then
+									STACK_UI.split = nil -- Move unknown, clear.
+								end
+							end
+						else
+							local CurrentID = GetContainerItemID(ContainerIndex, SlotIndex)
+							local Changed = Slot[2] ~= CurrentID
 
-local function PickupContainerItem(ContainerIndex, SlotIndex)
-	local Slot = GetSlotInfo(ContainerIndex, SlotIndex)
-	if ( Slot ) then
-		local PlacementStack = Slot.Stack
-		if ( CursorHasItem() ) then
-			MoveSet(ContainerIndex, SlotIndex, PlacementStack) -- Click (Not Split)
-		else
-			local OriginStack, OriginContainerIndex, OriginSlotIndex, Split, Iteration = MoveInfo()
-
-			if ( OriginStack ) then
-				if ( PlacementStack and PlacementStack > 1 ) then
-					Iteration = -1 -- Merging
+							Slot[1] = StackCurrent
+							Slot[2] = (Changed) and nil or CurrentID
+						end
+					end
 				else
-					Iteration = (Split) and -2 or -1 -- Empty/Swap
+					Slot[2] = nil -- .ClearAll()
 				end
-
-				local Origin = GetSlotInfo(OriginContainerIndex, OriginSlotIndex)
-				if ( Origin ) then
-					Origin.New = nil
-					Origin.Stack = 0
-				end
-			else
-				Iteration = 0 -- Source Unknown
 			end
-
-			Slot.New = nil
-			Slot.Stack = Iteration
-			MoveClear(true)
 		end
 	end
 end
 
-local function EventHandler(Self, Event, ...)
-	if ( Event == "BAG_UPDATE" ) then
-		SlotUpdate(...)
+hooksecurefunc("PickupContainerItem", function(ContainerIndex, SlotIndex)
+	if ( INVENTORY ) then
+		local Slot = GetSlotInfo(ContainerIndex, SlotIndex)
+
+		if ( Slot ) then
+			if ( CursorHasItem() ) then
+				STACK_UI.split = Slot
+			else
+				local Origin = STACK_UI.split
+
+				if ( Origin ~= Slot ) then
+					local Time, Stack = GetTime()
+
+					if ( Origin ) then
+						if ( Type(Origin) == "number" ) then
+							Stack = 9998
+						else
+							Origin[1] = 9999
+							Origin[3] = Time
+						end
+					end
+
+					Slot[1] = Stack or 9999
+					Slot[3] = Time
+				end
+
+				STACK_UI.split = nil
+			end
+		else
+			STACK_UI.split = nil
+		end
+	end
+end)
+
+local function Processor(Self, Event, ...)
+	if ( Self == "CONSTRUCT" ) then
+		STACK_UI = StackSplitFrame -- Avoid hook to SplitContainerItem()?
+		INVENTORY = {}
+
+		for i=MIN,MAX do
+			Query(Self, i)
+		end
+
+		local BAG_UPDATE = {GetFramesRegisteredForEvent("BAG_UPDATE")}
+
+		C_NewItems:RegisterEvent("BAG_UPDATE")
+		C_NewItems:RegisterEvent("BAG_CLOSED")
+		C_NewItems:SetScript("OnEvent", Processor)
+
+		for i=1,#BAG_UPDATE do
+			local Frame = BAG_UPDATE[i]
+			Frame:UnregisterEvent("BAG_UPDATE")
+			Frame:RegisterEvent("BAG_UPDATE")
+		end
 	elseif ( Event == "BAG_CLOSED" ) then
-		ContainerUpdate(..., true)
-	elseif ( Event == "ITEM_LOCKED" ) then
-		MoveSet(...)
+		Bag(Event, ...)
 	else
-		MoveClear(... or MoveInfo() and true)
+		local ContainerIndex, NewItems = ...
+		if ( not NewItems ) then
+			Query(Event, ContainerIndex)
+		end
 	end
 end
-
-function Construct()
-	local Self = C_NewItems
-
-	INVENTORY = {}
-	SplitUI = StackSplitFrame
-
-	for i=MIN,MAX do
-		SlotUpdate(i, true)
-	end
-
-	Self:RegisterEvent("BAG_CLOSED")
-	Self:RegisterEvent("ITEM_LOCKED")
-	Self:RegisterEvent("ITEM_UNLOCKED")
-	Self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-
-	Self:SetScript("OnEvent", EventHandler)
-	hooksecurefunc("PickupContainerItem", PickupContainerItem)
-end
-
---[[
-	I hate this, but we have to be first.
-	Or we pre-call a C_NewItems func.
-]]
-C_NewItems:RegisterEvent("BAG_UPDATE")
 
 --[[
 
@@ -195,25 +175,28 @@ C_NewItems:RegisterEvent("BAG_UPDATE")
 ]]
 
 function C_NewItems.ClearAll()
-	if ( not INVENTORY ) then return Construct() end
+	if ( not INVENTORY ) then return Processor("CONSTRUCT") end
 
 	for i=MIN,MAX do
-		SlotUpdate(i, true)
+		Query(nil, i)
 	end
 end
 
 function C_NewItems.IsNewItem(ContainerIndex, SlotIndex)
-	if ( not INVENTORY ) then return Construct() end
+	if ( not INVENTORY ) then return Processor("CONSTRUCT") end
 
 	local Slot = GetSlotInfo(ContainerIndex, SlotIndex)
-	return Slot and Slot.New
+	return (Slot and Slot[2]) and true
 end
 
 function C_NewItems.RemoveNewItem(ContainerIndex, SlotIndex)
-	if ( not INVENTORY ) then return Construct() end
+	if ( not INVENTORY ) then return Processor("CONSTRUCT") end
 
 	local Slot = GetSlotInfo(ContainerIndex, SlotIndex)
 	if ( Slot ) then
-		Slot.New = nil
+		Slot[2] = nil
 	end
 end
+
+-- Global
+_G.C_NewItems = C_NewItems

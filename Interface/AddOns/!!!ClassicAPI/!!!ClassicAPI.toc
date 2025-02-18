@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: !!!ClassicAPI
-## Notes: Blizzard Classic API Emulation
-## Version: 1.1.67
+## Notes: Library to emulate aspects of the Classic API for the 3.3.5a client
+## Version: 1.1.74
 ## Author: Tsoukie
 Lib\Load.xml
 Load.xml

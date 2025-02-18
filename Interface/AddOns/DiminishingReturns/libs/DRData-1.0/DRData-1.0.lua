@@ -206,7 +206,7 @@ Data.spells = {
 	
 	--[[ FEARS ]]--
 	-- Blind
-	[2094] = "cyclone",
+	--[2094] = "cyclone",
 
 	-- Fear (Warlock)
 	[5782] = "fear",
@@ -445,7 +445,11 @@ Data.spells = {
 	[64804] = "entrapment",
 	[19185] = "entrapment",
 }
-
+if WOW_PROJECT_ID_RCE == (WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5) then
+    Data.spells[2094] = "cyclone"
+elseif WOW_PROJECT_ID_RCE == (WOW_PROJECT_WRATH_CLASSIC or 11) then
+    Data.spells[2094] = "fear"
+end
 -- DR Category names
 Data.categoryNames = {
 	["banish"] = L["Banish"],

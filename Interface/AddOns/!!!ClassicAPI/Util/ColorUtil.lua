@@ -1,12 +1,10 @@
-local ColorMixin = ColorMixin
-if ( ColorMixin and not ColorMixin.___CAPI ) then return end
-ColorMixin.___CAPI = nil
-
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local CreateColor = CreateColor
+local ColorMixin = ColorMixin
+local UnitClass = UnitClass
 local Mixin = Mixin
 
 for _, classColor in pairs(RAID_CLASS_COLORS) do
-	if ( classColor.colorStr ) then break end
 	Mixin(classColor, ColorMixin);
 	classColor.colorStr = classColor:GenerateHexColor();
 end
@@ -49,7 +47,7 @@ function GetClassColorObj(classFilename)
 end
 
 function GetClassColoredTextForUnit(unit, text)
-	local classFilename = select(2, UnitClass(unit));
+	local _, classFilename = UnitClass(unit);
 	local color = GetClassColorObj(classFilename);
 	if (color) then 
 		return color:WrapTextInColorCode(text);
